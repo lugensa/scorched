@@ -1,4 +1,0 @@
-scorched
-========
-
-Sunburnt offspring

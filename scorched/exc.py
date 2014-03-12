@@ -1,0 +1,2 @@
+class SolrError(Exception):
+    pass
