@@ -1,8 +1,8 @@
 import datetime
 import math
-import re
 import pytz
-from scorched.exc import SolrError
+import re
+import scorched.exc
 
 try:
     import mx.DateTime
@@ -107,18 +107,15 @@ class solr_date(object):
         elif hasattr(v, "strftime"):
             self._dt_obj = self.from_date(v)
         else:
-            raise SolrError("Cannot initialize solr_date from %s object"
-                            % type(v))
+            raise scorched.exc.SolrError(
+                "Cannot initialize solr_date from %s object" % type(v))
 
     @staticmethod
     def from_date(dt_obj):
         # Python datetime objects may include timezone information
         if hasattr(dt_obj, 'tzinfo') and dt_obj.tzinfo:
             # but Solr requires UTC times.
-            if pytz:
-                return dt_obj.astimezone(pytz.utc).replace(tzinfo=None)
-            else:
-                raise EnvironmentError("pytz not available, cannot do timezone conversions")
+            return dt_obj.astimezone(pytz.utc).replace(tzinfo=None)
         else:
             return dt_obj
 

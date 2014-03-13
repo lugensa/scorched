@@ -3,7 +3,12 @@ import scorched.dates
 
 
 class SolrFacetCounts(object):
-    members = ["facet_dates", "facet_fields", "facet_queries", "facet_pivot"]
+    members = (
+        "facet_dates",
+        "facet_fields",
+        "facet_queries",
+        "facet_pivot"
+    )
 
     def __init__(self, **kwargs):
         for member in self.members:
@@ -12,17 +17,18 @@ class SolrFacetCounts(object):
 
     @classmethod
     def from_response(cls, response):
-        facet_counts_dict = dict(response.get("facet_counts", {}))
-        return SolrFacetCounts(**facet_counts_dict)
+        facet_counts = dict(response.get("facet_counts", {}))
+        return SolrFacetCounts(**facet_counts)
 
     @classmethod
     def from_response_json(cls, response):
         try:
-            facet_counts_dict = response['facet_counts']
+            facet_counts = response['facet_counts']
         except KeyError:
             return SolrFacetCounts()
         facet_fields = {}
-        for facet_field, facet_values in facet_counts_dict['facet_fields'].viewitems():
+        for facet_field, facet_values in facet_counts[
+                'facet_fields'].viewitems():
             facets = []
             # Change each facet list from [a, 1, b, 2, c, 3 ...] to
             # [(a, 1), (b, 2), (c, 3) ...]
@@ -32,8 +38,8 @@ class SolrFacetCounts(object):
                 else:
                     facets.append((name, value))
             facet_fields[facet_field] = facets
-        facet_counts_dict['facet_fields'] = facet_fields
-        return SolrFacetCounts(**facet_counts_dict)
+        facet_counts['facet_fields'] = facet_fields
+        return SolrFacetCounts(**facet_counts)
 
 
 class SolrResponse(object):
@@ -98,4 +104,5 @@ class SolrResult(object):
         return docs
 
     def __str__(self):
-        return "%(numFound)s results found, starting at #%(start)s\n\n" % self.__dict__ + str(self.docs)
+        return "%(numFound)s results found, starting at #%(start)s\n\n" % (
+            self.__dict__ + str(self.docs))

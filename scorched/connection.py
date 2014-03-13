@@ -1,15 +1,14 @@
-import urlparse
-import time
-import urllib
-import warnings
-import requests
+import itertools
 import json
+import requests
 import scorched.dates
 import scorched.response
-
-from itertools import islice
-from scorched.exc import SolrError
-from scorched.search import LuceneQuery, MltSolrSearch, SolrSearch, params_from_dict
+import scorched.search
+import scorched.exc
+import time
+import urlparse
+import urllib
+import warnings
 
 MAX_LENGTH_GET_URL = 2048
 # Jetty default is 4096; Tomcat default is 8192; picking 2048 to be
@@ -22,7 +21,6 @@ class SolrConnection(object):
 
     def __init__(self, url, http_connection, mode, retry_timeout,
                  max_length_get_url):
-        #TODO
         self.http_connection = requests.Session()
         if mode == 'r':
             self.writeable = False
@@ -67,7 +65,7 @@ class SolrConnection(object):
         url = self.url_for_update(**kwargs)
         response = self.request('POST', url, data=body, headers=headers)
         if response.status_code != 200:
-            raise SolrError(response)
+            raise scorched.exc.SolrError(response)
 
     def url_for_update(self, commit=None, commitWithin=None, softCommit=None,
                        optimize=None, waitSearcher=None, expungeDeletes=None,
@@ -105,7 +103,8 @@ class SolrConnection(object):
         if 'maxSegments' in extra_params and 'optimize' not in extra_params:
             raise ValueError("Can't do maxSegments without optimize")
         if extra_params:
-            return "%s?%s" % (self.update_url, urllib.urlencode(sorted(extra_params.items())))
+            return "%s?%s" % (self.update_url, urllib.urlencode(
+                sorted(extra_params.items())))
         else:
             return self.update_url
 
@@ -116,19 +115,21 @@ class SolrConnection(object):
         qs = urllib.urlencode(params)
         url = "%s?%s" % (self.select_url, qs)
         if len(url) > self.max_length_get_url:
-            warnings.warn("Long query URL encountered - POSTing instead of "
-                          "GETting. This query will not be cached at the HTTP layer")
+            warnings.warn(
+                "Long query URL encountered - POSTing instead of "
+                "GETting. This query will not be cached at the HTTP layer")
             url = self.select_url
             method = 'POST'
             kwargs = {
                 'data': qs,
-                'headers': {"Content-Type": "application/x-www-form-urlencoded"}}
+                'headers': {
+                    "Content-Type": "application/x-www-form-urlencoded"}}
         else:
             method = 'GET'
             kwargs = {}
         response = self.request(method, url, **kwargs)
         if response.status_code != 200:
-            raise SolrError(response)
+            raise scorched.exc.SolrError(response)
         return response.content
 
     def mlt(self, params, content=None):
@@ -156,7 +157,7 @@ class SolrConnection(object):
                     'headers': {"Content-Type": "text/plain; charset=utf-8"}}
         response = self.request(method, url, **kwargs)
         if response.status_code != 200:
-            raise SolrError(response)
+            raise scorched.exc.SolrError(response)
         return response.content
 
 
@@ -236,20 +237,20 @@ class SolrInterface(object):
         self.delete_by_query(self.Q(**{"*": "*"}))
 
     def search(self, **kwargs):
-        params = params_from_dict(**kwargs)
+        params = scorched.search.params_from_dict(**kwargs)
         ret = scorched.response.SolrResponse.from_json(
             self.conn.select(params), self._datefields)
         return ret
 
     def query(self, *args, **kwargs):
-        q = SolrSearch(self)
+        q = scorched.search.SolrSearch(self)
         if len(args) + len(kwargs) > 0:
             return q.query(*args, **kwargs)
         else:
             return q
 
     def mlt_search(self, content=None, **kwargs):
-        params = params_from_dict(**kwargs)
+        params = scorched.search.params_from_dict(**kwargs)
         ret = self.schema.parse_response(
             self.conn.mlt(params, content=content))
         return ret
@@ -269,12 +270,12 @@ class SolrInterface(object):
         Other MoreLikeThis specific parameters can be passed as kwargs without
         the 'mlt.' prefix.
         """
-        q = MltSolrSearch(
+        q = scorched.search.MltSolrSearch(
             self, content=content, content_charset=content_charset, url=url)
         return q.mlt(fields=fields, query_fields=query_fields, **kwargs)
 
     def Q(self, *args, **kwargs):
-        q = LuceneQuery()
+        q = scorched.search.LuceneQuery()
         q.add(args, kwargs)
         return q
 
@@ -282,7 +283,7 @@ class SolrInterface(object):
 def grouper(iterable, n):
     "grouper('ABCDEFG', 3) --> [['ABC'], ['DEF'], ['G']]"
     i = iter(iterable)
-    g = list(islice(i, 0, n))
+    g = list(itertools.islice(i, 0, n))
     while g:
         yield g
-        g = list(islice(i, 0, n))
+        g = list(itertools.islice(i, 0, n))

@@ -1,18 +1,17 @@
-import datetime
 import collections
 import copy
+import datetime
+import numbers
 import operator
 import re
+import scorched.strings
+import scorched.exc
+import scorched.dates
 try:
     import mx.DateTime
     HAS_MX_DATETIME = True
 except ImportError:
     HAS_MX_DATETIME = False
-import numbers
-import scorched.strings
-
-from scorched.dates import solr_date
-from scorched.exc import SolrError
 
 PARSERS = ("edismax", "dismax")
 
@@ -78,9 +77,9 @@ class LuceneQuery(object):
             return u"true" if value else u"false"
         if HAS_MX_DATETIME:
             if isinstance(value, mx.DateTime.DateTimeType):
-                return unicode(solr_date(value))
+                return unicode(scorched.dates.solr_date(value))
         if isinstance(value, datetime.datetime):
-            return unicode(solr_date(value))
+            return unicode(scorched.dates.solr_date(value))
         return unicode(value)
 
     def to_query(self, value):
@@ -210,7 +209,8 @@ class LuceneQuery(object):
                              for kwargs, boost_score in self.boosts]
             newself = newself | (newself & reduce(operator.or_, boost_queries))
             newself, _ = newself.normalize()
-            return newself.__unicode_special__(level=level, force_serialize=force_serialize)
+            return newself.__unicode_special__(level=level,
+                                               force_serialize=force_serialize)
         else:
             alliter = [self.serialize_term_queries(self.terms),
                        self.serialize_term_queries(self.phrases),
@@ -222,7 +222,8 @@ class LuceneQuery(object):
                 op_ = u'OR' if self._or else u'AND'
                 if self.child_needs_parens(q):
                     u.append(
-                        u"(%s)" % q.__unicode_special__(level=level + 1, op=op_))
+                        u"(%s)" % q.__unicode_special__(
+                            level=level + 1, op=op_))
                 else:
                     u.append(
                         u"%s" % q.__unicode_special__(level=level + 1, op=op_))
@@ -264,7 +265,8 @@ class LuceneQuery(object):
         return q
 
     def __nonzero__(self):
-        return bool(self.terms) or bool(self.phrases) or bool(self.ranges) or bool(self.subqueries)
+        return bool(self.terms) or bool(self.phrases) or bool(self.ranges) or \
+            bool(self.subqueries)
 
     def __or__(self, other):
         q = LuceneQuery()
@@ -345,17 +347,17 @@ class LuceneQuery(object):
 
     def add_range(self, field_name, rel, value):
         if rel not in self.range_query_templates:
-            raise SolrError("No such relation '%s' defined" % rel)
+            raise scorched.exc.SolrError("No such relation '%s' defined" % rel)
         insts = (value,)
         if rel in ('range', 'rangeexc'):
             try:
                 assert len(value) == 2
             except (AssertionError, TypeError):
-                raise SolrError("'%s__%s' argument must be a length-2 iterable"
+                raise scorched.exc.SolrError("'%s__%s' argument must be a length-2 iterable"
                                 % (field_name, rel))
         elif rel == 'any':
             if value is not True:
-                raise SolrError("'%s__%s' argument must be True")
+                raise scorched.exc.SolrError("'%s__%s' argument must be True")
             insts = ()
         self.ranges.add((field_name, rel, insts))
 
@@ -468,8 +470,9 @@ class BaseSearch(object):
 
     def alt_parser(self, parser, **kwargs):
         if parser not in PARSERS:
-            raise SolrError("Parser (%s) is not supported choose between (%s)"
-                            % (parser, PARSERS))
+            raise scorched.exc.SolrError(
+                "Parser (%s) is not supported choose between (%s)" % (
+                    parser, PARSERS))
         newself = self.clone()
         if parser == 'dismax':
             newself.parser = DismaxOptions()
@@ -573,7 +576,8 @@ class MltSolrSearch(BaseSearch):
                     content_charset = 'utf-8'
                 if isinstance(content, unicode):
                     content = content.encode('utf-8')
-                elif content_charset.lower().replace('-', '_') not in self.trivial_encodings:
+                elif content_charset.lower(
+                ).replace('-', '_') not in self.trivial_encodings:
                     content = content.decode(content_charset).encode('utf-8')
             self.content = content
             self.url = url
@@ -661,7 +665,7 @@ class Options(object):
         checked_kwargs = {}
         for k, v in kwargs.items():
             if k not in self.opts:
-                raise SolrError(
+                raise scorched.exc.SolrError(
                     "No such option for %s: %s" % (self.option_name, k))
             opt_type = self.opts[k]
             try:
@@ -672,7 +676,7 @@ class Options(object):
                 else:
                     v = opt_type(self, v)
             except:
-                raise SolrError(
+                raise scorched.exc.SolrError(
                     "Invalid value for %s option %s: %s" % (self.option_name,
                                                             k, v))
             checked_kwargs[k] = v
@@ -767,7 +771,7 @@ class DismaxOptions(Options):
                     try:
                         v = float(v)
                     except ValueError:
-                        raise SolrError(
+                        raise scorched.exc.SolrError(
                             "'%s' has non-numerical boost value" % k)
         self.kwargs.update(checked_kwargs)
 
@@ -857,13 +861,13 @@ class MoreLikeThisOptions(Options):
         if query_fields is not None:
             for k, v in query_fields.items():
                 if k not in self.fields:
-                    raise SolrError(
+                    raise scorched.exc.SolrError(
                         "'%s' specified in query_fields but not fields" % k)
                 if v is not None:
                     try:
                         v = float(v)
                     except ValueError:
-                        raise SolrError(
+                        raise scorched.exc.SolrError(
                             "'%s' has non-numerical boost value" % k)
             self.query_fields.update(query_fields)
 
@@ -933,11 +937,13 @@ class PaginateOptions(Options):
     def update(self, start, rows):
         if start is not None:
             if start < 0:
-                raise SolrError("paginator start index must be 0 or greater")
+                raise scorched.exc.SolrError(
+                    "paginator start index must be 0 or greater")
             self.start = start
         if rows is not None:
             if rows < 0:
-                raise SolrError("paginator rows must be 0 or greater")
+                raise scorched.exc.SolrError(
+                    "paginator rows must be 0 or greater")
             self.rows = rows
 
     def options(self):
@@ -972,7 +978,8 @@ class SortOptions(Options):
 
     def options(self):
         if self.fields:
-            return {"sort": ", ".join("%s %s" % (field, order) for order, field in self.fields)}
+            return {"sort": ", ".join(
+                "%s %s" % (field, order) for order, field in self.fields)}
         else:
             return {}
 
