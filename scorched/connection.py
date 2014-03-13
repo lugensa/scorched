@@ -21,6 +21,18 @@ class SolrConnection(object):
 
     def __init__(self, url, http_connection, mode, retry_timeout,
                  max_length_get_url):
+        """
+        :param url: url to solr
+        :type url: str
+        :param http_connection: already existing connection TODO
+        :type http_connection: requests connection
+        :param mode: mode (readable, writable) solr
+        :type mode: str
+        :param retry_timeout: timeout until retry
+        :type retry_timeout: int
+        :param max_length_get_url: max length until switch to post
+        :type max_length_get_url: int
+        """
         self.http_connection = requests.Session()
         if mode == 'r':
             self.writeable = False
@@ -34,6 +46,15 @@ class SolrConnection(object):
         self.max_length_get_url = max_length_get_url
 
     def request(self, *args, **kwargs):
+        """
+        :param args: arguments
+        :type args: tuple
+        :param kwargs: key word arguments
+        :type kwargs: dict
+
+        .. todo::
+            Make this api more explicit!
+        """
         try:
             return self.http_connection.request(*args, **kwargs)
         except requests.exceptions.ConnectionError:
@@ -43,15 +64,44 @@ class SolrConnection(object):
             return self.http_connection.request(*args, **kwargs)
 
     def commit(self, waitSearcher=None, expungeDeletes=None, softCommit=None):
+        """
+        :param waitSearcher: optional -- block until a new searcher is opened
+        and registered as the main query searcher, making the changes visible
+        :type waitSearcher: bool
+        :param expungeDeletes: optional -- merge segments with deletes away
+        :type expungeDeletes: bool
+        :param softCommit: optional -- perform a soft commit - this will
+        refresh the 'view' of the index in a more performant manner, but
+        without "on-disk" guarantees.
+        :type softCommit: bool
+
+        A commit operation makes index changes visible to new search requests.
+        """
+
         self.update('{"commit": {}}', commit=True,
                     waitSearcher=waitSearcher, expungeDeletes=expungeDeletes,
                     softCommit=softCommit)
 
     def optimize(self, waitSearcher=None, maxSegments=None):
+        """
+        :param waitSearcher: optional -- block until a new searcher is opened
+        and registered as the main query searcher, making the changes visible
+        :type waitSearcher: bool
+        :param maxSegments: optional -- optimizes down to at most this number
+        of segments
+        :type maxSegments: int
+
+        An optimize is like a hard commit except that it forces all of the
+        index segments to be merged into a single segment first.
+        """
         self.update('{"optimize": {}}', optimize=True,
                     waitSearcher=waitSearcher, maxSegments=maxSegments)
 
     def rollback(self):
+        """
+        The rollback command rollbacks all add/deletes made to the index since
+        the last commit
+        """
         self.update('{"rollback": {}}')
 
     def update(self, update_doc, **kwargs):
@@ -166,6 +216,19 @@ class SolrInterface(object):
 
     def __init__(self, url, http_connection=None, mode='',
                  retry_timeout=-1, max_length_get_url=MAX_LENGTH_GET_URL):
+        """
+        :param url: url to solr
+        :type url: str
+        :param http_connection: optional -- already existing connection TODO
+        :type http_connection: requests connection
+        :param mode: optional -- mode (readable, writable) solr
+        :type mode: str
+        :param retry_timeout: optional -- timeout until retry
+        :type retry_timeout: int
+        :param max_length_get_url: optional -- max length until switch to post
+        :type max_length_get_url: int
+        """
+
         self.conn = SolrConnection(
             url, http_connection, mode, retry_timeout, max_length_get_url)
         self.schema = self.init_schema()
@@ -207,6 +270,17 @@ class SolrInterface(object):
         return docs
 
     def add(self, docs, chunk=100, **kwargs):
+        """
+        :param docs: documents to be added
+        :type docs: dict
+        :param chunk: optional -- size of chunks in witch the add command
+        schould be splitted
+        :type chunk: int
+        :param kwargs: optinal -- additional arguments
+        :type kwargs: dict
+
+        Add a document or a list of document to solr.
+        """
         if hasattr(docs, "items") or not hasattr(docs, "__iter__"):
             docs = [docs]
         # to avoid making messages too large, we break the message every
@@ -216,14 +290,29 @@ class SolrInterface(object):
             self.conn.update(update_message, **kwargs)
 
     def delete_by_query(self, query, **kwargs):
+        """
+        :param query: criteria how witch entries should be deleted
+        :type query: LuceneQuery
+
+        Delete entries by a given query
+        """
         delete_message = json.dumps({"delete": {"query": unicode(query)}})
         self.conn.update(delete_message, **kwargs)
 
     def delete_by_ids(self, ids, **kwargs):
+        """
+        :param ids: ids of entries that should be deleted
+        :type ids: list
+
+        Delete entries by a given id
+        """
         delete_message = json.dumps({"delete": ids})
         self.conn.update(delete_message, **kwargs)
 
     def commit(self, *args, **kwargs):
+        """
+        Commit actions
+        """
         self.conn.commit(*args, **kwargs)
 
     def optimize(self, *args, **kwargs):
@@ -233,16 +322,24 @@ class SolrInterface(object):
         self.conn.rollback()
 
     def delete_all(self):
-        # When deletion is fixed to escape query strings, this will need fixed.
+        """
+        Delete everything
+        """
         self.delete_by_query(self.Q(**{"*": "*"}))
 
     def search(self, **kwargs):
+        """
+        Search solr
+        """
         params = scorched.search.params_from_dict(**kwargs)
         ret = scorched.response.SolrResponse.from_json(
             self.conn.select(params), self._datefields)
         return ret
 
     def query(self, *args, **kwargs):
+        """
+        Build a solr query
+        """
         q = scorched.search.SolrSearch(self)
         if len(args) + len(kwargs) > 0:
             return q.query(*args, **kwargs)
@@ -250,6 +347,9 @@ class SolrInterface(object):
             return q
 
     def mlt_search(self, content=None, **kwargs):
+        """
+        Mlt search solr
+        """
         params = scorched.search.params_from_dict(**kwargs)
         ret = self.schema.parse_response(
             self.conn.mlt(params, content=content))
@@ -281,7 +381,9 @@ class SolrInterface(object):
 
 
 def grouper(iterable, n):
-    "grouper('ABCDEFG', 3) --> [['ABC'], ['DEF'], ['G']]"
+    """
+    grouper('ABCDEFG', 3) --> [['ABC'], ['DEF'], ['G']]
+    """
     i = iter(iterable)
     g = list(itertools.islice(i, 0, n))
     while g:
