@@ -28,7 +28,7 @@ class SolrFacetCounts(object):
             return SolrFacetCounts()
         facet_fields = {}
         for facet_field, facet_values in facet_counts[
-                'facet_fields'].viewitems():
+                'facet_fields'].items():
             facets = []
             # Change each facet list from [a, 1, b, 2, c, 3 ...] to
             # [(a, 1), (b, 2), (c, 3) ...]
@@ -59,7 +59,7 @@ class SolrResponse(object):
         self.highlighting = doc.get("highlighting", {})
         self.more_like_these = dict((k, SolrResult.from_json(v, datefields))
                                     for (k, v) in doc.get('moreLikeThis', {}
-                                                          ).viewitems())
+                                                          ).items())
         if len(self.more_like_these) == 1:
             self.more_like_this = self.more_like_these.values()[0]
         else:
