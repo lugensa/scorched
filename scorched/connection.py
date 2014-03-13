@@ -77,7 +77,6 @@ class SolrConnection(object):
 
         A commit operation makes index changes visible to new search requests.
         """
-
         self.update('{"commit": {}}', commit=True,
                     waitSearcher=waitSearcher, expungeDeletes=expungeDeletes,
                     softCommit=softCommit)
@@ -105,6 +104,12 @@ class SolrConnection(object):
         self.update('{"rollback": {}}')
 
     def update(self, update_doc, **kwargs):
+        """
+        :param update_doc: data send to solr
+        :type update_doc: json data
+
+        Send json to solr
+        """
         if not self.writeable:
             raise TypeError("This Solr instance is only for reading")
         body = update_doc

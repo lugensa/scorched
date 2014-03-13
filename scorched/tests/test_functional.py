@@ -15,7 +15,18 @@ class TestUtils(unittest.TestCase):
             self.docs = json.loads(self.datajson)
 
     @scorched.testing.skip_unless_solr
-    def test_functional_solr(self):
+    def test_query(self):
+        dsn = os.environ.get("SOLR_URL",
+                             "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        si.add(self.docs)
+        si.commit()
+        res = si.query(genre_s="fantasy").execute()
+        self.assertEqual(res.result.numFound, 3)
+        si.delete_all()
+
+    @scorched.testing.skip_unless_solr
+    def test_facet_query(self):
         dsn = os.environ.get("SOLR_URL",
                              "http://localhost:8983/solr")
         si = SolrInterface(dsn)
@@ -34,4 +45,32 @@ class TestUtils(unittest.TestCase):
                           'facet_dates': {},
                           'facet_queries': {},
                           'facet_pivot': ()})
+        si.delete_all()
+
+    @scorched.testing.skip_unless_solr
+    def test_filter_query(self):
+        dsn = os.environ.get("SOLR_URL",
+                             "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        si.add(self.docs)
+        si.commit()
+        res = si.query(si.Q(**{"*": "*"})).filter(cat="hardcover").filter(
+            genre_s="fantasy").execute()
+        self.assertEqual(res.result.numFound, 1)
+        self.assertEqual([x['name'] for x in res.result.docs],
+                         [u'The Lightning Thief'])
+        si.delete_all()
+
+    @scorched.testing.skip_unless_solr
+    def test_edismax_query(self):
+        dsn = os.environ.get("SOLR_URL",
+                             "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        si.add(self.docs)
+        si.commit()
+        res = si.query(si.Q(**{"*": "*"})).filter(cat="hardcover").filter(
+            genre_s="fantasy").alt_parser('edismax').execute()
+        self.assertEqual(res.result.numFound, 1)
+        self.assertEqual([x['name'] for x in res.result.docs],
+                         [u'The Lightning Thief'])
         si.delete_all()
