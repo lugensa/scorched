@@ -329,6 +329,8 @@ class SolrInterface(object):
 
     def search(self, **kwargs):
         """
+        :returns: SolrResponse  -- A solr response object.
+
         Search solr
         """
         params = scorched.search.params_from_dict(**kwargs)
@@ -338,6 +340,8 @@ class SolrInterface(object):
 
     def query(self, *args, **kwargs):
         """
+        :returns: SolrSearch -- A solrsearch.
+
         Build a solr query
         """
         q = scorched.search.SolrSearch(self)
