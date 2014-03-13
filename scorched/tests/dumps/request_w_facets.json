@@ -1,0 +1,88 @@
+{
+  "responseHeader": {
+    "status": 0,
+    "QTime": 1,
+    "params": {
+      "facet": "true",
+      "indent": "true",
+      "q": "genre_s:fantasy",
+      "_": "1394706864646",
+      "facet.field": "cat",
+      "wt": "json"
+    }
+  },
+  "response": {
+    "numFound": 3,
+    "start": 0,
+    "docs": [
+      {
+        "id": "978-0641723445",
+        "cat": [
+          "book",
+          "hardcover"
+        ],
+        "name": "The Lightning Thief",
+        "author": "Rick Riordan",
+        "author_s": "Rick Riordan",
+        "series_t": "Percy Jackson and the Olympians",
+        "sequence_i": 1,
+        "genre_s": "fantasy",
+        "inStock": true,
+        "price": 12.5,
+        "price_c": "12.5,USD",
+        "pages_i": 384,
+        "_version_": 1462456002687271000
+      },
+      {
+        "id": "978-1423103349",
+        "cat": [
+          "book",
+          "paperback"
+        ],
+        "name": "The Sea of Monsters",
+        "author": "Rick Riordan",
+        "author_s": "Rick Riordan",
+        "series_t": "Percy Jackson and the Olympians",
+        "sequence_i": 2,
+        "genre_s": "fantasy",
+        "inStock": true,
+        "price": 6.49,
+        "price_c": "6.49,USD",
+        "pages_i": 304,
+        "_version_": 1462456002688319500
+      },
+      {
+        "id": "978-1857995879",
+        "cat": [
+          "book",
+          "paperback"
+        ],
+        "name": "Sophie's World : The Greek Philosophers",
+        "author": "Jostein Gaarder",
+        "author_s": "Jostein Gaarder",
+        "sequence_i": 1,
+        "genre_s": "fantasy",
+        "inStock": true,
+        "price": 3.07,
+        "price_c": "3.07,USD",
+        "pages_i": 64,
+        "_version_": 1462456002689368000
+      }
+    ]
+  },
+  "facet_counts": {
+    "facet_queries": {},
+    "facet_fields": {
+      "cat": [
+        "book",
+        3,
+        "paperback",
+        2,
+        "hardcover",
+        1
+      ]
+    },
+    "facet_dates": {},
+    "facet_ranges": {}
+  }
+}

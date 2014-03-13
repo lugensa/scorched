@@ -45,7 +45,7 @@ class SolrFacetCounts(object):
 class SolrResponse(object):
 
     @classmethod
-    def from_json(cls, jsonmsg, datefields=[]):
+    def from_json(cls, jsonmsg, datefields=()):
         self = cls()
         self.original_json = jsonmsg
         doc = json.loads(jsonmsg)
@@ -85,7 +85,7 @@ class SolrResponse(object):
 class SolrResult(object):
 
     @classmethod
-    def from_json(cls, node, datefields=[]):
+    def from_json(cls, node, datefields=()):
         self = cls()
         self.name = 'response'
         self.numFound = int(node['numFound'])
