@@ -8,7 +8,7 @@ README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
 
-setup(name='elainepy',
+setup(name='scorched',
       version=version,
       description="",
       long_description=README + '\n\n' + CHANGES,
@@ -28,5 +28,6 @@ setup(name='elainepy',
           "coverage",
           "pytz",
       ],
+      test_suite='scorched.tests',
       setup_requires=["setuptools_git"],
       )

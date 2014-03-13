@@ -16,7 +16,7 @@ class TestUtils(unittest.TestCase):
 
     @scorched.testing.skip_unless_solr
     def test_functional_solr(self):
-        dsn = os.environ.get("SOLR_INDEX",
+        dsn = os.environ.get("SOLR_URL",
                              "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         si.add(self.docs)

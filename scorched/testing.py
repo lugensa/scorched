@@ -1,12 +1,11 @@
 import requests
 import os
 import unittest
-import urlparse
 import warnings
 
 
 def is_solr_available():
-    dsn = os.environ.get("SOLR_INDEX",
+    dsn = os.environ.get("SOLR_URL",
                          "http://localhost:8983/solr")
     if dsn is not None:
         try:
