@@ -5,6 +5,7 @@ python:
 # command to install dependencies
 install:
   - pip install . --use-mirrors
+  - pip install coveralls
 env:
   - SOLR_VERSION=4.6.1 SOLR_URL=http://localhost:8983/solr/collection1
 # command to run tests
