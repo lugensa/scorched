@@ -11,6 +11,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   usage.rst
+   query.rst
+   mlt.rst
    api.rst
 
 

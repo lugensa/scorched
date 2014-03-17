@@ -54,9 +54,12 @@ class SolrResponse(object):
             setattr(self, attr, details.get(attr))
         if self.status != 0:
             raise ValueError("Response indicates an error")
-        self.result = SolrResult.from_json(doc['response'], datefields)
+        self.result = SolrResult()
+        if 'response' in doc:
+            self.result = SolrResult.from_json(doc['response'], datefields)
         self.facet_counts = SolrFacetCounts.from_response_json(doc)
         self.highlighting = doc.get("highlighting", {})
+        self.groups = doc.get('grouped', {})
         self.more_like_these = dict((k, SolrResult.from_json(v, datefields))
                                     for (k, v) in doc.get('moreLikeThis', {}
                                                           ).items())
