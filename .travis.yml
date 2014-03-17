@@ -11,3 +11,5 @@ env:
 before_script: curl https://raw.github.com/moliware/travis-solr/master/travis-solr.sh | bash
 script: nosetests -s scorched
 after_script: killall java
+after_success:
+  coveralls    
