@@ -9,7 +9,8 @@ Git Repository and issue tracker: https://github.com/lugensa/scorched
 .. |travisci| image::  https://travis-ci.org/lugensa/scorched.png
 .. _travisci: https://travis-ci.org/lugensa/scorched
 
-.. image:: https://coveralls.io/repos/lugensa/scorched/badge.png :target: https://coveralls.io/r/lugensa/scorched 
+.. image:: https://coveralls.io/repos/lugensa/scorched/badge.png
+    :target: https://coveralls.io/r/lugensa/scorched 
 
 |travisci|_
 
