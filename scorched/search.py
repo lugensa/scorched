@@ -600,6 +600,8 @@ class MltSolrSearch(BaseSearch):
         options = super(MltSolrSearch, self).options()
         if self.url is not None:
             options['stream.url'] = self.url
+        if 'q' not in options:
+            options['q'] = '*:*'  # search everything
         return options
 
     def execute(self, constructor=None):
@@ -869,10 +871,11 @@ class MoreLikeThisOptions(Options):
 
 
 class MoreLikeThisHandlerOptions(MoreLikeThisOptions):
-    opts = {'match.include': bool,
-            'match.offset': int,
-            'interestingTerms': ["list", "details", "none"],
-            }
+    opts = {
+        'match.include': bool,
+        'match.offset': int,
+        'interestingTerms': ["list", "details", "none"],
+    }
     opts.update(MoreLikeThisOptions.opts)
     del opts['count']
 

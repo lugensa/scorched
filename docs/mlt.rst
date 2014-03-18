@@ -26,16 +26,11 @@ Instead of calling the ``query`` method on the interface, we call the
 
 ::
 
-    >>> si.mlt_query(content=open("localfile").read())
+    >>> si.mlt_query(fields="name", content=open("localfile").read())
 
 We give the MLT handler some content (sourced in this case from a local file);
 the MLT query will take this text, analyze it, and retrieve documents that are
 similar according to the results of its analysis.
-
-Because we haven't specified which fields we care about, the similarity is
-calculated on the *default search field*. It is preferable to not use or rely
-on this setting; instead the request handler or query LocalParams for a search
-should specify the default field(s) to search on
 
 The results are returned in the same format as illustrated in the ``mlt()``
 method.
@@ -44,20 +39,22 @@ Further MLT query options
 -------------------------
 
 If we wanted similarity to be calculated with respect to a different field or
-fields, that can be specified too:
+fields.:
 
 ::
 
-    >>> si.mlt_query(content=open("localfile").read(), fields="name")
-    >>> si.mlt_query(content=open("localfile").read(), fields=["name", "author_t"])
+    >>> si.mlt_query(content=open("localfile").read(),
+    ...              fields=["name", "author_t"])
 
 We can understand a little more about why we get the results we do by asking
 for the result of the MLT document analysis.
 
 ::
 
-    >>> si.mlt_query(content=open("localfile").read(), interestingTerms="list")
-    >>> si.mlt_query(content=open("localfile").read(), interestingTerms="details")
+    >>> si.mlt_query(fields="name", content=open("localfile").read(),
+    ...              interestingTerms="list")
+    >>> si.mlt_query(fields="name", content=open("localfile").read(),
+    ...              interestingTerms="details")
 
 "list" will return a list of the interesting terms extracted; "details" will
 also provide details of the boost used for each term.
@@ -68,7 +65,8 @@ available at http://docs.python.org/library/codecs.html#standard-encodings:
 
 ::
 
-    >>> si.mlt_query(content=open("localfile").read(), content_charset="iso-8859-1")
+    >>> si.mlt_query(fields="name", content=open("localfile").read(),
+    ...              content_charset="iso-8859-1")
 
 Sourcing content from the web
 -----------------------------
@@ -78,7 +76,7 @@ the URL for the content rather than supplying it yourself:
 
 ::
 
-    >>> si.mlt_query(url="http://example.com/document")
+    >>> si.mlt_query(fields="name", url="http://example.com/document")
 
 All the other options above still apply to URL-sourced content, except for
 "content_charset"; that's up to the webserver where the content is stored.
@@ -93,7 +91,37 @@ You can perform an MLT query on indexed content in the following way:
 
 ::
 
-    >>> si.mlt_query().query(...)
+    >>> res = si.mlt_query("genre_s", interestingTerms="details",
+    ...                    mintf=1, mindf=1).query(
+    ...                    id="978-0641723445").execute()
+    >>> res.result.docs
+    [{u'_version_': 1462917302263480320,
+      u'author': u'Rick Riordan',
+      u'author_s': u'Rick Riordan',
+      u'cat': [u'book', u'paperback'],
+      u'genre_s': u'fantasy',
+      u'id': u'978-1423103349',
+      u'inStock': True,
+      u'name': u'The Sea of Monsters',
+      u'pages_i': 304,
+      u'price': 6.49,
+      u'price_c': u'6.49,USD',
+      u'sequence_i': 2,
+      u'series_t': u'Percy Jackson and the Olympians'},
+     {u'_version_': 1462917302263480321,
+      u'author': u'Jostein Gaarder',
+      u'author_s': u'Jostein Gaarder',
+      u'cat': [u'book', u'paperback'],
+      u'genre_s': u'fantasy',
+      u'id': u'978-1857995879',
+      u'inStock': True,
+      u'name': u"Sophie's World : The Greek Philosophers",
+      u'pages_i': 64,
+      u'price': 3.07,
+      u'price_c': u'3.07,USD',
+      u'sequence_i': 1}]
+    >>> res.interesting_terms
+    >>> [u'genre_s:fantasy', 1.0]
 
 ie - initialize an otherwise empty mlt_query object, and then run queries on it
 as you would run normal queries. The full range of query operations is
@@ -101,7 +129,7 @@ supported when composing the query for indexed content:
 
 ::
 
-    >>> si.mlt_query().query(title='Whale').query(~si.Q(
+    >>> si.mlt_query("name").query(title='Whale').query(~si.Q(
     ...     author='Melville').query(si.Q('Moby') | si.Q('Dick'))
 
 Chaining MLT queries

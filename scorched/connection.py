@@ -180,6 +180,35 @@ class SolrConnection(object):
             raise scorched.exc.SolrError(response)
         return response.content
 
+    def mlt(self, params, content=None):
+        """
+        Perform a MoreLikeThis query using the content specified
+        There may be no content if stream.url is specified in the params.
+        """
+        if not self.readable:
+            raise TypeError("This Solr instance is only for writing")
+        params.append(('wt', 'json'))
+        qs = urllib.urlencode(params)
+        base_url = "%s?%s" % (self.mlt_url, qs)
+        method = 'GET'
+        kwargs = {}
+        if content is None:
+            url = base_url
+        else:
+            get_url = "%s&stream.body=%s" % (base_url, urllib.quote_plus(content))
+            if len(get_url) <= self.max_length_get_url:
+                url = get_url
+            else:
+                url = base_url
+                method = 'POST'
+                kwargs = {
+                    'data': content,
+                    'headers': {"Content-Type": "text/plain; charset=utf-8"}}
+        response = self.request(method, url, **kwargs)
+        if response.status_code != 200:
+            raise scorched.exc.SolrError(response.content)
+        return response.content
+
 
 class SolrInterface(object):
     remote_schema_file = "schema?wt=json"
@@ -351,10 +380,19 @@ class SolrInterface(object):
         else:
             return q
 
-    def mlt_query(self, fields=None, content=None, content_charset=None,
+    def mlt_search(self, content=None, **kwargs):
+        """
+        Mlt search solr
+        """
+        params = scorched.search.params_from_dict(**kwargs)
+        ret = scorched.response.SolrResponse.from_json(
+            self.conn.mlt(params, content=content), self._datefields)
+        return ret
+
+    def mlt_query(self, fields, content=None, content_charset=None,
                   url=None, query_fields=None, **kwargs):
         """
-        :param fields: optional -- field names to compute similarity upon
+        :param fields: field names to compute similarity upon
         :type fields: list
         :param content: optional -- string on witch to find similar documents
         :type content: str

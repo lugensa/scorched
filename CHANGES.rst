@@ -7,7 +7,7 @@
 
 - Cleaner api removed exclude use ~si.Q()
 
-- Removed mlt_search (redundant with MltSearch)   
+- Fixed mlt_search (mlt component and handler)
 
 - Removed mx.DateTime
 

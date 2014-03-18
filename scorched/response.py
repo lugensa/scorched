@@ -55,8 +55,11 @@ class SolrResponse(object):
         if self.status != 0:
             raise ValueError("Response indicates an error")
         self.result = SolrResult()
-        if 'response' in doc:
+        if doc.get('response'):
             self.result = SolrResult.from_json(doc['response'], datefields)
+        # TODO mlt/ returns match what should we do with it ?
+        #if doc.get('match'):
+        #    self.result = SolrResult.from_json(doc['match'], datefields)
         self.facet_counts = SolrFacetCounts.from_response_json(doc)
         self.highlighting = doc.get("highlighting", {})
         self.groups = doc.get('grouped', {})
@@ -64,11 +67,7 @@ class SolrResponse(object):
                                     for (k, v) in doc.get('moreLikeThis', {}
                                                           ).items())
         # can be computed by MoreLikeThisHandler
-        interesting_terms = doc.get('interestingTerms', ())
-        if len(interesting_terms) == 1:
-            self.interesting_terms = interesting_terms.values()[0]
-        else:
-            self.interesting_terms = None
+        self.interesting_terms = doc.get('interestingTerms', None)
         return self
 
     def __str__(self):

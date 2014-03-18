@@ -1,8 +1,10 @@
+.. _api:
+
 Scorched API
-------------
+============
 
 API
-~~~
+---
 
 .. automodule:: scorched.connection
    :members: grouper

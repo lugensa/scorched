@@ -470,12 +470,13 @@ def check_url_encode_data(kwargs, output):
 
 mlt_query_options_data = (
     ('text_field', {}, {},
-     [('mlt.fl', 'text_field')]),
+     [('mlt.fl', 'text_field'), ('q', '*:*')]),
     (['string_field', 'text_field'], {'string_field': 3.0}, {},
-     [('mlt.fl', 'string_field,text_field'), ('mlt.qf', 'string_field^3.0')]),
+     [('mlt.fl', 'string_field,text_field'), ('mlt.qf', 'string_field^3.0'),
+      ('q', '*:*')]),
     ('text_field', {}, {'mindf': 3, 'interestingTerms': 'details'},
      [('mlt.fl', 'text_field'), ('mlt.interestingTerms', 'details'),
-      ('mlt.mindf', '3')]),
+      ('mlt.mindf', '3'), ('q', '*:*')]),
 )
 
 
