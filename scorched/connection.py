@@ -63,46 +63,6 @@ class SolrConnection(object):
             time.sleep(self.retry_timeout)
             return self.http_connection.request(*args, **kwargs)
 
-    def commit(self, waitSearcher=None, expungeDeletes=None, softCommit=None):
-        """
-        :param waitSearcher: optional -- block until a new searcher is opened
-        and registered as the main query searcher, making the changes visible
-        :type waitSearcher: bool
-        :param expungeDeletes: optional -- merge segments with deletes away
-        :type expungeDeletes: bool
-        :param softCommit: optional -- perform a soft commit - this will
-        refresh the 'view' of the index in a more performant manner, but
-        without "on-disk" guarantees.
-        :type softCommit: bool
-
-        A commit operation makes index changes visible to new search requests.
-        """
-        self.update('{"commit": {}}', commit=True,
-                    waitSearcher=waitSearcher, expungeDeletes=expungeDeletes,
-                    softCommit=softCommit)
-
-    def optimize(self, waitSearcher=None, maxSegments=None):
-        """
-        :param waitSearcher: optional -- block until a new searcher is opened
-        and registered as the main query searcher, making the changes visible
-        :type waitSearcher: bool
-        :param maxSegments: optional -- optimizes down to at most this number
-        of segments
-        :type maxSegments: int
-
-        An optimize is like a hard commit except that it forces all of the
-        index segments to be merged into a single segment first.
-        """
-        self.update('{"optimize": {}}', optimize=True,
-                    waitSearcher=waitSearcher, maxSegments=maxSegments)
-
-    def rollback(self):
-        """
-        The rollback command rollbacks all add/deletes made to the index since
-        the last commit
-        """
-        self.update('{"rollback": {}}')
-
     def update(self, update_doc, **kwargs):
         """
         :param update_doc: data send to solr
@@ -125,6 +85,31 @@ class SolrConnection(object):
     def url_for_update(self, commit=None, commitWithin=None, softCommit=None,
                        optimize=None, waitSearcher=None, expungeDeletes=None,
                        maxSegments=None):
+        """
+        :param commit: optional -- commit actions
+        :type commit: bool
+        :param commitWithin: optional -- document will be added within that
+                             time
+        :type commitWithin: int
+        :param softCommit: optional -- performant commit without "on-disk"
+                           guarantee
+        :type softCommit: bool
+        :param optimize: optional -- optimize forces all of the index segments
+                         to be merged into a single segment first.
+        :type optimze: bool
+        :param waitSearcher: optional -- block until a new searcher is opened
+                             and registered as the main query searcher,
+        :type waitSearcher: bool
+        :param expungeDeletes: optional -- merge segments with deletes away
+        :type expungeDeletes: bool
+        :param maxSegments: optional -- optimizes down to at most this number
+                            of segments
+        :type maxSegments: int
+        :returns: str -- url with all extra paramters set
+
+        This functions sets all extra parameters for the ``optimize`` and
+        ``commit`` function.
+        """
         extra_params = {}
         if commit is not None:
             extra_params['commit'] = "true" if commit else "false"
@@ -164,6 +149,14 @@ class SolrConnection(object):
             return self.update_url
 
     def select(self, params):
+        """
+        :param params: LuceneQuery converted to a dictionary with search
+                       queries
+        :type params: dict
+        :returns: json -- json string
+
+        We perform here a search on the `select` handler of solr.
+        """
         if not self.readable:
             raise TypeError("This Solr instance is only for writing")
         params.append(('wt', 'json'))
@@ -182,34 +175,6 @@ class SolrConnection(object):
         else:
             method = 'GET'
             kwargs = {}
-        response = self.request(method, url, **kwargs)
-        if response.status_code != 200:
-            raise scorched.exc.SolrError(response)
-        return response.content
-
-    def mlt(self, params, content=None):
-        """Perform a MoreLikeThis query using the content specified
-        There may be no content if stream.url is specified in the params.
-        """
-        if not self.readable:
-            raise TypeError("This Solr instance is only for writing")
-        qs = urllib.urlencode(params)
-        base_url = "%s?%s" % (self.mlt_url, qs)
-        method = 'GET'
-        kwargs = {}
-        if content is None:
-            url = base_url
-        else:
-            get_url = "%s&stream.body=%s" % (
-                base_url, urllib.quote_plus(content))
-            if len(get_url) <= self.max_length_get_url:
-                url = get_url
-            else:
-                url = base_url
-                method = 'POST'
-                kwargs = {
-                    'data': content,
-                    'headers': {"Content-Type": "text/plain; charset=utf-8"}}
         response = self.request(method, url, **kwargs)
         if response.status_code != 200:
             raise scorched.exc.SolrError(response)
@@ -314,17 +279,48 @@ class SolrInterface(object):
         delete_message = json.dumps({"delete": ids})
         self.conn.update(delete_message, **kwargs)
 
-    def commit(self, *args, **kwargs):
+    def commit(self, waitSearcher=None, expungeDeletes=None, softCommit=None):
         """
-        Commit actions
-        """
-        self.conn.commit(*args, **kwargs)
+        :param waitSearcher: optional -- block until a new searcher is opened
+                             and registered as the main query searcher, making
+                             the changes visible
+        :type waitSearcher: bool
+        :param expungeDeletes: optional -- merge segments with deletes away
+        :type expungeDeletes: bool
+        :param softCommit: optional -- perform a soft commit - this will
+                           refresh the 'view' of the index in a more performant
+                           manner, but without "on-disk" guarantees.
+        :type softCommit: bool
 
-    def optimize(self, *args, **kwargs):
-        self.conn.optimize(*args, **kwargs)
+        A commit operation makes index changes visible to new search requests.
+        """
+        self.conn.update('{"commit": {}}', commit=True,
+                         waitSearcher=waitSearcher,
+                         expungeDeletes=expungeDeletes,
+                         softCommit=softCommit)
+
+    def optimize(self, waitSearcher=None, maxSegments=None):
+        """
+        :param waitSearcher: optional -- block until a new searcher is opened
+                             and registered as the main query searcher, making
+                             the changes visible
+        :type waitSearcher: bool
+        :param maxSegments: optional -- optimizes down to at most this number
+                            of segments
+        :type maxSegments: int
+
+        An optimize is like a hard commit except that it forces all of the
+        index segments to be merged into a single segment first.
+        """
+        self.conn.update('{"optimize": {}}', optimize=True,
+                         waitSearcher=waitSearcher, maxSegments=maxSegments)
 
     def rollback(self):
-        self.conn.rollback()
+        """
+        The rollback command rollbacks all add/deletes made to the index since
+        the last commit
+        """
+        self.conn.update('{"rollback": {}}')
 
     def delete_all(self):
         """
@@ -355,26 +351,25 @@ class SolrInterface(object):
         else:
             return q
 
-    def mlt_search(self, content=None, **kwargs):
-        """
-        Mlt search solr
-        """
-        params = scorched.search.params_from_dict(**kwargs)
-        ret = self.schema.parse_response(
-            self.conn.mlt(params, content=content))
-        return ret
-
     def mlt_query(self, fields=None, content=None, content_charset=None,
                   url=None, query_fields=None, **kwargs):
-        """Perform a similarity query on MoreLikeThisHandler
+        """
+        :param fields: optional -- field names to compute similarity upon
+        :type fields: list
+        :param content: optional -- string on witch to find similar documents
+        :type content: str
+        :param content_charset: optional -- charset e.g. (iso-8859-1)
+        :type content_charset: str
+        :param url: optional -- like content but retrive directly from url
+        :type url: str
+        :param query_fields: optional -- adjust boosting values for ``fields``
+        :type query_fields: dict  e.g. ({"a": 0.25, "b": 0.75})
+        :returns: MltSolrSearch
+
+        Perform a similarity query on MoreLikeThisHandler
 
         The MoreLikeThisHandler is expected to be registered at the '/mlt'
         endpoint in the solrconfig.xml file of the server.
-
-        fields is the list of field names to compute similarity upon. If not
-        provided, we just use the default search field.
-        query_fields can be used to adjust boosting values on a subset of those
-        fields.
 
         Other MoreLikeThis specific parameters can be passed as kwargs without
         the 'mlt.' prefix.

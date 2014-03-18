@@ -18,14 +18,14 @@ If you have `pip <http://www.pip-installer.org>`_ installed, just type:
 
 ::
 
-    pip install scorched
+    $ pip install scorched
 
 If you've got an old version of scorched installed, and want to
 upgrade, then type:
 
 ::
 
-    pip install -U scorched
+    $ pip install -U scorched
 
 That's all you need to do; all dependencies will be pulled in automatically.
 
@@ -38,8 +38,9 @@ connection to the solr server. Pass the URL of the solr server to a
 SolrInterface object.
 
 ::
-    
-    si = scorched.SolrInterface("http://localhost:8983/solr/")
+
+    >>> import scorched 
+    >>> si = scorched.SolrInterface("http://localhost:8983/solr/")
 
     
 .. note:: Optional arguments to connection:
@@ -53,31 +54,30 @@ To add data to the scorched instance use a Python dictionary.
 
 ::
 
-    document = {"id":"0553573403",
-                "cat":"book",
-                "name":"A Game of Thrones",
-                "price":7.99,
-                "inStock": True,
-                "author_t":
-                "George R.R. Martin",
-                "series_t":"A Song of Ice and Fire",
-                "sequence_i":1,
-                "genre_s":"fantasy"}
-
-    si.add(document)
+    >>> document = {"id":"0553573403",
+    ...             "cat":"book",
+    ...             "name":"A Game of Thrones",
+    ...             "price":7.99,
+    ...             "inStock": True,
+    ...             "author_t":
+    ...             "George R.R. Martin",
+    ...             "series_t":"A Song of Ice and Fire",
+    ...             "sequence_i":1,
+    ...             "genre_s":"fantasy"}
+    >>> si.add(document)
 
 You can add lists of dictionaries in the same way. Given the example
 "books.json" file, you could feed it to scorched like so:
 
 ::
 
-    file = os.path.join(os.path.dirname(__file__), "dumps",
-                        "books.json")
-    with open(file) as f:
-        datajson = f.read()
-        docs = json.loads(self.datajson)
-    si.add(docs)
-    si.commit()
+    >>> file = os.path.join(os.path.dirname(__file__), "dumps",
+    ...                     "books.json")
+    >>> with open(file) as f:
+    ...     datajson = f.read()
+    ...     docs = json.loads(self.datajson)
+    >>> si.add(docs)
+    >>> si.commit()
 
 .. note:: Optional arguments to add:
 
@@ -95,8 +95,8 @@ to scorched.
 
 ::
 
-    si.delete_by_ids([obj.id])
-    si.delete_by_ids([x.id for x in objs])
+    >>> si.delete_by_ids([obj.id])
+    >>> si.delete_by_ids([x.id for x in objs])
 
 To delete documents by query, you construct one or more queries from `Q`
 objects, in the same way that you construct a query as explained in
@@ -105,14 +105,14 @@ objects, in the same way that you construct a query as explained in
 
 ::
 
-    si.delete_by_query(query=si.Q("game"))
+    >>> si.delete_by_query(query=si.Q("game"))
 
 To clear the entire index, there is a shortcut which simply deletes every
 document in the index.
 
 ::
 
-    si.delete_all()
+    >>> si.delete_all()
 
 Deletions, like additions, only take effect after a commit (or autocommit).
 
@@ -135,7 +135,7 @@ Either way, to optimize an index, simply call:
 
 ::
 
-    si.optimize()
+    >>> si.optimize()
 
 A Solr optimize also performs a commit, so if you’re about to ``optimize()``
 anyway, you can leave off the preceding ``commit()``. It doesn’t particularly
@@ -149,4 +149,4 @@ a rollback to revert the index state to that of the last commit.
 
 ::
 
-    si.rollback()
+    >>> si.rollback()

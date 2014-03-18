@@ -7,11 +7,7 @@ import re
 import scorched.strings
 import scorched.exc
 import scorched.dates
-try:
-    import mx.DateTime
-    HAS_MX_DATETIME = True
-except ImportError:
-    HAS_MX_DATETIME = False
+
 
 PARSERS = ("edismax", "dismax")
 
@@ -75,9 +71,6 @@ class LuceneQuery(object):
     def to_solr(self, value):
         if isinstance(value, bool):
             return u"true" if value else u"false"
-        if HAS_MX_DATETIME:
-            if isinstance(value, mx.DateTime.DateTimeType):
-                return unicode(scorched.dates.solr_date(value))
         if isinstance(value, datetime.datetime):
             return unicode(scorched.dates.solr_date(value))
         return unicode(value)
@@ -353,8 +346,9 @@ class LuceneQuery(object):
             try:
                 assert len(value) == 2
             except (AssertionError, TypeError):
-                raise scorched.exc.SolrError("'%s__%s' argument must be a length-2 iterable"
-                                % (field_name, rel))
+                raise scorched.exc.SolrError(
+                    "'%s__%s' argument must be a length-2 iterable" % (
+                        field_name, rel))
         elif rel == 'any':
             if value is not True:
                 raise scorched.exc.SolrError("'%s__%s' argument must be True")
@@ -407,10 +401,6 @@ class BaseSearch(object):
     def query_by_phrase(self, *args, **kwargs):
         return self.query(__terms_or_phrases="phrases", *args, **kwargs)
 
-    def exclude(self, *args, **kwargs):
-        # cloning will be done by query
-        return self.query(~self.Q(*args, **kwargs))
-
     def boost_relevancy(self, boost_score, **kwargs):
         if not self.query_obj:
             raise TypeError("Can't boost the relevancy of an empty query")
@@ -433,10 +423,6 @@ class BaseSearch(object):
 
     def filter_by_phrase(self, *args, **kwargs):
         return self.filter(__terms_or_phrases="phrases", *args, **kwargs)
-
-    def filter_exclude(self, *args, **kwargs):
-        # cloning will be done by filter
-        return self.filter(~self.Q(*args, **kwargs))
 
     def facet_by(self, field, **kwargs):
         newself = self.clone()
@@ -598,12 +584,6 @@ class MltSolrSearch(BaseSearch):
                 "Cannot specify query as well as content on an MltSolrSearch")
         return super(MltSolrSearch, self).query_by_phrase(*args, **kwargs)
 
-    def exclude(self, *args, **kwargs):
-        if self.content is not None or self.url is not None:
-            raise ValueError(
-                "Cannot specify query as well as content on an MltSolrSearch")
-        return super(MltSolrSearch, self).exclude(*args, **kwargs)
-
     def Q(self, *args, **kwargs):
         if self.content is not None or self.url is not None:
             raise ValueError(
@@ -690,15 +670,18 @@ class Options(object):
 
 class FacetOptions(Options):
     option_name = "facet"
-    opts = {"prefix": unicode,
-            "sort": [True, False, "count", "index"],
-            "limit": int,
-            "offset": lambda self, x: int(x) >= 0 and int(x) or self.invalid_value(),
-            "mincount": lambda self, x: int(x) >= 0 and int(x) or self.invalid_value(),
-            "missing": bool,
-            "method": ["enum", "fc"],
-            "enum.cache.minDf": int,
-            }
+    opts = {
+        "prefix": unicode,
+        "sort": [True, False, "count", "index"],
+        "limit": int,
+        "offset":
+        lambda self, x: int(x) >= 0 and int(x) or self.invalid_value(),
+        "mincount":
+        lambda self, x: int(x) >= 0 and int(x) or self.invalid_value(),
+        "missing": bool,
+        "method": ["enum", "fc"],
+        "enum.cache.minDf": int,
+    }
 
     def __init__(self, original=None):
         if original is None:

@@ -33,7 +33,9 @@ the MLT query will take this text, analyze it, and retrieve documents that are
 similar according to the results of its analysis.
 
 Because we haven't specified which fields we care about, the similarity is
-calculated on the default search field, whatever that is.
+calculated on the *default search field*. It is preferable to not use or rely
+on this setting; instead the request handler or query LocalParams for a search
+should specify the default field(s) to search on
 
 The results are returned in the same format as illustrated in the ``mlt()``
 method.
@@ -99,8 +101,8 @@ supported when composing the query for indexed content:
 
 ::
 
-    >>> si.mlt_query().query(title='Whale').exclude(
-    ...     author='Melville').query(si.Q('Moby')|si.Q('Dick'))
+    >>> si.mlt_query().query(title='Whale').query(~si.Q(
+    ...     author='Melville').query(si.Q('Moby') | si.Q('Dick'))
 
 Chaining MLT queries
 --------------------
@@ -108,7 +110,7 @@ Chaining MLT queries
 The ``mlt_query()`` method is chainable in the same way as the ``query``
 method. There are a fre differences to note.
 
-* You can't chain a ``query()`` or ``exclude()`` onto an ``mlt_query()`` call
+* You can't chain a ``query()`` onto an ``mlt_query()`` call
   if the MLT query is based on supplied ``content`` or ``url``.
 * You can't chain multiple ``mlt_query()`` methods together - only one content
   source can be considered at a time.

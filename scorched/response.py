@@ -63,10 +63,6 @@ class SolrResponse(object):
         self.more_like_these = dict((k, SolrResult.from_json(v, datefields))
                                     for (k, v) in doc.get('moreLikeThis', {}
                                                           ).items())
-        if len(self.more_like_these) == 1:
-            self.more_like_this = self.more_like_these.values()[0]
-        else:
-            self.more_like_this = None
         # can be computed by MoreLikeThisHandler
         interesting_terms = doc.get('interestingTerms', ())
         if len(interesting_terms) == 1:

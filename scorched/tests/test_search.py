@@ -1,11 +1,4 @@
 import datetime
-
-try:
-    import mx.DateTime
-    HAS_MX_DATETIME = True
-except ImportError:
-    HAS_MX_DATETIME = False
-
 from scorched.exc import SolrError
 from scorched.search import (SolrSearch, MltSolrSearch, PaginateOptions,
                              SortOptions, FieldLimitOptions, FacetOptions,
@@ -166,11 +159,6 @@ good_query_data = {
     ],
 }
 good_query_data.update(base_good_query_data)
-
-if HAS_MX_DATETIME:
-    good_query_data['query'].append(
-        ([], {"date_field": mx.DateTime.DateTime(2009, 1, 1)},
-         [("q", u"date_field:2009\\-01\\-01T00\\:00\\:00Z")],))
 
 
 def check_query_data(method, args, kwargs, output):
@@ -381,8 +369,8 @@ complex_boolean_queries = (
     # Test escaping of AND, OR, NOT
     (lambda q: q.query("AND", "OR", "NOT"),
      [('q', u'"AND" AND "NOT" AND "OR"')]),
-    # Test exclude (rather than explicit NOT
-    (lambda q: q.query("blah").exclude(q.Q("abc") | q.Q("def") | q.Q("ghi")),
+    # Test exclude
+    (lambda q: q.query("blah").query(~q.Q(q.Q("abc") | q.Q("def") | q.Q("ghi"))),
      [('q', u'blah AND NOT (abc OR def OR ghi)')]),
     # Try boosts
     (lambda q: q.query("blah").query(q.Q("def") ** 1.5),

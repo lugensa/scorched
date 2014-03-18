@@ -4,12 +4,6 @@ import pytz
 import re
 import scorched.exc
 
-try:
-    import mx.DateTime
-    HAS_MX_DATETIME = True
-except ImportError:
-    HAS_MX_DATETIME = False
-
 
 year = r'[+/-]?\d+'
 tzd = r'Z|((?P<tzd_sign>[-+])(?P<tzd_hour>\d\d):(?P<tzd_minute>\d\d))'
@@ -69,36 +63,27 @@ class DateTimeRangeError(ValueError):
     pass
 
 
-if HAS_MX_DATETIME:
-    def datetime_factory(**kwargs):
-        try:
-            return mx.DateTime.DateTimeFrom(**kwargs)
-        except mx.DateTime.RangeError as e:
-            raise DateTimeRangeError(e.args[0])
-else:
-    def datetime_factory(**kwargs):
-        second = kwargs.get('second')
-        if second is not None:
-            f, i = math.modf(second)
-            kwargs['second'] = int(i)
-            kwargs['microsecond'] = int(f * 1000000)
-        try:
-            return datetime.datetime(**kwargs)
-        except ValueError, e:
-            raise DateTimeRangeError(e.args[0])
+def datetime_factory(**kwargs):
+    second = kwargs.get('second')
+    if second is not None:
+        f, i = math.modf(second)
+        kwargs['second'] = int(i)
+        kwargs['microsecond'] = int(f * 1000000)
+    try:
+        return datetime.datetime(**kwargs)
+    except ValueError, e:
+        raise DateTimeRangeError(e.args[0])
 
-if HAS_MX_DATETIME:
-    def datetime_delta_factory(hours, minutes):
-        return mx.DateTime.DateTimeDelta(0, hours, minutes)
-else:
-    def datetime_delta_factory(hours, minutes):
-        return datetime.timedelta(hours=hours, minutes=minutes)
+
+def datetime_delta_factory(hours, minutes):
+    return datetime.timedelta(hours=hours, minutes=minutes)
 
 
 class solr_date(object):
-    """This class can be initialized from either native python datetime
-    objects and mx.DateTime objects, and will serialize to a format
-    appropriate for Solr"""
+    """
+    This class can be initialized from native python datetime
+    objects and will serialize to a format appropriate for Solr
+    """
     def __init__(self, v):
         if isinstance(v, solr_date):
             self._dt_obj = v._dt_obj

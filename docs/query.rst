@@ -48,32 +48,32 @@ A simple search for one word, in the default search field.
 
 ::
 
-    si.query("thief")
+    >>> si.query("thief")
 
 Maybe you want to search in the (non-default) field author for authors called
 Martin
 
 ::
 
-    si.query(author="rick")
+    >>> si.query(author="rick")
 
 Maybe you want to search for books with "thief" in their title, by an author
 called "rick".
 
 ::
 
-    si.query(name="thief", author="rick")
+    >>> si.query(name="thief", author="rick")
 
 Perhaps your initial, default, search is more complex, and has more than one
 word in it:
 
 ::
 
-    si.query(name="lightning").query(name="thief")
+    >>> si.query(name="lightning").query(name="thief")
 
 A easy way to see what sunburnt is producing is to call ``options``::
 
-    si.query(name="lightning").query(name="thief").options()
+    >>> si.query(name="lightning").query(name="thief").options()
     {'q': u'name:lightning AND name:thief'}
 
 Executing queries
@@ -86,7 +86,7 @@ execute it:
 
 ::
 
-    response = si.query("thief").execute()
+    >>> response = si.query("thief").execute()
 
 This will return a ``SolrResponse`` object. If you treat this object as a list,
 then each member of the list will be a document, in the form of a Python
@@ -120,14 +120,14 @@ you want an object.  Perhaps you have the following class defined in your code:
 
 ::
 
- class Book:
-     def __init__(self, name, author, **other_kwargs):
-         self.title = name
-         self.author = author
-         self.other_kwargs = other_kwargs
-
-     def __repr__(self):
-         return 'Book("%s", "%s")' % (title, author)
+    >>> class Book:
+    ...     def __init__(self, name, author, **other_kwargs):
+    ...         self.title = name
+    ...         self.author = author
+    ...         self.other_kwargs = other_kwargs
+    ... 
+    ...     def __repr__(self):
+    ...         return 'Book("%s", "%s")' % (title, author)
 
 
 You can tell scorched to give you ``Book`` instances back by telling
@@ -137,7 +137,6 @@ You can tell scorched to give you ``Book`` instances back by telling
 
     >>> for result in si.query(“game”).execute(constructor=Book):
     ...     print result
-
     Book("The Lightning Thief", "Rick Riordan")
 
 The ``constructor`` argument most often will be a class, but it can be any
@@ -176,7 +175,7 @@ which takes two parameters, ``start`` and ``rows``:
 
 ::
 
-    si.query("black").paginate(start=10, rows=30)
+    >>> si.query("black").paginate(start=10, rows=30)
 
 Returning different fields
 --------------------------
@@ -187,16 +186,16 @@ you apply the ``field_limit()`` methods.
 
 ::
 
-    si.query("game").field_limit("id")
-    si.query("game").field_limit(["id", "name"])
+    >>> si.query("game").field_limit("id")
+    >>> si.query("game").field_limit(["id", "name"])
 
 You can use the same option to get hold of the relevancy score that Solr
 has calculated for each document in the query:
 
 ::
 
-    si.query("game").field_limit(score=True) # Return the score alongside each document
-    si.query("game").field_limit("id", score=True") # return just the id and score.
+    >>> si.query("game").field_limit(score=True) # Return the score alongside each document
+    >>> si.query("game").field_limit("id", score=True") # return just the id and score.
 
 The results appear just like the normal dictionary responses, but with a different
 selection of fields.
@@ -228,7 +227,7 @@ is fine though.
 
 ::
 
-    si.query(sequence_i=1)
+    >>> si.query(sequence_i=1)
 
 Comparison queries
 ~~~~~~~~~~~~~~~~~~
@@ -237,7 +236,7 @@ These use a new syntax:
 
 ::
 
-    si.query(price__lt=7)
+    >>> si.query(price__lt=7)
 
 Notice the double-underscore separating "price" from "lt". It will search for
 all books whose price is less than 7. You can do similar searches on any float
@@ -256,14 +255,14 @@ a range, ie between two different numbers.
 
 ::
 
-    si.query(price__range=(5, 7)) # Search for all books with prices between $5 and $7.
+    >>> si.query(price__range=(5, 7)) # all books with prices between 5 and 7.
 
 This range query is *inclusive* - it will return prices of books which are
 priced at exactly 5 or exactly 7. You can also make an *exclusive* search:
 
 ::
 
-    si.query(price__rangeexc=(5, 7))
+    >>> si.query(price__rangeexc=(5, 7))
 
 Which will exclude books priced at exactly 5 or 7.
 
@@ -271,7 +270,7 @@ Finally, you can also do a completely open range search:
 
 ::
 
-    si.query(price__any=True)
+    >>> si.query(price__any=True)
 
 Will search for a book which has *any* price. Why would you do this? Well, if
 you had a schema where price was *optional*, then this search would return all
@@ -290,7 +289,7 @@ also correct to microsecond precision.
 
 ::
 
-    si.query(date_dt=datetime.datetime(2006, 02, 13))
+    >>> si.query(date_dt=datetime.datetime(2006, 02, 13))
 
 Will search for items whose manufacture date is *exactly* zero microseconds
 after midnight on the 13th February, 2006.
@@ -300,10 +299,10 @@ More likely you'll want to search by comparison or by range:
 ::
 
     # all items after the 1st January 2006
-    si.query(date_dt__gt=datetime.datetime(2006, 1, 1))
+    >>> si.query(date_dt__gt=datetime.datetime(2006, 1, 1))
 
     # all items in Q1 2006.
-    si.query(date_dt__range=(datetime.datetime(2006, 1, 1), datetime.datetime(2006, 4, 1))
+    >>> si.query(date_dt__range=(datetime.datetime(2006, 1, 1), datetime.datetime(2006, 4, 1))
 
 The argument to a date query can be any object that looks roughly like a Python
 ``datetime`` object or a string in W3C Datetime notation
@@ -311,9 +310,9 @@ The argument to a date query can be any object that looks roughly like a Python
 
 ::
 
-    si.query(date_dt__gte="2006")
-    si.query(date_dt__lt="2009-04-13")
-    si.query(date_dt__range=("2010-03-04 00:34:21", "2011-02-17 09:21:44"))
+    >>> si.query(date_dt__gte="2006")
+    >>> si.query(date_dt__lt="2009-04-13")
+    >>> si.query(date_dt__range=("2010-03-04 00:34:21", "2011-02-17 09:21:44"))
 
 Boolean fields
 ~~~~~~~~~~~~~~
@@ -323,7 +322,7 @@ documents carry an ``inStock`` field. We can select on that by doing:
 
 ::
 
-    si.query("thief", inStock=True)
+    >>> si.query("thief", inStock=True)
 
 
 Sorting results
@@ -336,52 +335,31 @@ must be sortable, so most likely your'’d use a numerical or date field.
 
 ::
 
-    si.query("thief").sort_by("price") # Sort by ascending price
-    si.query("thief").sort_by("-price") # Sort by descending price (because of the minus sign)
+    >>> si.query("thief").sort_by("price") # ascending price
+    >>> si.query("thief").sort_by("-price") # descending price
 
 You can also sort on multiple factors:
 
 ::
 
-    si.query("thief").sort_by("-price").sort_by("score")
+    >>> si.query("thief").sort_by("-price").sort_by("score")
 
 This query will sort first by descending price, and then by increasing "score"
 (which is what solr calls relevancy).
 
 
-Excluding results from queries
-------------------------------
-
-If we want to *exclude* results by some criteria we use the ``exclude`` function.
-
-::
-
-    si.exclude(author="Rick Riordan")
-
-``exclude()`` methods chain in the same way as ``query()`` methodms, so you can
-mix and match. Return all books costing more than 7, except for those authored
-by Rick Riordan.
-
-::
-
-    si.query(price__gt=7).exclude(author_t="Rick Riordan")
-
-.. _optional-terms:
-
-Optional terms and combining queries
-------------------------------------
+Complex queries
+---------------
 
 Scorched queries can be chained together in all sorts of ways, with
-query and exclude terms being applied. So far, you've only seen
-examples which have compulsory terms, either positive (``query()``)
-or negative(``exclude()``).
+query terms being applied.
 
 What we do is construct two *query objects*, one for each condition, and ``OR``
 them together.
 
 ::
 
-    si.query(si.Q("thief") | si.Q("sea"))
+    >>> si.query(si.Q("thief") | si.Q("sea"))
 
 The ``Q`` object can contain an arbitrary query, and can then be combined using
 Boolean logic (here, using ``|``, the OR operator). The result can then be
@@ -395,15 +373,26 @@ A moderately complex query could be written:
 
 ::
 
-    query = si.query(si.Q(si.Q("thief") & ~si.Q(author="ostein")) \
+    >>> query = si.query(si.Q(si.Q("thief") & ~si.Q(author="ostein")) \
     | si.Q(si.Q("foo") & ~si.Q(author="bui")))
 
 Which will producse this query:
 
 ::
 
-    query.options()
+    >>> query.options()
     {'q': u'(thief AND (*:* AND NOT author:ostein)) OR (foo AND (*:* AND NOT author:bui))'}
+
+
+Excluding results from queries
+------------------------------
+
+If we want to *exclude* results by some criteria we use the ``~si.Q()``.
+
+::
+
+    >>> si.query(~si.Q(author="Rick Riordan"))
+
 
 Wildcard searching
 ------------------
@@ -415,14 +404,14 @@ Search for book with "thie" in the name:
 
 ::
 
-    si.query(name=scorched.strings.WildcardString("thie*"))
+    >>> si.query(name=scorched.strings.WildcardString("thie*"))
 
 If, for some reason, you want to search exactly for a string with an asterisk
 or a question mark in it then you need to tell Solr to special case it:
 
 ::
 
-    si.query(id=RawString("055323933?*"))
+    >>> si.query(id=RawString("055323933?*"))
 
 This will search for a document whose id contains *exactly* the string given,
 including the question mark and asterisk.
@@ -442,31 +431,35 @@ If you taking search input from the user, you would write:
 
 ::
 
-    si.query(name=user_input).filter(price__lt=7.5)
-    si.query(name=user_input).filter(price__gte=7.5)
+    >>> si.query(name=user_input).filter(price__lt=7.5)
+    >>> si.query(name=user_input).filter(price__gte=7.5)
 
 Adding multiple filter::
 
-    si.query(name="bla").filter(price__lt=7.5).filter(author="hans").options()
+    >>> si.query(name="bla").filter(price__lt=7.5).filter(author="hans").options()
     {'fq': [u'author:hans', u'price:{* TO 7.5}'], 'q': u'name:bla'}
 
     
 You can filter any sort of query, simply by using ``filter()`` instead of
-``query()``. And if your filtering involves an exclusion, then
-``filter_exclude()`` has the same functionality as ``exclude()``.
+``query()``. And if your filtering involves an exclusion, then simple use
+``~si.Q(author="lloyd")``.
 
 ::
 
-    si.query(title="black").filter_exclude(author="lloyd")
+    >>> si.query(title="black").filter(~si.Q(author="lloyd")).options()
+    {'fq': u'NOT author:lloyd', 'q': u'title:black'}
 
 It's possible to mix and match ``query()`` and ``filter()`` calls as much as
 you like while chaining. The resulting filter queries will be combined and
-cached together. The argument to a ``filter()`` or ``filter_exclude()`` call
-can be an combination of ``si.Q`` objects.
+cached together. The argument to a ``filter()`` call can be an combination of
+``si.Q`` objects.
 
 ::
 
-    si.query(title="black").filter(si.Q(si.Q(name="thief") & ~si.Q(author="ostein"))).filter(si.Q(si.Q(title="foo") & ~si.Q(author="bui"))).options()
+    >>> si.query(title="black").filter(
+    ...     si.Q(si.Q(name="thief") & ~si.Q(author="ostein"))
+    ...         ).filter(si.Q(si.Q(title="foo") & ~si.Q(author="bui"))
+    ... ).options()
     {'fq': [u'name:thief', u'title:foo', u'NOT author:ostein', u'NOT author:bui'],
      'q': u'title:black'}
 
@@ -483,7 +476,7 @@ Boosts the importance of the author field by 3.
 
 ::
 
-    si.query(si.Q("black") | si.Q(author="lloyd")**3).options()
+    >>> si.query(si.Q("black") | si.Q(author="lloyd")**3).options()
     {'q': u'black OR author:lloyd^3'}
 
 
@@ -495,7 +488,7 @@ little awkward; scorched provides a shortcut for this pattern.
 
 ::
 
-    si.query("black").boost_relevancy(3, author_t="lloyd")
+    >>> si.query("black").boost_relevancy(3, author_t="lloyd").options()
     {'q': u'black OR (black AND author_t:lloyd^3)'}
 
 This is fully chainable, and ``boost_relevancy`` can take an arbitrary
@@ -512,7 +505,7 @@ chainable on a query object. The ``facet_by()`` method needs, at least, a field
 
 ::
 
-    facet_query = si.query("thief").facet_by("sequence_i").paginate(rows=0)
+    >>> facet_query = si.query("thief").facet_by("sequence_i").paginate(rows=0)
 
 The above fragment will search for game with "thrones" in the title, and facet
 the results according to the value of ``sequence_i``. It will also return zero
@@ -532,7 +525,7 @@ You can facet on more than one field at a time:
 
 :: 
 
-    si.query(...).facet_by(fields=["field1", "field2, ...])
+    >>> si.query(...).facet_by(fields=["field1", "field2, ...])
 
 The ``facet_fields`` dictionary will have more than one key.
 
@@ -541,7 +534,8 @@ basic options are exposed through scorched:
 
 ::
 
-    fields, prefix, sort, limit, offset, mincount, missing, method, enum.cache.minDf
+    fields, prefix, sort, limit, offset, mincount, missing, method,
+    enum.cache.minDf
 
 All of these can be used as keyword arguments to the ``facet()`` call, except
 of course the last one since it contains periods. To pass keyword arguments
@@ -549,7 +543,7 @@ with periods in them, you can use `**` syntax:
 
 ::
 
-    facet(**{"enum.cache.minDf":25})
+    >>> facet(**{"enum.cache.minDf":25})
 
 You can also facet on the result of one or more queries, using the
 ``facet_query()`` method. For example:
@@ -667,16 +661,6 @@ contains only one document.
 
 We can read the above result as saying that under the ``mlt()`` parameters
 requested, there was only one document similar to the search result.
-
-In this case, only one document was returned by the original query, In this
-case, there is a shortcut attribute: ``more_like_this`` instead of
-``more_like_these``.
-
-::
-
-    >>> print mlt_query.execute().more_like_this.docs
-    [{'author_t': u'Orson Scott Card',
-    ...
 
 To avoid having to do the extra dictionary lookup.
 
