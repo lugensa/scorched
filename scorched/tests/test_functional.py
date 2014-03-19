@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+from __future__ import unicode_literals
 import unittest
 import os
 import json
@@ -30,7 +32,7 @@ class TestUtils(unittest.TestCase):
         res = si.query(genre_s="fantasy").execute()
         self.assertEqual(res.result.numFound, 3)
         # delete
-        si.delete_by_ids(res[0]['id'])
+        si.delete_by_ids(res.result.docs[0]['id'])
         si.commit()
         res = si.query(genre_s="fantasy").execute()
         self.assertEqual(res.result.numFound, 2)
@@ -102,6 +104,30 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(res.more_like_these["978-0641723445"].docs), 2)
         self.assertEqual([x['author'] for x in res.more_like_these[
             "978-0641723445"].docs], [u'Rick Riordan', u'Jostein Gaarder'])
+
+    @scorched.testing.skip_unless_solr
+    def test_encoding(self):
+        dsn = os.environ.get("SOLR_URL",
+                             "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        docs = [{
+            "id": "978-0641723445",
+            "cat": ["book", "hardcover"],
+            "name": u"The Höhlentripp Strauß",
+            "author": u"Röüß Itoa",
+            "series_t": u"Percy Jackson and \N{UMBRELLA}nicode",
+            "sequence_i": 1,
+            "genre_s": "fantasy",
+            "inStock": True,
+            "price": 12.50,
+            "pages_i": 384
+            }]
+        si.add(docs)
+        si.commit()
+        res = si.query(author=u"Röüß").execute()
+        self.assertEqual(res.result.numFound, 1)
+        for k, v in docs[0].items():
+            self.assertEqual(res.result.docs[0][k], v)
 
 
 class TestMltHandler(unittest.TestCase):

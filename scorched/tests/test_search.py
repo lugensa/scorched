@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import unicode_literals
 import datetime
 from scorched.exc import SolrError
 from scorched.search import (SolrSearch, MltSolrSearch, PaginateOptions,
@@ -14,148 +16,148 @@ debug = False
 base_good_query_data = {
     "query_by_term": [
         (["hello"], {},
-         [("q", u"hello")]),
+         [("q", b"hello")]),
         (["hello"], {"int_field": 3},
-         [("q", u"hello AND int_field:3")]),
+         [("q", b"hello AND int_field:3")]),
         (["hello", "world"], {},
-         [("q", u"hello AND world")]),
+         [("q", b"hello AND world")]),
         # NB this next is not really what we want,
         # probably this should warn
         (["hello world"], {},
-         [("q", u"hello\\ world")]),
+         [("q", b"hello\\ world")]),
     ],
 
     "query_by_phrase": [
         (["hello"], {},
-         [("q", u"hello")]),
+         [("q", b"hello")]),
         (["hello"], {"int_field": 3},
          # Non-text data is always taken to be a term, and terms come before
          # phrases, so order is reversed
-         [("q", u"int_field:3 AND hello")]),
+         [("q", b"int_field:3 AND hello")]),
         (["hello", "world"], {},
-         [("q", u"hello AND world")]),
+         [("q", b"hello AND world")]),
         (["hello world"], {},
-         [("q", u"hello\\ world")]),
+         [("q", b"hello\\ world")]),
         ([], {'string_field': ['hello world', 'goodbye, cruel world']},
-         [("q", u"string_field:goodbye,\\ cruel\\ world AND string_field:hello\\ world")]),
+         [("q", b"string_field:goodbye,\\ cruel\\ world AND string_field:hello\\ world")]),
     ],
 
     "query": [
         # Basic queries
         (["hello"], {},
-         [("q", u"hello")]),
+         [("q", b"hello")]),
         (["hello"], {"int_field": 3},
-         [("q", u"hello AND int_field:3")]),
+         [("q", b"hello AND int_field:3")]),
         (["hello", "world"], {},
-         [("q", u"hello AND world")]),
+         [("q", b"hello AND world")]),
         (["hello world"], {},
-         [("q", u"hello\\ world")]),
+         [("q", b"hello\\ world")]),
         # Test fields
         # Boolean fields take any truth-y value
         ([], {"boolean_field": True},
-         [("q", u"boolean_field:true")]),
+         [("q", b"boolean_field:true")]),
         ([], {"boolean_field": 'true'},
-         [("q", u"boolean_field:true")]),
+         [("q", b"boolean_field:true")]),
         ([], {"boolean_field": "false"},
-         [("q", u"boolean_field:false")]),
+         [("q", b"boolean_field:false")]),
         ([], {"boolean_field": False},
-         [("q", u"boolean_field:false")]),
+         [("q", b"boolean_field:false")]),
         ([], {"int_field": 3},
-         [("q", u"int_field:3")]),
+         [("q", b"int_field:3")]),
         ([], {"sint_field": 3},
-         [("q", u"sint_field:3")]),
+         [("q", b"sint_field:3")]),
         ([], {"long_field": 2 ** 31},
-         [("q", u"long_field:2147483648")]),
+         [("q", b"long_field:2147483648")]),
         ([], {"slong_field": 2 ** 31},
-         [("q", u"slong_field:2147483648")]),
+         [("q", b"slong_field:2147483648")]),
         ([], {"float_field": 3.0},
-         [("q", u"float_field:3.0")]),
+         [("q", b"float_field:3.0")]),
         ([], {"sfloat_field": 3.0},
-         [("q", u"sfloat_field:3.0")]),
+         [("q", b"sfloat_field:3.0")]),
         ([], {"double_field": 3.0},
-         [("q", u"double_field:3.0")]),
+         [("q", b"double_field:3.0")]),
         ([], {"sdouble_field": 3.0},
-         [("q", u"sdouble_field:3.0")]),
+         [("q", b"sdouble_field:3.0")]),
         ([], {"date_field": datetime.datetime(2009, 1, 1)},
-         [("q", u"date_field:2009\\-01\\-01T00\\:00\\:00Z")]),
+         [("q", b"date_field:2009\\-01\\-01T00\\:00\\:00Z")]),
         # Test ranges
         ([], {"int_field__any": True},
-         [("q", u"int_field:[* TO *]")]),
+         [("q", b"int_field:[* TO *]")]),
         ([], {"int_field__lt": 3},
-         [("q", u"int_field:{* TO 3}")]),
+         [("q", b"int_field:{* TO 3}")]),
         ([], {"int_field__gt": 3},
-         [("q", u"int_field:{3 TO *}")]),
+         [("q", b"int_field:{3 TO *}")]),
         ([], {"int_field__rangeexc": (-3, 3)},
-         [("q", u"int_field:{\-3 TO 3}")]),
+         [("q", b"int_field:{\-3 TO 3}")]),
         ([], {"int_field__rangeexc": (3, -3)},
-         [("q", u"int_field:{\-3 TO 3}")]),
+         [("q", b"int_field:{\-3 TO 3}")]),
         ([], {"int_field__lte": 3},
-         [("q", u"int_field:[* TO 3]")]),
+         [("q", b"int_field:[* TO 3]")]),
         ([], {"int_field__gte": 3},
-         [("q", u"int_field:[3 TO *]")]),
+         [("q", b"int_field:[3 TO *]")]),
         ([], {"int_field__range": (-3, 3)},
-         [("q", u"int_field:[\-3 TO 3]")]),
+         [("q", b"int_field:[\-3 TO 3]")]),
         ([], {"int_field__range": (3, -3)},
-         [("q", u"int_field:[\-3 TO 3]")]),
+         [("q", b"int_field:[\-3 TO 3]")]),
         ([], {"date_field__lt": datetime.datetime(2009, 1, 1)},
-         [("q", u"date_field:{* TO 2009\\-01\\-01T00\\:00\\:00Z}")]),
+         [("q", b"date_field:{* TO 2009\\-01\\-01T00\\:00\\:00Z}")]),
         ([], {"date_field__gt": datetime.datetime(2009, 1, 1)},
-         [("q", u"date_field:{2009\\-01\\-01T00\\:00\\:00Z TO *}")]),
+         [("q", b"date_field:{2009\\-01\\-01T00\\:00\\:00Z TO *}")]),
         ([], {
             "date_field__rangeexc": (datetime.datetime(2009, 1, 1), datetime.datetime(2009, 1, 2))},
-         [("q", "date_field:{2009\\-01\\-01T00\\:00\\:00Z TO 2009\\-01\\-02T00\\:00\\:00Z}")]),
+         [("q", b"date_field:{2009\\-01\\-01T00\\:00\\:00Z TO 2009\\-01\\-02T00\\:00\\:00Z}")]),
         ([], {"date_field__lte": datetime.datetime(2009, 1, 1)},
-         [("q", u"date_field:[* TO 2009\\-01\\-01T00\\:00\\:00Z]")]),
+         [("q", b"date_field:[* TO 2009\\-01\\-01T00\\:00\\:00Z]")]),
         ([], {"date_field__gte": datetime.datetime(2009, 1, 1)},
-         [("q", u"date_field:[2009\\-01\\-01T00\\:00\\:00Z TO *]")]),
+         [("q", b"date_field:[2009\\-01\\-01T00\\:00\\:00Z TO *]")]),
         ([], {
             "date_field__range": (datetime.datetime(2009, 1, 1), datetime.datetime(2009, 1, 2))},
-         [("q", u"date_field:[2009\\-01\\-01T00\\:00\\:00Z TO 2009\\-01\\-02T00\\:00\\:00Z]")]),
+         [("q", b"date_field:[2009\\-01\\-01T00\\:00\\:00Z TO 2009\\-01\\-02T00\\:00\\:00Z]")]),
         ([], {'string_field': ['hello world', 'goodbye, cruel world']},
-         [("q", u"string_field:goodbye,\\ cruel\\ world AND string_field:hello\\ world")]),
+         [("q", b"string_field:goodbye,\\ cruel\\ world AND string_field:hello\\ world")]),
         # Raw strings
         ([], {'string_field': "abc*???"},
-         [("q", "string_field:abc\\*\\?\\?\\?")]),
+         [("q", b"string_field:abc\\*\\?\\?\\?")]),
     ],
 }
 
 good_query_data = {
     "filter_by_term": [
         (["hello"], {},
-         [("fq", u"hello"), ("q", "*:*")]),
+         [("fq", b"hello"), ("q", b"*:*")]),
         #test multiple fq
         (["hello"], {"int_field":3},
-         [("fq", u"hello"), ("fq", u"int_field:3"), ("q", "*:*")]),
+         [("fq", b"hello"), ("fq", b"int_field:3"), ("q", b"*:*")]),
         (["hello", "world"], {},
-         [("fq", u"hello"), ("fq", u"world"), ("q", "*:*")]),
+         [("fq", b"hello"), ("fq", b"world"), ("q", b"*:*")]),
         # NB this next is not really what we want,
         # probably this should warn
         (["hello world"], {},
-         [("fq", u"hello\\ world"), ("q", "*:*")]),
+         [("fq", b"hello\\ world"), ("q", b"*:*")]),
     ],
 
     "filter_by_phrase": [
         (["hello"], {},
-         [("fq", u"hello"), ("q", "*:*")]),
+         [("fq", b"hello"), ("q", b"*:*")]),
         #test multiple fq
         (["hello"], {"int_field":3},
-         [("fq", u"hello"), ("fq", u"int_field:3"), ("q", "*:*")]),
+         [("fq", b"hello"), ("fq", b"int_field:3"), ("q", b"*:*")]),
         (["hello", "world"], {},
-         [("fq", u"hello"), ("fq", u"world"), ("q", "*:*")]),
+         [("fq", b"hello"), ("fq", b"world"), ("q", b"*:*")]),
         (["hello world"], {},
-         [("fq", u"hello\\ world"), ("q", "*:*")]),
+         [("fq", b"hello\\ world"), ("q", b"*:*")]),
     ],
 
     "filter": [
         (["hello"], {},
-         [("fq", u"hello"), ("q", "*:*")]),
+         [("fq", b"hello"), ("q", b"*:*")]),
         #test multiple fq
         (["hello"], {"int_field":3},
-         [("fq", u"hello"), ("fq", "int_field:3"), ("q", "*:*")]),
+         [("fq", b"hello"), ("fq", b"int_field:3"), ("q", b"*:*")]),
         (["hello", "world"], {},
-         [("fq", u"hello"), ("fq", u"world"), ("q", "*:*")]),
+         [("fq", b"hello"), ("fq", b"world"), ("q", b"*:*")]),
         (["hello world"], {},
-         [("fq", u"hello\\ world"), ("q", "*:*")]),
+         [("fq", b"hello\\ world"), ("q", b"*:*")]),
     ],
 }
 good_query_data.update(base_good_query_data)
@@ -321,106 +323,108 @@ def check_bad_option_data(OptionClass, kwargs):
 
 complex_boolean_queries = (
     (lambda q: q.query("hello world").filter(q.Q(text_field="tow") | q.Q(boolean_field=False, int_field__gt=3)),
-     [('fq', u'text_field:tow OR (boolean_field:false AND int_field:{3 TO *})'), ('q', u'hello\\ world')]),
+     [('fq', b'text_field:tow OR (boolean_field:false AND int_field:{3 TO *})'), ('q', b'hello\\ world')]),
     #test multiple fq
     (lambda q: q.query("hello world").filter(q.Q(text_field="tow") & q.Q(boolean_field=False, int_field__gt=3)),
-     [('fq', u'boolean_field:false'), ('fq', u'int_field:{3 TO *}'), ('fq', u'text_field:tow'), ('q',  u'hello\\ world')]),
+     [('fq', b'boolean_field:false'), ('fq', b'int_field:{3 TO *}'), ('fq', b'text_field:tow'), ('q',  b'hello\\ world')]),
 # Test various combinations of NOTs at the top level.
 # Sometimes we need to do the *:* trick, sometimes not.
     (lambda q: q.query(~q.Q("hello world")),
-     [('q',  u'NOT hello\\ world')]),
+     [('q',  b'NOT hello\\ world')]),
     (lambda q: q.query(~q.Q("hello world") & ~q.Q(int_field=3)),
-     [('q',  u'NOT hello\\ world AND NOT int_field:3')]),
+     [('q',  b'NOT hello\\ world AND NOT int_field:3')]),
     (lambda q: q.query("hello world", ~q.Q(int_field=3)),
-     [('q', u'hello\\ world AND NOT int_field:3')]),
+     [('q', b'hello\\ world AND NOT int_field:3')]),
     (lambda q: q.query("abc", q.Q("def"), ~q.Q(int_field=3)),
-     [('q', u'abc AND def AND NOT int_field:3')]),
+     [('q', b'abc AND def AND NOT int_field:3')]),
     (lambda q: q.query("abc", q.Q("def") & ~q.Q(int_field=3)),
-     [('q', u'abc AND def AND NOT int_field:3')]),
+     [('q', b'abc AND def AND NOT int_field:3')]),
     (lambda q: q.query("abc", q.Q("def") | ~q.Q(int_field=3)),
-     [('q', u'abc AND (def OR (*:* AND NOT int_field:3))')]),
+     [('q', b'abc AND (def OR (*:* AND NOT int_field:3))')]),
     (lambda q: q.query(q.Q("abc") | ~q.Q("def")),
-     [('q', u'abc OR (*:* AND NOT def)')]),
+     [('q', b'abc OR (*:* AND NOT def)')]),
     (lambda q: q.query(q.Q("abc") | q.Q(~q.Q("def"))),
-     [('q', u'abc OR (*:* AND NOT def)')]),
+     [('q', b'abc OR (*:* AND NOT def)')]),
     # Make sure that ANDs are flattened
     (lambda q: q.query("def", q.Q("abc"), q.Q(q.Q("xyz"))),
-     [('q', u'abc AND def AND xyz')]),
+     [('q', b'abc AND def AND xyz')]),
     # Make sure that ORs are flattened
     (lambda q: q.query(q.Q("def") | q.Q(q.Q("xyz"))),
-     [('q', u'def OR xyz')]),
+     [('q', b'def OR xyz')]),
     # Make sure that empty queries are discarded in ANDs
     (lambda q: q.query("def", q.Q("abc"), q.Q(), q.Q(q.Q() & q.Q("xyz"))),
-     [('q', u'abc AND def AND xyz')]),
+     [('q', b'abc AND def AND xyz')]),
     # Make sure that empty queries are discarded in ORs
     (lambda q: q.query(q.Q() | q.Q("def") | q.Q(q.Q() | q.Q("xyz"))),
-     [('q', u'def OR xyz')]),
+     [('q', b'def OR xyz')]),
     # Test cancellation of NOTs.
     (lambda q: q.query(~q.Q(~q.Q("def"))),
-     [('q', u'def')]),
+     [('q', b'def')]),
     (lambda q: q.query(~q.Q(~q.Q(~q.Q("def")))),
-     [('q', u'NOT def')]),
+     [('q', b'NOT def')]),
     # Test it works through sub-sub-queries
     (lambda q: q.query(~q.Q(q.Q(q.Q(~q.Q(~q.Q("def")))))),
-     [('q', u'NOT def')]),
+     [('q', b'NOT def')]),
     # Even with empty queries in there
     (lambda q: q.query(~q.Q(q.Q(q.Q() & q.Q(q.Q() | ~q.Q(~q.Q("def")))))),
-     [('q', u'NOT def')]),
+     [('q', b'NOT def')]),
     # Test escaping of AND, OR, NOT
     (lambda q: q.query("AND", "OR", "NOT"),
-     [('q', u'"AND" AND "NOT" AND "OR"')]),
+     [('q', b'"AND" AND "NOT" AND "OR"')]),
     # Test exclude
     (lambda q: q.query("blah").query(~q.Q(q.Q("abc") | q.Q("def") | q.Q("ghi"))),
-     [('q', u'blah AND NOT (abc OR def OR ghi)')]),
+     [('q', b'blah AND NOT (abc OR def OR ghi)')]),
     # Try boosts
     (lambda q: q.query("blah").query(q.Q("def") ** 1.5),
-     [('q', u'blah AND def^1.5')]),
+     [('q', b'blah AND def^1.5')]),
     (lambda q: q.query("blah").query((q.Q("def") | q.Q("ghi")) ** 1.5),
-     [('q', u'blah AND (def OR ghi)^1.5')]),
+     [('q', b'blah AND (def OR ghi)^1.5')]),
     (lambda q: q.query("blah").query(q.Q("def", ~q.Q("pqr") | q.Q("mno")) ** 1.5),
-     [('q', u'blah AND (def AND ((*:* AND NOT pqr) OR mno))^1.5')]),
+     [('q', b'blah AND (def AND ((*:* AND NOT pqr) OR mno))^1.5')]),
     #wildcard
     (lambda q: q.query("blah").query(q.Q(WildcardString("def*"),
                                          ~q.Q(miu=WildcardString("pqr*")) | q.Q("mno")) ** 1.5),
-     [('q', 'blah AND (def* AND ((*:* AND NOT miu:pqr*) OR mno))^1.5')]),
+     [('q', b'blah AND (def* AND ((*:* AND NOT miu:pqr*) OR mno))^1.5')]),
     (lambda q: q.query("blah").query(q.Q("def*", ~q.Q(miu="pqr*") | q.Q("mno")) ** 1.5),
-     [('q', 'blah AND (def\\* AND ((*:* AND NOT miu:pqr\\*) OR mno))^1.5')]),
+     [('q', b'blah AND (def\\* AND ((*:* AND NOT miu:pqr\\*) OR mno))^1.5')]),
     # And boost_relevancy
     (lambda q: q.query("blah").boost_relevancy(1.5, int_field=3),
-     [('q', u'blah OR (blah AND int_field:3^1.5)')]),
+     [('q', b'blah OR (blah AND int_field:3^1.5)')]),
     (lambda q: q.query("blah").boost_relevancy(1.5, int_field=3).boost_relevancy(2, string_field='def'),
-     [('q', u'blah OR (blah AND (int_field:3^1.5 OR string_field:def^2))')]),
+     [('q', b'blah OR (blah AND (int_field:3^1.5 OR string_field:def^2))')]),
     (lambda q: q.query("blah").query("blah2").boost_relevancy(1.5, int_field=3),
-     [('q', u'(blah AND blah2) OR (blah AND blah2 AND int_field:3^1.5)')]),
+     [('q', b'(blah AND blah2) OR (blah AND blah2 AND int_field:3^1.5)')]),
     (lambda q: q.query(q.Q("blah") | q.Q("blah2")).boost_relevancy(1.5, int_field=3),
-     [('q', u'blah OR blah2 OR ((blah OR blah2) AND int_field:3^1.5)')]),
+     [('q', b'blah OR blah2 OR ((blah OR blah2) AND int_field:3^1.5)')]),
     # And ranges
     (lambda q: q.query(int_field__any=True),
-     [('q', u'int_field:[* TO *]')]),
+     [('q', b'int_field:[* TO *]')]),
     (lambda q: q.query("blah", ~q.Q(int_field__any=True)),
-     [('q', u'blah AND NOT int_field:[* TO *]')]),
+     [('q', b'blah AND NOT int_field:[* TO *]')]),
     #facet
     (lambda q: q.query("game").facet_query(price__lt=7).facet_query(price__gte=7),
-     [('facet', 'true'), ('facet.query', 'price:[7 TO *]'),
-      ('facet.query', 'price:{* TO 7}'), ('q', 'game')]),
+     [('facet', b'true'), ('facet.query', b'price:[7 TO *]'),
+      ('facet.query', b'price:{* TO 7}'), ('q', b'game')]),
     # group
     (lambda q: q.query().group_by('major_value', limit=10),
-     [('group', 'true'), ('group.field', 'major_value'), ('group.limit', '10'),
-      ('group.ngroups', 'true'), ('q', '*:*')]),
+     [('group', b'true'), ('group.field', b'major_value'), ('group.limit', b'10'),
+      ('group.ngroups', b'true'), ('q', b'*:*')]),
     # highlight
     (lambda q: q.query("hello world").filter(q.Q(text_field="tow")).highlight('title'),
-     [('fq', 'text_field:tow'), ('hl', 'true'), ('hl.fl', 'title'), ('q', 'hello\\ world')]),
+     [('fq', b'text_field:tow'), ('hl', b'true'), ('hl.fl', b'title'), ('q', b'hello\\ world')]),
     # sort
     (lambda q: q.query("hello world").filter(q.Q(text_field="tow")).sort_by('title'),
-     [('fq', 'text_field:tow'), ('q', 'hello\\ world'), ('sort', 'title asc')]),
+     [('fq', b'text_field:tow'), ('q', b'hello\\ world'), ('sort', b'title asc')]),
     # dismax
     (lambda q: q.query("hello").filter(q.Q(text_field="tow")).alt_parser(
         "dismax", qf={"text_field": 0.25, "string_field": 0.75}),
-     [('defType', 'dismax'), ('fq', 'text_field:tow'), ('q', 'hello'), ('qf', 'text_field^0.25 string_field^0.75')]),
+     [('defType', b'dismax'), ('fq', b'text_field:tow'), ('q', b'hello'),
+      ('qf', b'text_field^0.25 string_field^0.75')]),
     # edismax
     (lambda q: q.query("hello").filter(q.Q(text_field="tow")).alt_parser(
         "edismax", qf={"text_field": 0.25, "string_field": 0.75}),
-     [('defType', 'edismax'), ('fq', 'text_field:tow'), ('q', 'hello'), ('qf', 'text_field^0.25 string_field^0.75')]),
+     [('defType', b'edismax'), ('fq', b'text_field:tow'), ('q', b'hello'),
+      ('qf', b'text_field^0.25 string_field^0.75')]),
 )
 
 
@@ -430,8 +434,8 @@ def check_complex_boolean_query(solr_search, query, output):
         assert p == output, "Unequal: %r, %r" % (p, output)
     except AssertionError:
         if debug:
-            print p
-            print output
+            print(p)
+            print(output)
             import ipdb
             ipdb.set_trace()
             raise
@@ -443,40 +447,40 @@ def check_complex_boolean_query(solr_search, query, output):
         assert p == q
     except AssertionError:
         if debug:
-            print p
-            print q
+            print(p)
+            print(q)
             import ipdb
             ipdb.set_trace()
             raise
 
 param_encode_data = (
     ({"int": 3, "string": "string", "unicode": u"unicode"},
-     [("int", "3"), ("string", "string"), ("unicode", "unicode")]),
+     [("int", b"3"), ("string", b"string"), ("unicode", b"unicode")]),
     ({"int": 3, "string": "string", "unicode": u"\N{UMBRELLA}nicode"},
-     [("int", "3"), ("string", "string"), ("unicode", "\xe2\x98\x82nicode")]),
+     [("int", b"3"), ("string", b"string"), ("unicode", b"\xe2\x98\x82nicode")]),
+    # python3 needs unicode as keys
     ({"int": 3, "string": "string", u"\N{UMBRELLA}nicode": u"\N{UMBRELLA}nicode"},
-     [("int", "3"), ("string", "string"), ("\xe2\x98\x82nicode", "\xe2\x98\x82nicode")]),
+     [("int", b"3"), ("string", b"string"), (u"\N{UMBRELLA}nicode", b"\xe2\x98\x82nicode")]),
     ({"true": True, "false": False},
-     [("false", "false"), ("true", "true")]),
+     [("false", b"false"), ("true", b"true")]),
     ({"list": ["first", "second", "third"]},
-     [("list", "first"), ("list", "second"), ("list", "third")]),
+     [("list", b"first"), ("list", b"second"), ("list", b"third")]),
 )
 
 
 def check_url_encode_data(kwargs, output):
-    # Convert for pre-2.6.5 python
-    s_kwargs = dict((k.encode('utf8'), v) for k, v in kwargs.items())
-    assert params_from_dict(**s_kwargs) == output
+    p = params_from_dict(**kwargs)
+    assert p == output, "Unequal: %r, %r" % (p, output)
 
 mlt_query_options_data = (
     ('text_field', {}, {},
-     [('mlt.fl', 'text_field'), ('q', '*:*')]),
+     [('mlt.fl', b'text_field'), ('q', b'*:*')]),
     (['string_field', 'text_field'], {'string_field': 3.0}, {},
-     [('mlt.fl', 'string_field,text_field'), ('mlt.qf', 'string_field^3.0'),
-      ('q', '*:*')]),
+     [('mlt.fl', b'string_field,text_field'), ('mlt.qf', b'string_field^3.0'),
+      ('q', b'*:*')]),
     ('text_field', {}, {'mindf': 3, 'interestingTerms': 'details'},
-     [('mlt.fl', 'text_field'), ('mlt.interestingTerms', 'details'),
-      ('mlt.mindf', '3'), ('q', '*:*')]),
+     [('mlt.fl', b'text_field'), ('mlt.interestingTerms', b'details'),
+      ('mlt.mindf', b'3'), ('q', b'*:*')]),
 )
 
 
@@ -487,25 +491,25 @@ def check_mlt_query_options(fields, query_fields, kwargs, output):
 
 
 def test_query_data():
-    for method, data in good_query_data.items():
+    for method, data in list(good_query_data.items()):
         for args, kwargs, output in data:
             yield check_query_data, method, args, kwargs, output
 
 
 def test_mlt_query_data():
-    for method, data in base_good_query_data.items():
+    for method, data in list(base_good_query_data.items()):
         for args, kwargs, output in data:
             yield check_mlt_query_data, method, args, kwargs, output
 
 
 def test_good_option_data():
-    for OptionClass, option_data in good_option_data.items():
+    for OptionClass, option_data in list(good_option_data.items()):
         for kwargs, output in option_data:
             yield check_good_option_data, OptionClass, kwargs, output
 
 
 def test_bad_option_data():
-    for OptionClass, option_data in bad_option_data.items():
+    for OptionClass, option_data in list(bad_option_data.items()):
         for kwargs in option_data:
             yield check_bad_option_data, OptionClass, kwargs
 

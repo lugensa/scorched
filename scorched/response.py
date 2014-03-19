@@ -1,5 +1,8 @@
+from __future__ import unicode_literals
 import json
 import scorched.dates
+
+from scorched.compat import str
 
 
 class SolrFacetCounts(object):
@@ -27,8 +30,8 @@ class SolrFacetCounts(object):
         except KeyError:
             return SolrFacetCounts()
         facet_fields = {}
-        for facet_field, facet_values in facet_counts[
-                'facet_fields'].items():
+        for facet_field, facet_values in list(facet_counts[
+                'facet_fields'].items()):
             facets = []
             # Change each facet list from [a, 1, b, 2, c, 3 ...] to
             # [(a, 1), (b, 2), (c, 3) ...]
@@ -64,8 +67,8 @@ class SolrResponse(object):
         self.highlighting = doc.get("highlighting", {})
         self.groups = doc.get('grouped', {})
         self.more_like_these = dict((k, SolrResult.from_json(v, datefields))
-                                    for (k, v) in doc.get('moreLikeThis', {}
-                                                          ).items())
+                                    for (k, v) in list(doc.get('moreLikeThis', {}
+                                                          ).items()))
         # can be computed by MoreLikeThisHandler
         self.interesting_terms = doc.get('interestingTerms', None)
         return self
@@ -76,7 +79,7 @@ class SolrResponse(object):
     def __len__(self):
         return len(self.result.docs)
 
-    def __getitem__(self, key):
+    def __next__(self, key):
         return self.result.docs[key]
 
 
@@ -94,7 +97,7 @@ class SolrResult(object):
 
     def _prepare_docs(self, docs, datefields):
         for doc in docs:
-            for name, value in doc.items():
+            for name, value in list(doc.items()):
                 if name in datefields:
                     doc[name] = scorched.dates.solr_date(value)._dt_obj
                 elif name.endswith(datefields):

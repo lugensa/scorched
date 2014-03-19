@@ -1,7 +1,14 @@
+from __future__ import print_function
+from __future__ import unicode_literals
 import scorched
-import sunburnt
 import time
 import datetime
+
+from matplotlib import pyplot
+from scorched.compat import is_py2
+
+if is_py2:
+    import sunburnt
 
 
 def build(n):
@@ -28,31 +35,35 @@ def run(n, interface):
     si.add(docs)
     si.commit()
     elapsed = (time.clock() - start)
-    print "%s docs took %ss" % (len(docs), elapsed)
+    print("%s docs took %ss" % (len(docs), elapsed))
     query = si.query(name='fisch')
     res = si.search(**query.options())
-    print "found %s" % res.result.numFound
+    print("found %s" % res.result.numFound)
     si.delete_all()
     si.commit()
     return {'x': n, 'y': elapsed}
 
 count = 21
-data_sunburnt = []
-for i in [x*1000 for x in range(1, count)]:
-    data_sunburnt.append(run(i, sunburnt.SolrInterface))
+if is_py2:
+    data_sunburnt = []
+    for i in [x*1000 for x in range(1, count)]:
+        data_sunburnt.append(run(i, sunburnt.SolrInterface))
 
 data_scorched = []
 for i in [x*1000 for x in range(1, count)]:
     data_scorched.append(run(i, scorched.SolrInterface))
 
-from matplotlib import pyplot
-pyplot.plot(
-    [x['x'] for x in data_sunburnt], [y['y'] for y in data_sunburnt], '-')
+if is_py2:
+    pyplot.plot(
+        [x['x'] for x in data_sunburnt], [y['y'] for y in data_sunburnt], '-')
 pyplot.plot(
     [x['x'] for x in data_scorched], [y['y'] for y in data_scorched], '-')
 pyplot.title('Plotting adding speed')
 pyplot.xlabel('Number documents')
 pyplot.ylabel('Time in seconds (less is better)')
-pyplot.legend(['sunburnt', 'scorched'])
+if is_py2:
+    pyplot.legend(['sunburnt', 'scorched'])
+else:
+    pyplot.legend(['scorched'])
 pyplot.savefig('bench.png')
 pyplot.show()

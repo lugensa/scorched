@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from scorched.strings import (RawString, WildcardString)
 from scorched.search import LuceneQuery
 

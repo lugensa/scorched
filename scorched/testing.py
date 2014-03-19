@@ -1,7 +1,11 @@
+from __future__ import print_function
+from __future__ import unicode_literals
 import requests
 import os
 import unittest
 import warnings
+
+from scorched.compat import str
 
 
 def is_solr_available():
@@ -12,7 +16,7 @@ def is_solr_available():
             requests.get(dsn, timeout=1)
             return True
         except Exception as e:
-            print "Connection error:%s" % str(e)
+            print("Connection error:%s" % str(e))
     return False
 
 

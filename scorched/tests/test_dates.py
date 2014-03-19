@@ -1,6 +1,8 @@
+from __future__ import unicode_literals
 import datetime
 import pytz
 
+from scorched.compat import str
 from scorched.dates import solr_date
 
 not_utc = pytz.timezone('Etc/GMT-3')
@@ -32,8 +34,8 @@ samples_from_strings = {
 
 
 def check_solr_date_from_date(s, date, canonical_date):
-    assert unicode(solr_date(date)) == s, "Unequal representations of %r: %r and %r" % (
-        date, unicode(solr_date(date)), s)
+    assert str(solr_date(date)) == s, "Unequal representations of %r: %r and %r" % (
+        date, str(solr_date(date)), s)
     check_solr_date_from_string(s, canonical_date)
 
 
@@ -43,10 +45,10 @@ def check_solr_date_from_string(s, date):
 
 
 def test_solr_date_from_pydatetimes():
-    for k, v in samples_from_pydatetimes.items():
+    for k, v in list(samples_from_pydatetimes.items()):
         yield check_solr_date_from_date, k, v[0], v[1]
 
 
 def test_solr_date_from_strings():
-    for k, v in samples_from_strings.items():
+    for k, v in list(samples_from_strings.items()):
         yield check_solr_date_from_string, k, v

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import itertools
 import json
 import requests
@@ -5,14 +6,19 @@ import scorched.dates
 import scorched.response
 import scorched.search
 import scorched.exc
+import scorched.compat
 import time
-import urlparse
-import urllib
 import warnings
+
+from scorched.compat import str
 
 MAX_LENGTH_GET_URL = 2048
 # Jetty default is 4096; Tomcat default is 8192; picking 2048 to be
 # conservative.
+
+
+def is_iter(val):
+    return isinstance(val, (tuple, list))
 
 
 class SolrConnection(object):
@@ -143,7 +149,7 @@ class SolrConnection(object):
         if 'maxSegments' in extra_params and 'optimize' not in extra_params:
             raise ValueError("Can't do maxSegments without optimize")
         if extra_params:
-            return "%s?%s" % (self.update_url, urllib.urlencode(
+            return "%s?%s" % (self.update_url, scorched.compat.urlencode(
                 sorted(extra_params.items())))
         else:
             return self.update_url
@@ -160,7 +166,7 @@ class SolrConnection(object):
         if not self.readable:
             raise TypeError("This Solr instance is only for writing")
         params.append(('wt', 'json'))
-        qs = urllib.urlencode(params)
+        qs = scorched.compat.urlencode(params)
         url = "%s?%s" % (self.select_url, qs)
         if len(url) > self.max_length_get_url:
             warnings.warn(
@@ -178,7 +184,7 @@ class SolrConnection(object):
         response = self.request(method, url, **kwargs)
         if response.status_code != 200:
             raise scorched.exc.SolrError(response)
-        return response.content
+        return response.text
 
     def mlt(self, params, content=None):
         """
@@ -188,14 +194,15 @@ class SolrConnection(object):
         if not self.readable:
             raise TypeError("This Solr instance is only for writing")
         params.append(('wt', 'json'))
-        qs = urllib.urlencode(params)
+        qs = scorched.compat.urlencode(params)
         base_url = "%s?%s" % (self.mlt_url, qs)
         method = 'GET'
         kwargs = {}
         if content is None:
             url = base_url
         else:
-            get_url = "%s&stream.body=%s" % (base_url, urllib.quote_plus(content))
+            get_url = "%s&stream.body=%s" % (
+                base_url, scorched.compat.quote_plus(content))
             if len(get_url) <= self.max_length_get_url:
                 url = get_url
             else:
@@ -207,7 +214,7 @@ class SolrConnection(object):
         response = self.request(method, url, **kwargs)
         if response.status_code != 200:
             raise scorched.exc.SolrError(response.content)
-        return response.content
+        return response.text
 
 
 class SolrInterface(object):
@@ -236,7 +243,8 @@ class SolrInterface(object):
 
     def init_schema(self):
         response = self.conn.request(
-            'GET', urlparse.urljoin(self.conn.url, self.remote_schema_file))
+            'GET', scorched.compat.urljoin(self.conn.url,
+                                           self.remote_schema_file))
         if response.status_code != 200:
             raise EnvironmentError(
                 "Couldn't retrieve schema document - status code %s\n%s" % (
@@ -256,16 +264,16 @@ class SolrInterface(object):
 
     def _prepare_docs(self, docs):
         for doc in docs:
-            for name, value in doc.items():
+            for name, value in list(doc.items()):
                 # XXX remove all None fields this is needed for adding date
                 # fields
                 if value is None:
                     doc.pop(name)
                     continue
                 if name in self._datefields:
-                    doc[name] = unicode(scorched.dates.solr_date(value))
+                    doc[name] = str(scorched.dates.solr_date(value))
                 elif name.endswith(self._datefields):
-                    doc[name] = unicode(scorched.dates.solr_date(value))
+                    doc[name] = str(scorched.dates.solr_date(value))
         return docs
 
     def add(self, docs, chunk=100, **kwargs):
@@ -280,7 +288,7 @@ class SolrInterface(object):
 
         Add a document or a list of document to solr.
         """
-        if hasattr(docs, "items") or not hasattr(docs, "__iter__"):
+        if hasattr(docs, "items") or not is_iter(docs):
             docs = [docs]
         # to avoid making messages too large, we break the message every
         # chunk docs.
@@ -295,7 +303,7 @@ class SolrInterface(object):
 
         Delete entries by a given query
         """
-        delete_message = json.dumps({"delete": {"query": unicode(query)}})
+        delete_message = json.dumps({"delete": {"query": str(query)}})
         self.conn.update(delete_message, **kwargs)
 
     def delete_by_ids(self, ids, **kwargs):

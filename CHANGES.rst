@@ -1,6 +1,8 @@
 0.1 (unreleased)
 ----------------
 
+- Python 3
+
 - Cleaner api moved redundant functions
 
 - Cleaner api removed filter_exclude use ~si.Q()

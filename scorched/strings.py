@@ -1,4 +1,9 @@
-class SolrString(unicode):
+from __future__ import unicode_literals
+from scorched.compat import str
+from scorched.compat import python_2_unicode_compatible
+
+
+class SolrString(str):
     # The behaviour below is only really relevant for String fields rather
     # than Text fields - most queryparsers will strip these characters out
     # for a text field anyway.
@@ -9,7 +14,7 @@ class SolrString(unicode):
             return u'"%s"' % self
         chars = []
         for c in self.chars:
-            if isinstance(c, basestring) and c in self.lucene_special_chars:
+            if isinstance(c, str) and c in self.lucene_special_chars:
                 chars.append(u'\%s' % c)
             else:
                 chars.append(u'%s' % c)
@@ -29,8 +34,9 @@ class WildcardString(SolrString):
 
     class SpecialChar(object):
 
-        def __unicode__(self):
-            return unicode(self.char)
+        @python_2_unicode_compatible
+        def __str__(self):
+            return str(self.char)
 
     class Asterisk(SpecialChar):
         char = u'*'

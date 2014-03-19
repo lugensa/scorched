@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import collections
 import copy
 import datetime
@@ -8,8 +9,16 @@ import scorched.strings
 import scorched.exc
 import scorched.dates
 
+from functools import reduce
+from scorched.compat import str
+from scorched.compat import python_2_unicode_compatible
+
 
 PARSERS = ("edismax", "dismax")
+
+
+def is_iter(val):
+    return isinstance(val, (tuple, list))
 
 
 class LuceneQuery(object):
@@ -56,7 +65,7 @@ class LuceneQuery(object):
     # testing.
     def serialize_term_queries(self, terms):
         s = []
-        for name, value_set in terms.items():
+        for name, value_set in list(terms.items()):
             if name:
                 tmp = [u'%s:%s' % (name, self.to_query(value))
                        for value in value_set]
@@ -72,8 +81,8 @@ class LuceneQuery(object):
         if isinstance(value, bool):
             return u"true" if value else u"false"
         if isinstance(value, datetime.datetime):
-            return unicode(scorched.dates.solr_date(value))
-        return unicode(value)
+            return str(scorched.dates.solr_date(value))
+        return str(value)
 
     def to_query(self, value):
         ret = scorched.strings.RawString(
@@ -98,7 +107,7 @@ class LuceneQuery(object):
             range_s = self.range_query_templates[rel]
             if values:
                 values = values[0]
-                if not hasattr(values, "__iter__"):
+                if not is_iter(values):
                     values = [values]
                 values = sorted(values)
                 values = [self.to_query(v) for v in values]
@@ -123,9 +132,9 @@ class LuceneQuery(object):
     def merge_term_dicts(*args):
         d = collections.defaultdict(set)
         for arg in args:
-            for k, v in arg.items():
+            for k, v in list(arg.items()):
                 d[k].update(v)
-        return dict((k, v) for k, v in d.items())
+        return dict((k, v) for k, v in list(d.items()))
 
     def normalize(self):
         if self.normalized:
@@ -188,7 +197,8 @@ class LuceneQuery(object):
         self.normalized = True
         return self, mutated
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return self.__unicode_special__(force_serialize=True)
 
     def __unicode_special__(self, level=0, op=None, force_serialize=False):
@@ -247,8 +257,8 @@ class LuceneQuery(object):
             subquery_length = len(self.subqueries[0])
         else:
             subquery_length = len(self.subqueries)
-        return sum([sum(len(v) for v in self.terms.values()),
-                    sum(len(v) for v in self.phrases.values()),
+        return sum([sum(len(v) for v in list(self.terms.values())),
+                    sum(len(v) for v in list(self.phrases.values())),
                     len(self.ranges),
                     subquery_length])
 
@@ -257,7 +267,7 @@ class LuceneQuery(object):
         q.add(args, kwargs)
         return q
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.terms) or bool(self.phrases) or bool(self.ranges) or \
             bool(self.subqueries)
 
@@ -306,7 +316,7 @@ class LuceneQuery(object):
             terms_or_phrases = None
         for value in args:
             self.add_exact(None, value, terms_or_phrases)
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             try:
                 field_name, rel = k.split("__")
             except ValueError:
@@ -324,7 +334,7 @@ class LuceneQuery(object):
         # We let people pass in a list of values to match.
         # This really only makes sense for text fields or
         # multivalued fields.
-        if not hasattr(values, "__iter__"):
+        if not is_iter(values):
             values = [values]
         # We can only do a field_name == "*" if:
         if not field_name or field_name == "*":
@@ -488,8 +498,7 @@ class BaseSearch(object):
             if hasattr(self, option_module):
                 _attr = getattr(self, option_module)
                 options.update(_attr.options())
-        # Next line is for pre-2.6.5 python
-        return dict((k.encode('utf8'), v) for k, v in options.items())
+        return options
 
     def results_as(self, constructor):
         newself = self.clone()
@@ -549,7 +558,7 @@ class MltSolrSearch(BaseSearch):
             if content is not None:
                 if content_charset is None:
                     content_charset = 'utf-8'
-                if isinstance(content, unicode):
+                if isinstance(content, str):
                     content = content.encode('utf-8')
                 elif content_charset.lower(
                 ).replace('-', '_') not in self.trivial_encodings:
@@ -621,20 +630,20 @@ class Options(object):
 
     def update(self, fields=None, **kwargs):
         if fields:
-            if isinstance(fields, basestring):
+            if isinstance(fields, str):
                 fields = [fields]
             for field in set(fields) - set(self.fields):
                 self.fields[field] = {}
         elif kwargs:
             fields = [None]
         checked_kwargs = self.check_opts(kwargs)
-        for k, v in checked_kwargs.items():
+        for k, v in list(checked_kwargs.items()):
             for field in fields:
                 self.fields[field][k] = v
 
     def check_opts(self, kwargs):
         checked_kwargs = {}
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             if k not in self.opts:
                 raise scorched.exc.SolrError(
                     "No such option for %s: %s" % (self.option_name, k))
@@ -659,12 +668,12 @@ class Options(object):
             opts[self.option_name] = True
             fields = [field for field in self.fields if field]
             self.field_names_in_opts(opts, fields)
-        for field_name, field_opts in self.fields.items():
+        for field_name, field_opts in list(self.fields.items()):
             if not field_name:
-                for field_opt, v in field_opts.items():
+                for field_opt, v in list(field_opts.items()):
                     opts['%s.%s' % (self.option_name, field_opt)] = v
             else:
-                for field_opt, v in field_opts.items():
+                for field_opt, v in list(field_opts.items()):
                     opts['f.%s.%s.%s' %
                          (field_name, self.option_name, field_opt)] = v
         return opts
@@ -673,7 +682,7 @@ class Options(object):
 class FacetOptions(Options):
     option_name = "facet"
     opts = {
-        "prefix": unicode,
+        "prefix": str,
         "sort": [True, False, "count", "index"],
         "limit": int,
         "offset":
@@ -699,7 +708,7 @@ class FacetOptions(Options):
 class GroupOptions(Options):
     option_name = "group"
     opts = {
-        "field": unicode,
+        "field": str,
         "limit": int,
         "main": bool,
         "ngroups": bool
@@ -726,8 +735,8 @@ class DismaxOptions(Options):
         "ps": int,
         "qs": int,
         "tie": float,
-        "bq": unicode,
-        "bf": unicode,
+        "bq": str,
+        "bf": str,
     }
 
     def __init__(self, original=None):
@@ -740,7 +749,7 @@ class DismaxOptions(Options):
         checked_kwargs = self.check_opts(kwargs)
         for f in ('qf', 'pf'):
             field = kwargs.get(f, {})
-            for k, v in field.items():
+            for k, v in list(field.items()):
                 if v is not None:
                     try:
                         v = float(v)
@@ -752,13 +761,14 @@ class DismaxOptions(Options):
     def options(self):
         opts = {}
         opts[self.option_name] = self._name
-        for opt_name, opt_value in self.kwargs.items():
+        for opt_name, opt_value in list(self.kwargs.items()):
             opt_type = self.opts[opt_name]
             opts[opt_name] = opt_type(opt_value)
 
             if opt_name in ("qf", "pf"):
                 qf_arg = []
-                for k, v in opt_value.items():
+                items = sorted(list(opt_value.items()),  reverse=True)
+                for k, v in items:
                     if v is None:
                         qf_arg.append(k)
                     else:
@@ -778,17 +788,17 @@ class HighlightOptions(Options):
             "mergeContinuous": bool,
             "requireFieldMatch": bool,
             "maxAnalyzedChars": int,
-            "alternateField": unicode,
+            "alternateField": str,
             "maxAlternateFieldLength": int,
             "formatter": ["simple"],
-            "simple.pre": unicode,
-            "simple.post": unicode,
-            "fragmenter": unicode,
+            "simple.pre": str,
+            "simple.post": str,
+            "fragmenter": str,
             "useFastVectorHighlighter": bool,  # available as of Solr 3.1
             "usePhraseHighlighter": bool,
             "highlightMultiTerm": bool,
             "regex.slop": float,
-            "regex.pattern": unicode,
+            "regex.pattern": str,
             "regex.maxAnalyzedChars": int
             }
 
@@ -828,12 +838,12 @@ class MoreLikeThisOptions(Options):
     def update(self, fields, query_fields=None, **kwargs):
         if fields is None:
             return
-        if isinstance(fields, basestring):
+        if isinstance(fields, str):
             fields = [fields]
         self.fields.update(fields)
 
         if query_fields is not None:
-            for k, v in query_fields.items():
+            for k, v in list(query_fields.items()):
                 if k not in self.fields:
                     raise scorched.exc.SolrError(
                         "'%s' specified in query_fields but not fields" % k)
@@ -856,14 +866,15 @@ class MoreLikeThisOptions(Options):
 
         if self.query_fields:
             qf_arg = []
-            for k, v in self.query_fields.items():
+            items = sorted(list(self.query_fields.items()),  reverse=True)
+            for k, v in items:
                 if v is None:
                     qf_arg.append(k)
                 else:
                     qf_arg.append("%s^%s" % (k, float(v)))
             opts["mlt.qf"] = " ".join(qf_arg)
 
-        for opt_name, opt_value in self.kwargs.items():
+        for opt_name, opt_value in list(self.kwargs.items()):
             opt_type = self.opts[opt_name]
             opts["mlt.%s" % opt_name] = opt_type(opt_value)
 
@@ -886,14 +897,14 @@ class MoreLikeThisHandlerOptions(MoreLikeThisOptions):
 
         if self.query_fields:
             qf_arg = []
-            for k, v in self.query_fields.items():
+            for k, v in list(self.query_fields.items()):
                 if v is None:
                     qf_arg.append(k)
                 else:
                     qf_arg.append("%s^%s" % (k, float(v)))
             opts["mlt.qf"] = " ".join(qf_arg)
 
-        for opt_name, opt_value in self.kwargs.items():
+        for opt_name, opt_value in list(self.kwargs.items()):
             opts["mlt.%s" % opt_name] = opt_value
 
         return opts
@@ -975,7 +986,7 @@ class FieldLimitOptions(Options):
     def update(self, fields=None, score=False, all_fields=False):
         if fields is None:
             fields = []
-        if isinstance(fields, basestring):
+        if isinstance(fields, str):
             fields = [fields]
         self.fields.update(fields)
         self.score = score
@@ -1007,7 +1018,7 @@ class FacetQueryOptions(Options):
 
     def options(self):
         if self.queries:
-            return {'facet.query': [unicode(q) for q in self.queries],
+            return {'facet.query': [str(q) for q in self.queries],
                     'facet': True}
         else:
             return {}
@@ -1015,17 +1026,18 @@ class FacetQueryOptions(Options):
 
 def params_from_dict(**kwargs):
     utf8_params = []
-    for k, vs in kwargs.items():
-        if isinstance(k, unicode):
-            k = k.encode('utf-8')
+    for k, vs in list(kwargs.items()):
+        if isinstance(k, bytes):
+            k = k.decode('utf-8')
         # We allow for multivalued options with lists.
-        if not hasattr(vs, "__iter__"):
+        if not is_iter(vs):
             vs = [vs]
         for v in vs:
             if isinstance(v, bool):
-                v = u"true" if v else u"false"
-            else:
-                v = unicode(v)
-            v = v.encode('utf-8')
+                v = b"true" if v else b"false"
+            if isinstance(v, str):
+                v = v.encode('utf-8')
+            if isinstance(v, numbers.Number):
+                v = str(v).encode('utf-8')
             utf8_params.append((k, v))
     return sorted(utf8_params)

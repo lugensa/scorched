@@ -1,8 +1,12 @@
+from __future__ import unicode_literals
 import datetime
 import math
 import pytz
 import re
 import scorched.exc
+
+from scorched.compat import str
+from scorched.compat import python_2_unicode_compatible
 
 
 year = r'[+/-]?\d+'
@@ -71,7 +75,7 @@ def datetime_factory(**kwargs):
         kwargs['microsecond'] = int(f * 1000000)
     try:
         return datetime.datetime(**kwargs)
-    except ValueError, e:
+    except ValueError as e:
         raise DateTimeRangeError(e.args[0])
 
 
@@ -87,7 +91,7 @@ class solr_date(object):
     def __init__(self, v):
         if isinstance(v, solr_date):
             self._dt_obj = v._dt_obj
-        elif isinstance(v, basestring):
+        elif isinstance(v, str):
             self._dt_obj = datetime_from_w3_datestring(v)
         elif hasattr(v, "strftime"):
             self._dt_obj = self.from_date(v)
@@ -114,7 +118,8 @@ class solr_date(object):
     def __repr__(self):
         return repr(self._dt_obj)
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         """ Serialize a datetime object in the format required
         by Solr. See http://wiki.apache.org/solr/IndexingDates
         """
