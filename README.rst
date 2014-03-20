@@ -5,6 +5,7 @@ Scorched is a sunburnt offspring and like all offspring it tries to make
 things better or at least different.
 
 Git Repository and issue tracker: https://github.com/lugensa/scorched
+Documentation: http://scorched.readthedocs.org/en/latest/
 
 .. |travisci| image::  https://travis-ci.org/lugensa/scorched.png
 .. _travisci: https://travis-ci.org/lugensa/scorched
@@ -27,5 +28,7 @@ Following some major differences:
 - API is more lightweight e.g. ``add`` consums now only dicts.
 
 - Wildcard search strings need to be explicitly set.
+
+- Python 3
 
 - ...
