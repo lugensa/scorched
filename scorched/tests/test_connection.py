@@ -9,16 +9,14 @@ import scorched.connection
 class TestConnection(unittest.TestCase):
 
     def test_readable(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = "http://localhost:8983/solr"
         sc = scorched.connection.SolrConnection(
             url=dsn, http_connection=None, mode="r", retry_timeout=-1,
             max_length_get_url=2048)
         self.assertRaises(TypeError, sc.update, {})
 
     def test_writeable(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = "http://localhost:8983/solr"
         sc = scorched.connection.SolrConnection(
             url=dsn, http_connection=None, mode="w", retry_timeout=-1,
             max_length_get_url=2048)
@@ -26,8 +24,7 @@ class TestConnection(unittest.TestCase):
         self.assertRaises(TypeError, sc.select, {})
 
     def test_mlt(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = "http://localhost:8983/solr"
         sc = scorched.connection.SolrConnection(
             url=dsn, http_connection=None, mode="", retry_timeout=-1,
             max_length_get_url=2048)
@@ -49,8 +46,7 @@ class TestConnection(unittest.TestCase):
                               content="fooo")
 
     def test_select(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = "http://localhost:8983/solr"
         sc = scorched.connection.SolrConnection(
             url=dsn, http_connection=None, mode="", retry_timeout=-1,
             max_length_get_url=0)
@@ -59,8 +55,7 @@ class TestConnection(unittest.TestCase):
             self.assertRaises(scorched.exc.SolrError, sc.select, [])
 
     def test_no_body_response_error(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = "http://localhost:8983/solr"
         sc = scorched.connection.SolrConnection(
             url=dsn, http_connection=None, mode="", retry_timeout=-1,
             max_length_get_url=2048)
@@ -70,16 +65,14 @@ class TestConnection(unittest.TestCase):
             self.assertRaises(scorched.exc.SolrError, sc.update, {})
 
     def test_request(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:1234/none")
+        dsn = "http://localhost:1234/none"
         sc = scorched.connection.SolrConnection(
             url=dsn, http_connection=None, mode="", retry_timeout=-1,
             max_length_get_url=2048)
         self.assertRaises(Exception, sc.request, (), {})
 
     def test_url_for_update(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:1234/none")
+        dsn = "http://localhost:1234/none"
         sc = scorched.connection.SolrConnection(
             url=dsn, http_connection=None, mode="", retry_timeout=-1,
             max_length_get_url=2048)

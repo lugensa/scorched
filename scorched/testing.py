@@ -3,6 +3,11 @@ from __future__ import unicode_literals
 import requests
 import os
 import unittest
+if not hasattr(unittest, "skip"):
+    try:
+        import unittest2 as unittest
+    except:
+        pass
 import warnings
 
 from scorched.compat import str
