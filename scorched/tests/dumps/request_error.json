@@ -1,0 +1,14 @@
+{
+  "responseHeader": {
+    "status": 400,
+    "QTime": 1,
+    "params": {
+      "facet": "true",
+      "indent": "true",
+      "q": "genre_s:fantasy",
+      "_": "1394706864646",
+      "facet.field": "cat",
+      "wt": "json"
+    }
+  }
+}

@@ -45,21 +45,15 @@ def datetime_from_w3_datestring(s):
             tzd_sign = 1
         elif d['tzd_sign'] == '-':
             tzd_sign = -1
-        try:
-            tz_delta = datetime_delta_factory(tzd_sign * int(d['tzd_hour']),
-                                              tzd_sign * int(d['tzd_minute']))
-        except DateTimeRangeError as e:
-            raise ValueError(e.args[0])
+        tz_delta = datetime_delta_factory(tzd_sign * int(d['tzd_hour']),
+                                          tzd_sign * int(d['tzd_minute']))
     else:
         tz_delta = datetime_delta_factory(0, 0)
     del d['tzd_sign']
     del d['tzd_hour']
     del d['tzd_minute']
     d['tzinfo'] = pytz.utc
-    try:
-        dt = datetime_factory(**d) + tz_delta
-    except DateTimeRangeError as e:
-        raise ValueError(e.args[0])
+    dt = datetime_factory(**d) + tz_delta
     return dt
 
 
@@ -110,10 +104,7 @@ class solr_date(object):
 
     @property
     def microsecond(self):
-        if hasattr(self._dt_obj, "microsecond"):
-            return self._dt_obj.microsecond
-        else:
-            return int(1000000*math.modf(self._dt_obj.second)[0])
+        return self._dt_obj.microsecond
 
     def __repr__(self):
         return repr(self._dt_obj)
@@ -123,22 +114,18 @@ class solr_date(object):
         """ Serialize a datetime object in the format required
         by Solr. See http://wiki.apache.org/solr/IndexingDates
         """
-        if hasattr(self._dt_obj, 'isoformat'):
-            return "%sZ" % (self._dt_obj.isoformat(), )
-        strtime = self._dt_obj.strftime("%Y-%m-%dT%H:%M:%S")
-        microsecond = self.microsecond
-        if microsecond:
-            return u"%s.%06dZ" % (strtime, microsecond)
-        return u"%sZ" % (strtime,)
+        return "%sZ" % (self._dt_obj.isoformat(), )
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         try:
             other = other._dt_obj
         except AttributeError:
             pass
-        if self._dt_obj < other:
-            return -1
-        elif self._dt_obj > other:
-            return 1
-        else:
-            return 0
+        return self._dt_obj < other
+
+    def __eq__(self, other):
+        try:
+            other = other._dt_obj
+        except AttributeError:
+            pass
+        return self._dt_obj == other

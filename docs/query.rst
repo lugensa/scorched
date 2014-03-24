@@ -127,7 +127,7 @@ you want an object.  Perhaps you have the following class defined in your code:
     ...         self.other_kwargs = other_kwargs
     ... 
     ...     def __repr__(self):
-    ...         return 'Book("%s", "%s")' % (title, author)
+    ...         return 'Book("%s", "%s")' % (self.title, self.author)
 
 
 You can tell scorched to give you ``Book`` instances back by telling
@@ -135,7 +135,7 @@ You can tell scorched to give you ``Book`` instances back by telling
 
 ::
 
-    >>> for result in si.query(“game”).execute(constructor=Book):
+    >>> for result in si.query("game").execute(constructor=Book):
     ...     print result
     Book("The Lightning Thief", "Rick Riordan")
 

@@ -1,9 +1,12 @@
 from __future__ import unicode_literals
 import datetime
 import pytz
+import unittest
+import scorched.exc
 
 from scorched.compat import str
-from scorched.dates import solr_date
+from scorched.dates import (solr_date, datetime_from_w3_datestring,
+                            datetime_factory)
 
 not_utc = pytz.timezone('Etc/GMT-3')
 
@@ -52,3 +55,37 @@ def test_solr_date_from_pydatetimes():
 def test_solr_date_from_strings():
     for k, v in list(samples_from_strings.items()):
         yield check_solr_date_from_string, k, v
+
+
+class TestDates(unittest.TestCase):
+
+    def test_datetime_from_w3_datestring(self):
+        self.assertRaises(ValueError,
+                          datetime_from_w3_datestring, "")
+        self.assertEqual(datetime_from_w3_datestring("2009-07-23T03:24:34.123+16:50"),
+                         datetime.datetime(2009, 7, 23, 20, 14, 34, 122999,
+                                           tzinfo=pytz.utc))
+        self.assertEqual(datetime_from_w3_datestring("2009-07-23T03:24:34.123-16:50"),
+                         datetime.datetime(2009, 7, 22, 10, 34, 34, 122999,
+                                           tzinfo=pytz.utc))
+
+    def test_datetime_factory(self):
+        self.assertRaises(ValueError,
+                          datetime_factory, year=1990, month=12,
+                          day=12345)
+
+    def test_solr_date(self):
+        self.assertRaises(scorched.exc.SolrError, solr_date, None)
+        s = solr_date("2009-07-23T03:24:34.000376Z")
+        s_older = solr_date("2007-07-23T03:24:34.000376Z")
+        self.assertEqual(s.microsecond, 376)
+        self.assertEqual(s, solr_date(s))
+        self.assertTrue(s == s)
+        self.assertTrue(s > s_older)
+        self.assertTrue(s_older < s)
+        self.assertRaises(TypeError, s.__lt__, datetime.datetime(2009, 7, 22, 10))
+        if scorched.compat.is_py2:  # pragma: no cover
+            self.assertRaises(TypeError, s.__eq__, datetime.datetime(2009, 7, 22, 10))
+        else:  # pragma: no cover
+            self.assertFalse(s == "Foo")
+        self.assertEqual(s.__repr__(), 'datetime.datetime(2009, 7, 23, 3, 24, 34, 376, tzinfo=<UTC>)')

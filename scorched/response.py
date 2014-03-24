@@ -19,12 +19,7 @@ class SolrFacetCounts(object):
         self.facet_fields = dict(self.facet_fields)
 
     @classmethod
-    def from_response(cls, response):
-        facet_counts = dict(response.get("facet_counts", {}))
-        return SolrFacetCounts(**facet_counts)
-
-    @classmethod
-    def from_response_json(cls, response):
+    def from_json(cls, response):
         try:
             facet_counts = response['facet_counts']
         except KeyError:
@@ -63,7 +58,7 @@ class SolrResponse(object):
         # TODO mlt/ returns match what should we do with it ?
         #if doc.get('match'):
         #    self.result = SolrResult.from_json(doc['match'], datefields)
-        self.facet_counts = SolrFacetCounts.from_response_json(doc)
+        self.facet_counts = SolrFacetCounts.from_json(doc)
         self.highlighting = doc.get("highlighting", {})
         self.groups = doc.get('grouped', {})
         self.more_like_these = dict((k, SolrResult.from_json(v, datefields))
@@ -78,9 +73,6 @@ class SolrResponse(object):
 
     def __len__(self):
         return len(self.result.docs)
-
-    def __next__(self, key):
-        return self.result.docs[key]
 
 
 class SolrResult(object):
@@ -105,5 +97,5 @@ class SolrResult(object):
         return docs
 
     def __str__(self):
-        return "%(numFound)s results found, starting at #%(start)s\n\n" % (
-            self.__dict__ + str(self.docs))
+        return "{numFound} results found, starting at #{start}".format(
+            numFound=self.numFound, start=self.start)

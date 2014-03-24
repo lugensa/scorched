@@ -7,6 +7,16 @@ import scorched.testing
 from scorched import SolrInterface
 
 
+class Book:
+    def __init__(self, name, author, **other_kwargs):
+        self.title = name
+        self.author = author
+        self.other_kwargs = other_kwargs
+
+    def __repr__(self):
+        return 'Book("%s", "%s")' % (self.title, self.author)
+
+
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
@@ -36,6 +46,11 @@ class TestUtils(unittest.TestCase):
         si.commit()
         res = si.query(genre_s="fantasy").execute()
         self.assertEqual(res.result.numFound, 2)
+        res = si.query(genre_s="fantasy").execute(constructor=Book)
+        # test constructor
+        self.assertEqual([x.title for x in res.result.docs],
+                         [u'The Sea of Monsters',
+                          u"Sophie's World : The Greek Philosophers"])
         # TODO rollback
         # we see a rollback in solr log but entry is still deleted
         #si.rollback()
@@ -110,7 +125,7 @@ class TestUtils(unittest.TestCase):
         dsn = os.environ.get("SOLR_URL",
                              "http://localhost:8983/solr")
         si = SolrInterface(dsn)
-        docs = [{
+        docs = {
             "id": "978-0641723445",
             "cat": ["book", "hardcover"],
             "name": u"The Höhlentripp Strauß",
@@ -121,12 +136,12 @@ class TestUtils(unittest.TestCase):
             "inStock": True,
             "price": 12.50,
             "pages_i": 384
-            }]
+            }
         si.add(docs)
         si.commit()
         res = si.query(author=u"Röüß").execute()
         self.assertEqual(res.result.numFound, 1)
-        for k, v in docs[0].items():
+        for k, v in docs.items():
             self.assertEqual(res.result.docs[0][k], v)
 
 

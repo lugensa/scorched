@@ -8,9 +8,10 @@ import warnings
 from scorched.compat import str
 
 
-def is_solr_available():
-    dsn = os.environ.get("SOLR_URL",
-                         "http://localhost:8983/solr")
+def is_solr_available(dsn=None):
+    if not dsn:
+        dsn = os.environ.get("SOLR_URL",
+                             "http://localhost:8983/solr")
     if dsn is not None:
         try:
             requests.get(dsn, timeout=1)

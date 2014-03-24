@@ -121,13 +121,14 @@ class SolrConnection(object):
             extra_params['commit'] = "true" if commit else "false"
         if commitWithin is not None:
             try:
-                extra_params['commitWithin'] = str(int(commitWithin))
+                extra_params['commitWithin'] = int(commitWithin)
             except (TypeError, ValueError):
                 raise ValueError(
                     "commitWithin should be a number in milliseconds")
             if extra_params['commitWithin'] < 0:
                 raise ValueError(
                     "commitWithin should be a number in milliseconds")
+            extra_params['commitWithin'] = str(extra_params['commitWithin'])
         if softCommit is not None:
             extra_params['softCommit'] = "true" if softCommit else "false"
         if optimize is not None:
@@ -139,11 +140,12 @@ class SolrConnection(object):
                 'expungeDeletes'] = "true" if expungeDeletes else "false"
         if maxSegments is not None:
             try:
-                extra_params['maxSegments'] = str(int(maxSegments))
+                extra_params['maxSegments'] = int(maxSegments)
             except (TypeError, ValueError):
                 raise ValueError("maxSegments")
             if extra_params['maxSegments'] <= 0:
                 raise ValueError("maxSegments should be a positive number")
+            extra_params['maxSegments'] = str(extra_params['maxSegments'])
         if 'expungeDeletes' in extra_params and 'commit' not in extra_params:
             raise ValueError("Can't do expungeDeletes without commit")
         if 'maxSegments' in extra_params and 'optimize' not in extra_params:

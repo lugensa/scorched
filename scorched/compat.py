@@ -5,8 +5,9 @@ is_py2 = (_ver[0] == 2)
 is_py3 = (_ver[0] == 3)
 
 
-if is_py2:
-    from urllib import quote, unquote, quote_plus, unquote_plus, urlencode, getproxies, proxy_bypass
+if is_py2:  # pragma: no cover
+    from urllib import (quote, unquote, quote_plus, unquote_plus, urlencode,
+                        getproxies, proxy_bypass)
     from urlparse import urlparse, urlunparse, urljoin, urlsplit, urldefrag
     from urllib2 import parse_http_list
     import cookielib
@@ -21,8 +22,10 @@ if is_py2:
     numeric_types = (int, long, float)
 
 
-elif is_py3:
-    from urllib.parse import urlparse, urlunparse, urljoin, urlsplit, urlencode, quote, unquote, quote_plus, unquote_plus, urldefrag
+elif is_py3:  # pragma: no cover
+    from urllib.parse import (urlparse, urlunparse, urljoin, urlsplit,
+                              urlencode, quote, unquote, quote_plus,
+                              unquote_plus, urldefrag)
     from urllib.request import parse_http_list, getproxies, proxy_bypass
     from http import cookiejar as cookielib
     from http.cookies import Morsel
@@ -46,7 +49,7 @@ def python_2_unicode_compatible(cls):
 
     The implementation comes from django.utils.encoding.
     """
-    if not is_py3:
+    if not is_py3:  # pragma: no cover
         cls.__unicode__ = cls.__str__
         cls.__str__ = lambda self: self.__unicode__().encode('utf-8')
     return cls

@@ -1,7 +1,7 @@
 0.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added more tests.
 
 
 0.1 (2014-03-20)

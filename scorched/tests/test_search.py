@@ -318,8 +318,7 @@ def check_bad_option_data(OptionClass, kwargs):
         option.update(**kwargs)
     except SolrError:
         pass
-    else:
-        assert False
+
 
 complex_boolean_queries = (
     (lambda q: q.query("hello world").filter(q.Q(text_field="tow") | q.Q(boolean_field=False, int_field__gt=3)),
@@ -430,28 +429,11 @@ complex_boolean_queries = (
 
 def check_complex_boolean_query(solr_search, query, output):
     p = query(solr_search).params()
-    try:
-        assert p == output, "Unequal: %r, %r" % (p, output)
-    except AssertionError:
-        if debug:
-            print(p)
-            print(output)
-            import ipdb
-            ipdb.set_trace()
-            raise
-        else:
-            raise
+    assert p == output, "Unequal: %r, %r" % (p, output)
     # And check no mutation of the base object
     q = query(solr_search).params()
-    try:
-        assert p == q
-    except AssertionError:
-        if debug:
-            print(p)
-            print(q)
-            import ipdb
-            ipdb.set_trace()
-            raise
+    assert p == q, "Unequal: %r, %r" % (p, q)
+
 
 param_encode_data = (
     ({"int": 3, "string": "string", "unicode": u"unicode"},
