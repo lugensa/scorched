@@ -11,7 +11,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
 setup(name='scorched',
       version=version,
-      description="",
+      description="solr search orm like query builder",
       long_description=README + '\n\n' + CHANGES,
       classifiers=[],
       keywords='solr tow sunburnt offspring',

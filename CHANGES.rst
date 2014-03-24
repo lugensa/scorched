@@ -1,7 +1,9 @@
 0.2 (unreleased)
 ----------------
 
-- Added more tests.
+- Added more tests
+
+- Added description in setup.py
 
 
 0.1 (2014-03-20)
