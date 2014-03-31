@@ -25,6 +25,11 @@ class ResultsTestCase(unittest.TestCase):
         self.assertEqual(res.status, 0)
         self.assertEqual(res.QTime, 1)
         self.assertEqual(res.result.numFound, 3)
+        # iterable
+        self.assertEqual([x['name'] for x in res],
+                         [u'The Lightning Thief',
+                          u'The Sea of Monsters',
+                          u"Sophie's World : The Greek Philosophers"])
         self.assertEqual([x['name'] for x in res.result.docs],
                          [u'The Lightning Thief',
                           u'The Sea of Monsters',

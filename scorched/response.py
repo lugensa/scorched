@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import collections
 import json
 import scorched.dates
 
@@ -40,7 +41,7 @@ class SolrFacetCounts(object):
         return SolrFacetCounts(**facet_counts)
 
 
-class SolrResponse(object):
+class SolrResponse(collections.Sequence):
 
     @classmethod
     def from_json(cls, jsonmsg, datefields=()):
@@ -56,14 +57,14 @@ class SolrResponse(object):
         if doc.get('response'):
             self.result = SolrResult.from_json(doc['response'], datefields)
         # TODO mlt/ returns match what should we do with it ?
-        #if doc.get('match'):
+        # if doc.get('match'):
         #    self.result = SolrResult.from_json(doc['match'], datefields)
         self.facet_counts = SolrFacetCounts.from_json(doc)
         self.highlighting = doc.get("highlighting", {})
         self.groups = doc.get('grouped', {})
-        self.more_like_these = dict((k, SolrResult.from_json(v, datefields))
-                                    for (k, v) in list(doc.get('moreLikeThis', {}
-                                                          ).items()))
+        self.more_like_these = dict(
+            (k, SolrResult.from_json(v, datefields))
+            for (k, v) in list(doc.get('moreLikeThis', {}).items()))
         # can be computed by MoreLikeThisHandler
         self.interesting_terms = doc.get('interestingTerms', None)
         return self
@@ -73,6 +74,9 @@ class SolrResponse(object):
 
     def __len__(self):
         return len(self.result.docs)
+
+    def __getitem__(self, key):
+        return self.result.docs[key]
 
 
 class SolrResult(object):
