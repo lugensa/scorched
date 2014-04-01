@@ -1,7 +1,7 @@
 0.3 (unreleased)
 ----------------
 
-- Makes SolrResult iterable.
+- Makes SolrResponse iterable.
 
 
 0.2 (2014-03-24)
