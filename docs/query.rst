@@ -561,6 +561,8 @@ The results come back this time in the ``facet_queries`` object, but have the
 same form as before. The facets are shown as a list of tuples, mapping query
 to number of results.
 
+Facet pivot TODO https://wiki.apache.org/solr/HierarchicalFaceting#Pivot_Facets
+
 Result grouping
 ---------------
 
@@ -605,6 +607,29 @@ It is also possible to specify a array of fields::
     
     >>> si.query('thief').highlight(['name', 'title']).options()
     {'hl': True, 'hl.fl': 'name,title', 'q': u'thief'}
+
+PostingsHighlighter
+-------------------
+
+For background, see https://wiki.apache.org/solr/PostingsHighlighter.
+
+PostingsHighlighter is a new highlighter in Solr4.3 to summarize documents
+for summary results. You do this with the
+chainable ``postings_highlight()`` method.
+
+Specify which field we would like to see highlighted:
+
+::
+
+    >>> resp = si.query('thief').postings_highlight('name').execute()
+    >>> resp.highlighting
+    {u'978-0641723445': {u'name': [u'The Lightning <em>Thief</em>']}}
+
+It is also possible to specify a array of fields::
+    
+    >>> si.query('thief').postings_highlight(['name', 'title']).options()
+    {'hl': True, 'hl.fl': 'name,title', 'q': u'thief'}
+
 
 More Like This
 --------------

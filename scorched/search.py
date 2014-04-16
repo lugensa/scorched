@@ -376,9 +376,9 @@ class BaseSearch(object):
 
     """Base class for common search options management"""
     option_modules = ('query_obj', 'filter_obj', 'paginator',
-                      'more_like_this', 'highlighter', 'faceter',
-                      'grouper', 'sorter', 'facet_querier', 'field_limiter',
-                      'parser')
+                      'more_like_this', 'highlighter', 'postings_highlighter',
+                      'faceter', 'grouper', 'sorter', 'facet_querier',
+                      'field_limiter', 'parser', 'pivoter')
 
     def _init_common_modules(self):
         self.query_obj = LuceneQuery(u'q')
@@ -386,7 +386,9 @@ class BaseSearch(object):
                                       multiple_tags_allowed=True)
         self.paginator = PaginateOptions()
         self.highlighter = HighlightOptions()
+        self.postings_highlighter = PostingsHighlightOptions()
         self.faceter = FacetOptions()
+        self.pivoter = FacetPivotOptions()
         self.grouper = GroupOptions()
         self.sorter = SortOptions()
         self.field_limiter = FieldLimitOptions()
@@ -434,9 +436,14 @@ class BaseSearch(object):
     def filter_by_phrase(self, *args, **kwargs):
         return self.filter(__terms_or_phrases="phrases", *args, **kwargs)
 
-    def facet_by(self, field, **kwargs):
+    def facet_by(self, fields, **kwargs):
         newself = self.clone()
-        newself.faceter.update(field, **kwargs)
+        newself.faceter.update(fields, **kwargs)
+        return newself
+
+    def pivot_by(self, fields, **kwargs):
+        newself = self.clone()
+        newself.pivoter.update(fields, **kwargs)
         return newself
 
     def group_by(self, field, **kwargs):
@@ -457,6 +464,11 @@ class BaseSearch(object):
     def highlight(self, fields=None, **kwargs):
         newself = self.clone()
         newself.highlighter.update(fields, **kwargs)
+        return newself
+
+    def postings_highlight(self, fields=None, **kwargs):
+        newself = self.clone()
+        newself.postings_highlighter.update(fields, **kwargs)
         return newself
 
     def mlt(self, fields, query_fields=None, **kwargs):
@@ -630,7 +642,7 @@ class Options(object):
 
     def update(self, fields=None, **kwargs):
         if fields:
-            if isinstance(fields, str):
+            if not is_iter(fields):
                 fields = [fields]
             for field in set(fields) - set(self.fields):
                 self.fields[field] = {}
@@ -703,6 +715,30 @@ class FacetOptions(Options):
     def field_names_in_opts(self, opts, fields):
         if fields:
             opts["facet.field"] = sorted(fields)
+
+
+class FacetPivotOptions(Options):
+    option_name = "facet.pivot"
+    opts = {
+        "mincount":
+        lambda self, x: int(x) >= 0 and int(x) or self.invalid_value(),
+    }
+
+    def __init__(self, original=None):
+        if original is None:
+            self.fields = collections.defaultdict(dict)
+        else:
+            self.fields = copy.copy(original.fields)
+
+    def field_names_in_opts(self, opts, fields):
+        opts["facet"] = True
+        if fields:
+            field_opts = {}
+            for field in fields:
+                field_opts.update(self.fields[field])
+                del(self.fields[field])
+            self.fields[None] = field_opts
+            opts["facet.pivot"] = ','.join(sorted(fields))
 
 
 class GroupOptions(Options):
@@ -799,7 +835,44 @@ class HighlightOptions(Options):
             "highlightMultiTerm": bool,
             "regex.slop": float,
             "regex.pattern": str,
-            "regex.maxAnalyzedChars": int
+            "regex.maxAnalyzedChars": int,
+            "boundaryScanner": str,
+            "bs.maxScan": str,
+            "bs.chars": str,
+            "bs.type": str,
+            "bs.language": str,
+            "bs.country": str,
+            }
+
+    def __init__(self, original=None):
+        if original is None:
+            self.fields = collections.defaultdict(dict)
+        else:
+            self.fields = copy.copy(original.fields)
+
+    def field_names_in_opts(self, opts, fields):
+        if fields:
+            opts["hl.fl"] = ",".join(sorted(fields))
+
+
+class PostingsHighlightOptions(Options):
+
+    option_name = "hl"
+    opts = {"snippets": int,
+            "tag.pre": str,
+            "tag.post": str,
+            "tag.ellipsis": str,
+            "defaultSummary": bool,
+            "encoder": str,
+            "score.k1": float,
+            "score.b": float,
+            "score.pivot": float,
+            "bs.type": str,
+            "bs.language": str,
+            "bs.country": str,
+            "bs.variant": str,
+            "maxAnalyzedChars": str,
+            "multiValuedSeperatorChar": str
             }
 
     def __init__(self, original=None):

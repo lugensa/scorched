@@ -1,7 +1,13 @@
 0.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fixed fields convert to arrays.
+
+- Added FacetPivotOptions.
+
+- Added PostingsHighlightOptions.
+
+- Added boundaryScanner to HighlightOptions.
 
 
 0.3 (2014-04-03)
