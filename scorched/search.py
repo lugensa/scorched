@@ -911,7 +911,7 @@ class MoreLikeThisOptions(Options):
     def update(self, fields, query_fields=None, **kwargs):
         if fields is None:
             return
-        if isinstance(fields, str):
+        if not is_iter(fields):
             fields = [fields]
         self.fields.update(fields)
 
@@ -1059,7 +1059,7 @@ class FieldLimitOptions(Options):
     def update(self, fields=None, score=False, all_fields=False):
         if fields is None:
             fields = []
-        if isinstance(fields, str):
+        if not is_iter(fields):
             fields = [fields]
         self.fields.update(fields)
         self.score = score

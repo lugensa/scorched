@@ -462,6 +462,11 @@ complex_boolean_queries = (
         "edismax", qf={"text_field": 0.25, "string_field": 0.75}),
      [('defType', b'edismax'), ('fq', b'text_field:tow'), ('q', b'hello'),
       ('qf', b'text_field^0.25 string_field^0.75')]),
+    # field_limit
+    (lambda q: q.query().field_limit(['name', 'foo']),
+     [('fl', b'foo,name'), ('q', b'*:*')]),
+    (lambda q: q.query().field_limit('foo'),
+     [('fl', b'foo'), ('q', b'*:*')]),
 )
 
 
