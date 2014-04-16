@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import os
 from setuptools import setup, find_packages
 
-version = '0.4'
+version = '0.5.dev0'
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
