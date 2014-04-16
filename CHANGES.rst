@@ -1,5 +1,5 @@
-0.4.1 (unreleased)
-----------------
+0.4.1 (2014-04-16)
+------------------
 
 - Fixed again fields in field_limiter.
 
