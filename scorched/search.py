@@ -378,7 +378,8 @@ class BaseSearch(object):
     option_modules = ('query_obj', 'filter_obj', 'paginator',
                       'more_like_this', 'highlighter', 'postings_highlighter',
                       'faceter', 'grouper', 'sorter', 'facet_querier',
-                      'debugger', 'field_limiter', 'parser', 'pivoter')
+                      'debugger', 'requesthandler', 'field_limiter', 'parser',
+                      'pivoter')
 
     def _init_common_modules(self):
         self.query_obj = LuceneQuery(u'q')
@@ -392,6 +393,7 @@ class BaseSearch(object):
         self.grouper = GroupOptions()
         self.sorter = SortOptions()
         self.debugger = DebugOptions()
+        self.requesthandler = RequestHandlerOption()
         self.field_limiter = FieldLimitOptions()
         self.facet_querier = FacetQueryOptions()
 
@@ -498,6 +500,11 @@ class BaseSearch(object):
     def debug(self):
         newself = self.clone()
         newself.debugger.update(True)
+        return newself
+
+    def set_requesthandler(self, handler):
+        newself = self.clone()
+        newself.requesthandler.update(handler)
         return newself
 
     def sort_by(self, field):
@@ -1066,6 +1073,22 @@ class DebugOptions(Options):
             return {"debugQuery": True}
         else:
             return {}
+
+
+class RequestHandlerOption(Options):
+    option_name = "qt"
+
+    def __init__(self, original=None):
+        if original is None:
+            self.handler = 'standard'
+        else:
+            self.handler = original.handler
+
+    def update(self, handler):
+        self.handler = handler
+
+    def options(self):
+        return {"qt": self.handler}
 
 
 class FieldLimitOptions(Options):

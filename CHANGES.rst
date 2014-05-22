@@ -3,6 +3,8 @@
 
 - Add `debugQuery` parameter to search. (#9903)
 
+- Add possibility to specify the request handler to use per query. (#9704)
+
 
 0.4.1 (2014-04-16)
 ------------------
