@@ -378,7 +378,7 @@ class BaseSearch(object):
     option_modules = ('query_obj', 'filter_obj', 'paginator',
                       'more_like_this', 'highlighter', 'postings_highlighter',
                       'faceter', 'grouper', 'sorter', 'facet_querier',
-                      'field_limiter', 'parser', 'pivoter')
+                      'debugger', 'field_limiter', 'parser', 'pivoter')
 
     def _init_common_modules(self):
         self.query_obj = LuceneQuery(u'q')
@@ -391,6 +391,7 @@ class BaseSearch(object):
         self.pivoter = FacetPivotOptions()
         self.grouper = GroupOptions()
         self.sorter = SortOptions()
+        self.debugger = DebugOptions()
         self.field_limiter = FieldLimitOptions()
         self.facet_querier = FacetQueryOptions()
 
@@ -492,6 +493,11 @@ class BaseSearch(object):
     def paginate(self, start=None, rows=None):
         newself = self.clone()
         newself.paginator.update(start, rows)
+        return newself
+
+    def debug(self):
+        newself = self.clone()
+        newself.debugger.update(True)
         return newself
 
     def sort_by(self, field):
@@ -1039,6 +1045,25 @@ class SortOptions(Options):
         if self.fields:
             return {"sort": ", ".join(
                 "%s %s" % (field, order) for order, field in self.fields)}
+        else:
+            return {}
+
+
+class DebugOptions(Options):
+    option_name = "debugQuery"
+
+    def __init__(self, original=None):
+        if original is None:
+            self.debug = False
+        else:
+            self.debug = original.debug
+
+    def update(self, debug):
+        self.debug = debug
+
+    def options(self):
+        if self.debug:
+            return {"debugQuery": True}
         else:
             return {}
 

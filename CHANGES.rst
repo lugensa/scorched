@@ -1,7 +1,7 @@
 0.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Add `debugQuery` parameter to search. (#9903)
 
 
 0.4.1 (2014-04-16)
