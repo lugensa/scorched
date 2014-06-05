@@ -62,6 +62,7 @@ class SolrResponse(collections.Sequence):
         self.facet_counts = SolrFacetCounts.from_json(doc)
         self.highlighting = doc.get("highlighting", {})
         self.groups = doc.get('grouped', {})
+        self.debug = doc.get('debug', {})
         self.more_like_these = dict(
             (k, SolrResult.from_json(v, datefields))
             for (k, v) in list(doc.get('moreLikeThis', {}).items()))
