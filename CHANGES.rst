@@ -1,4 +1,4 @@
-0.5 (unreleased)
+0.5 (2014-06-05)
 ----------------
 
 - Add `debugQuery` parameter to search. (#9903)
