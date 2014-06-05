@@ -144,6 +144,34 @@ class TestUtils(unittest.TestCase):
         for k, v in docs.items():
             self.assertEqual(res.result.docs[0][k], v)
 
+    @scorched.testing.skip_unless_solr
+    def test_debug(self):
+        dsn = os.environ.get("SOLR_URL",
+                             "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        docs = {
+            "id": "978-0641723445",
+            "cat": ["book", "hardcover"],
+            "name": u"The Höhlentripp Strauß",
+            "author": u"Röüß Itoa",
+            "series_t": u"Percy Jackson and \N{UMBRELLA}nicode",
+            "sequence_i": 1,
+            "genre_s": "fantasy",
+            "inStock": True,
+            "price": 12.50,
+            "pages_i": 384
+            }
+        si.add(docs)
+        si.commit()
+        res = si.query(author=u"Röüß").debug().execute()
+        self.assertEqual(res.result.numFound, 1)
+        for k, v in docs.items():
+            self.assertEqual(res.result.docs[0][k], v)
+        self.assertTrue('explain' in res.debug)
+        # deactivate
+        res = si.query(author=u"Röüß").execute()
+        self.assertFalse('explain' in res.debug)
+
 
 class TestMltHandler(unittest.TestCase):
 
