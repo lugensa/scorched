@@ -29,11 +29,11 @@ def is_solr_available(dsn=None):
 def skip_unless_solr(func):
     """
     Use this decorator to skip tests which need a functional solr connection.
-    The connection is given by the environment SOLR_INDEX
+    The connection is given by the environment SOLR_URL
     """
 
     if is_solr_available():
         return func
-    msg = "Test needs a running solr connection (SOLR_INDEX)"
+    msg = "Test needs a running solr connection (SOLR_URL)"
     warnings.warn(msg + str(func))
     return unittest.skip(msg)(func)

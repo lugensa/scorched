@@ -39,3 +39,6 @@ nosetests.xml
 
 # vim
 *.swp
+
+# potential solr downloads
+solr-*
