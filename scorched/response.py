@@ -61,6 +61,7 @@ class SolrResponse(collections.Sequence):
         #    self.result = SolrResult.from_json(doc['match'], datefields)
         self.facet_counts = SolrFacetCounts.from_json(doc)
         self.highlighting = doc.get("highlighting", {})
+        self.spellcheck = doc.get("spellcheck", {})
         self.groups = doc.get('grouped', {})
         self.debug = doc.get('debug', {})
         self.more_like_these = dict(
