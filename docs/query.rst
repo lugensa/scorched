@@ -706,3 +706,51 @@ Example::
 
     >>> si.query().alt_parser('edismax', mm=2).options()
     {'defType': 'edismax', 'mm': 2, 'q': '*:*'}
+
+Set request handler
+-------------------
+
+For background, see https://wiki.apache.org/solr/SolrRequestHandler.
+It is possible to set the request handler. To set a different request handler
+use ``set_requesthandler``.
+
+Example::
+    
+    >>> si.query().set_requesthandler('foo').options()
+    {u'q': u'*:*', u'qt': 'foo'}
+
+Set debug
+---------
+
+For background, see https://wiki.apache.org/solr/CommonQueryParameters#Debugging.
+To get see what solr is doing with our query we need sometimes more info. To get
+this addition information we set ``debug``.
+
+Example::
+    
+    >>> si.query().debug().options()
+    {u'debugQuery': True, u'q': u'*:*'}
+    >>>  si.query().debug().execute().debug
+    {u'QParser': u'LuceneQParser',
+    u'explain': {u'978-1423103349': u'\n1.0 = (MATCH) MatchAllDocsQuery, product of:\n  1.0 = queryNorm\n',
+     u'978-1857995879': u'\n1.0 = (MATCH) MatchAllDocsQuery, product of:\n  1.0 = queryNorm\n',
+     u'978-1933988177': u'\n1.0 = (MATCH) MatchAllDocsQuery, product of:\n  1.0 = queryNorm\n'},
+    u'parsedquery': u'MatchAllDocsQuery(*:*)',
+    u'parsedquery_toString': u'*:*',
+    u'querystring': u'*:*',
+    u'rawquerystring': u'*:*',
+    u'timing': {u'prepare': {u'debug': {u'time': 0.0},
+      u'facet': {u'time': 0.0},
+      u'highlight': {u'time': 0.0},
+      u'mlt': {u'time': 0.0},
+      u'query': {u'time': 0.0},
+      u'stats': {u'time': 0.0},
+      u'time': 0.0},
+     u'process': {u'debug': {u'time': 0.0},
+      u'facet': {u'time': 0.0},
+      u'highlight': {u'time': 0.0},
+      u'mlt': {u'time': 0.0},
+      u'query': {u'time': 1.0},
+      u'stats': {u'time': 0.0},
+      u'time': 1.0},
+     u'time': 1.0}}

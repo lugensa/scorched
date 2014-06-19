@@ -1057,6 +1057,8 @@ class SortOptions(Options):
 
 
 class DebugOptions(Options):
+    # XXX should be changed to 'debug' added in 4.0
+    # https://wiki.apache.org/solr/CommonQueryParameters#Debugging
     option_name = "debugQuery"
 
     def __init__(self, original=None):
@@ -1080,7 +1082,9 @@ class RequestHandlerOption(Options):
 
     def __init__(self, original=None):
         if original is None:
-            self.handler = 'standard'
+            # XXX 'standard' is deprecated
+            # https://wiki.apache.org/solr/SolrRequestHandler#Old_handleSelect.3Dtrue_Resolution_.28qt_param.29
+            self.handler = None
         else:
             self.handler = original.handler
 
@@ -1088,7 +1092,10 @@ class RequestHandlerOption(Options):
         self.handler = handler
 
     def options(self):
-        return {"qt": self.handler}
+        ret = {}
+        if self.handler:
+            ret = {"qt": self.handler}
+        return ret
 
 
 class FieldLimitOptions(Options):

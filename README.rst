@@ -32,3 +32,31 @@ Following some major differences:
 - Python 3
 
 - ...
+
+
+Local testing
+=============
+
+First checkout the sources::
+
+  https://github.com/lugensa/scorched.git
+
+Now create a virtual-env and install some dependencies::
+
+  cd scorched
+  virtualenv ./
+  bin/pip install -e .
+
+Start the solr server to test against::
+
+  # DEBUG=1|0: verbose output of solr server on|off
+  # SOLR_VERSION=x.y.z (the version to test against)
+  # the solr startup script reports the pid of the solr process
+  SOLR_VERSION=4.6.1 SOLR_PORT=44177 DEBUG=1 SOLR_CONFS="scorched/tests/solrconfig.xml" ./testing-solr.sh
+  
+  # stop solr
+  kill -9 $pid
+
+Running the tests::
+
+  SOLR_URL=http://localhost:44177/solr ./bin/nosetests -s scorched

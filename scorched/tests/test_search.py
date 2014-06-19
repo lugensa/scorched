@@ -7,6 +7,7 @@ from scorched.search import (SolrSearch, MltSolrSearch, PaginateOptions,
                              GroupOptions, HighlightOptions, DismaxOptions,
                              MoreLikeThisOptions, EdismaxOptions,
                              PostingsHighlightOptions, FacetPivotOptions,
+                             RequestHandlerOption, DebugOptions,
                              params_from_dict)
 from scorched.strings import WildcardString
 from nose.tools import assert_equal
@@ -126,8 +127,8 @@ good_query_data = {
     "filter_by_term": [
         (["hello"], {},
          [("fq", b"hello"), ("q", b"*:*")]),
-        #test multiple fq
-        (["hello"], {"int_field":3},
+        # test multiple fq
+        (["hello"], {"int_field": 3},
          [("fq", b"hello"), ("fq", b"int_field:3"), ("q", b"*:*")]),
         (["hello", "world"], {},
          [("fq", b"hello"), ("fq", b"world"), ("q", b"*:*")]),
@@ -140,8 +141,8 @@ good_query_data = {
     "filter_by_phrase": [
         (["hello"], {},
          [("fq", b"hello"), ("q", b"*:*")]),
-        #test multiple fq
-        (["hello"], {"int_field":3},
+        # test multiple fq
+        (["hello"], {"int_field": 3},
          [("fq", b"hello"), ("fq", b"int_field:3"), ("q", b"*:*")]),
         (["hello", "world"], {},
          [("fq", b"hello"), ("fq", b"world"), ("q", b"*:*")]),
@@ -152,8 +153,8 @@ good_query_data = {
     "filter": [
         (["hello"], {},
          [("fq", b"hello"), ("q", b"*:*")]),
-        #test multiple fq
-        (["hello"], {"int_field":3},
+        # test multiple fq
+        (["hello"], {"int_field": 3},
          [("fq", b"hello"), ("fq", b"int_field:3"), ("q", b"*:*")]),
         (["hello", "world"], {},
          [("fq", b"hello"), ("fq", b"world"), ("q", b"*:*")]),
@@ -201,14 +202,14 @@ good_option_data = {
         ({"fields": ["int_field", "text_field"], "prefix": "abc", "limit": 3},
          {"facet": True, "facet.field": ["int_field", "text_field"], "f.int_field.facet.prefix": "abc", "f.int_field.facet.limit": 3, "f.text_field.facet.prefix": "abc", "f.text_field.facet.limit": 3, }),
     ),
-    FacetPivotOptions:(
-        ({"fields":["text_field"]},
-         {"facet":True, "facet.pivot":"text_field"}),
-        ({"fields":["int_field", "text_field"]},
-         {"facet":True, "facet.pivot":"int_field,text_field"}),
-        ({"fields":["int_field", "text_field"], "mincount":2},
-         {"facet":True, "facet.pivot":"int_field,text_field", "facet.pivot.mincount":2}),
-        ),
+    FacetPivotOptions: (
+        ({"fields": ["text_field"]},
+         {"facet": True, "facet.pivot": "text_field"}),
+        ({"fields": ["int_field", "text_field"]},
+         {"facet": True, "facet.pivot": "int_field,text_field"}),
+        ({"fields": ["int_field", "text_field"], "mincount": 2},
+         {"facet": True, "facet.pivot": "int_field,text_field", "facet.pivot.mincount": 2}),
+    ),
     GroupOptions: (
         ({"field": "int_field", "limit": 10},
          {"group": True, "group.limit": 10, "group.field": "int_field"}),
@@ -235,18 +236,18 @@ good_option_data = {
         ({"fields": ["int_field", "text_field"], "snippets": 3, "fragsize": 5},
          {"hl": True, "hl.fl": "int_field,text_field", "f.int_field.hl.snippets": 3, "f.int_field.hl.fragsize": 5, "f.text_field.hl.snippets": 3, "f.text_field.hl.fragsize": 5}),
     ),
-    PostingsHighlightOptions:(
-        ({"fields":"int_field"},
-         {"hl":True, "hl.fl":"int_field"}),
-        ({"fields":["int_field", "text_field"]},
-         {"hl":True, "hl.fl":"int_field,text_field"}),
-        ({"snippets":3},
-         {"hl":True, "hl.snippets":3}),
-        ({"fields":["int_field", "text_field"], "snippets":1,
-          "tag.pre":"&lt;em&gt;", "tag.post": "&lt;em&gt;",
+    PostingsHighlightOptions: (
+        ({"fields": "int_field"},
+         {"hl": True, "hl.fl": "int_field"}),
+        ({"fields": ["int_field", "text_field"]},
+         {"hl": True, "hl.fl": "int_field,text_field"}),
+        ({"snippets": 3},
+         {"hl": True, "hl.snippets": 3}),
+        ({"fields": ["int_field", "text_field"], "snippets": 1,
+          "tag.pre": "&lt;em&gt;", "tag.post": "&lt;em&gt;",
           "tag.ellipsis": "...", "defaultSummary": True, "encoder": "simple",
           "score.k1": 1.2, "score.b": 0.75, "score.pivot": 87,
-          "bs.type": "SENTENCE", "maxAnalyzedChars": 10000,},
+          "bs.type": "SENTENCE", "maxAnalyzedChars": 10000, },
          {'f.text_field.hl.score.b': 0.75, 'f.int_field.hl.encoder': u'simple',
           'f.int_field.hl.tag.pre': u'&lt;em&gt;', 'f.text_field.hl.tag.pre':
           u'&lt;em&gt;', 'f.text_field.hl.defaultSummary': True,
@@ -263,7 +264,7 @@ good_option_data = {
           u'10000', 'f.int_field.hl.score.k1': 1.2,
           'f.int_field.hl.defaultSummary': True, 'f.text_field.hl.score.pivot':
           87.0}),
-        ),
+    ),
     MoreLikeThisOptions: (
         ({"fields": "int_field"},
          {"mlt": True, "mlt.fl": "int_field"}),
@@ -303,6 +304,20 @@ good_option_data = {
          {"fl": "*,score"}),
         ({"fields": "int_field", "score": True},
          {"fl": "int_field,score"}),
+    ),
+    RequestHandlerOption: (
+        ({"handler": None},
+         {}),
+        ({"handler": "hans"},
+         {'qt': 'hans'}),
+    ),
+    DebugOptions: (
+        ({"debug": None},
+         {}),
+        ({"debug": False},
+         {}),
+        ({"debug": True},
+         {'debugQuery': True}),
     ),
 }
 
@@ -361,11 +376,11 @@ def check_bad_option_data(OptionClass, kwargs):
 complex_boolean_queries = (
     (lambda q: q.query("hello world").filter(q.Q(text_field="tow") | q.Q(boolean_field=False, int_field__gt=3)),
      [('fq', b'text_field:tow OR (boolean_field:false AND int_field:{3 TO *})'), ('q', b'hello\\ world')]),
-    #test multiple fq
+    # test multiple fq
     (lambda q: q.query("hello world").filter(q.Q(text_field="tow") & q.Q(boolean_field=False, int_field__gt=3)),
      [('fq', b'boolean_field:false'), ('fq', b'int_field:{3 TO *}'), ('fq', b'text_field:tow'), ('q',  b'hello\\ world')]),
-# Test various combinations of NOTs at the top level.
-# Sometimes we need to do the *:* trick, sometimes not.
+    # Test various combinations of NOTs at the top level.
+    # Sometimes we need to do the *:* trick, sometimes not.
     (lambda q: q.query(~q.Q("hello world")),
      [('q',  b'NOT hello\\ world')]),
     (lambda q: q.query(~q.Q("hello world") & ~q.Q(int_field=3)),
@@ -418,7 +433,7 @@ complex_boolean_queries = (
      [('q', b'blah AND (def OR ghi)^1.5')]),
     (lambda q: q.query("blah").query(q.Q("def", ~q.Q("pqr") | q.Q("mno")) ** 1.5),
      [('q', b'blah AND (def AND ((*:* AND NOT pqr) OR mno))^1.5')]),
-    #wildcard
+    # wildcard
     (lambda q: q.query("blah").query(q.Q(WildcardString("def*"),
                                          ~q.Q(miu=WildcardString("pqr*")) | q.Q("mno")) ** 1.5),
      [('q', b'blah AND (def* AND ((*:* AND NOT miu:pqr*) OR mno))^1.5')]),
@@ -438,7 +453,7 @@ complex_boolean_queries = (
      [('q', b'int_field:[* TO *]')]),
     (lambda q: q.query("blah", ~q.Q(int_field__any=True)),
      [('q', b'blah AND NOT int_field:[* TO *]')]),
-    #facet
+    # facet
     (lambda q: q.query("game").facet_query(price__lt=7).facet_query(price__gte=7),
      [('facet', b'true'), ('facet.query', b'price:[7 TO *]'),
       ('facet.query', b'price:{* TO 7}'), ('q', b'game')]),
@@ -467,6 +482,12 @@ complex_boolean_queries = (
      [('fl', b'foo,name'), ('q', b'*:*')]),
     (lambda q: q.query().field_limit('foo'),
      [('fl', b'foo'), ('q', b'*:*')]),
+    # set_requesthandler
+    (lambda q: q.query("hello").set_requesthandler("foo"),
+     [('q', b'hello'), ('qt', b'foo')]),
+    # debug
+    (lambda q: q.query("hello").debug(),
+     [('debugQuery', b'true'), ('q', b'hello')]),
 )
 
 
