@@ -1,7 +1,7 @@
 0.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Add spellchecking for scorched queries. (#9707)
 
 
 0.5 (2014-06-05)
