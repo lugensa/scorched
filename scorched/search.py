@@ -378,8 +378,8 @@ class BaseSearch(object):
     option_modules = ('query_obj', 'filter_obj', 'paginator',
                       'more_like_this', 'highlighter', 'postings_highlighter',
                       'faceter', 'grouper', 'sorter', 'facet_querier',
-                      'debugger', 'requesthandler', 'field_limiter', 'parser',
-                      'pivoter')
+                      'debugger', 'spellchecker', 'requesthandler',
+                      'field_limiter', 'parser', 'pivoter')
 
     def _init_common_modules(self):
         self.query_obj = LuceneQuery(u'q')
@@ -393,6 +393,7 @@ class BaseSearch(object):
         self.grouper = GroupOptions()
         self.sorter = SortOptions()
         self.debugger = DebugOptions()
+        self.spellchecker = SpellcheckOptions()
         self.requesthandler = RequestHandlerOption()
         self.field_limiter = FieldLimitOptions()
         self.facet_querier = FacetQueryOptions()
@@ -500,6 +501,11 @@ class BaseSearch(object):
     def debug(self):
         newself = self.clone()
         newself.debugger.update(True)
+        return newself
+
+    def spellcheck(self):
+        newself = self.clone()
+        newself.spellchecker.update(True)
         return newself
 
     def set_requesthandler(self, handler):
@@ -1073,6 +1079,25 @@ class DebugOptions(Options):
     def options(self):
         if self.debug:
             return {"debugQuery": True}
+        else:
+            return {}
+
+
+class SpellcheckOptions(Options):
+    option_name = "spellcheck"
+
+    def __init__(self, original=None):
+        if original is None:
+            self.spellcheck = False
+        else:
+            self.spellcheck = original.spellcheck
+
+    def update(self, spellcheck):
+        self.spellcheck = spellcheck
+
+    def options(self):
+        if self.spellcheck:
+            return {"spellcheck": True}
         else:
             return {}
 

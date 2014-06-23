@@ -754,3 +754,17 @@ Example::
       u'stats': {u'time': 0.0},
       u'time': 1.0},
      u'time': 1.0}}
+
+
+Enable spellchecking
+--------------------
+
+For background, see http://wiki.apache.org/solr/SpellCheckComponent.
+It is possible to activate spellchecking in yout query. To do that,
+use ``spellcheck``.
+
+
+Example::
+
+    >>> si.query().spellcheck().options()
+    {u'q': u'*:*', u'spellcheck': 'true'}

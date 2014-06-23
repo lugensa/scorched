@@ -172,6 +172,13 @@ class TestUtils(unittest.TestCase):
         res = si.query(author=u"Röüß").execute()
         self.assertFalse('explain' in res.debug)
 
+    @scorched.testing.skip_unless_solr
+    def test_spellcheck(self):
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        opts = si.query(name=u"Monstes").spellcheck().options()
+        self.assertEqual({u'q': u'name:Monstes', u'spellcheck': True}, opts)
+
 
 class TestMltHandler(unittest.TestCase):
 
