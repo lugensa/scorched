@@ -1,4 +1,4 @@
-0.6 (unreleased)
+0.6 (2014-06-23)
 ----------------
 
 - Add spellchecking for scorched queries. (#9707)
