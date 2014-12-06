@@ -1,7 +1,7 @@
 0.7 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Test against solr 4.10.2 and added python 3.4 to travis.
 
 
 0.6 (2014-06-23)
