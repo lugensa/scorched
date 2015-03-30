@@ -65,3 +65,6 @@ class WildcardString(SolrString):
         if backslash:
             chars.append(u'\\')
         return chars
+
+class DismaxString(str):
+    ''' A dismax query string that should not be escaped by the client. '''

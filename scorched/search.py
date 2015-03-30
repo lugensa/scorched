@@ -85,10 +85,13 @@ class LuceneQuery(object):
         return str(value)
 
     def to_query(self, value):
-        ret = scorched.strings.RawString(
-            self.to_solr(value)).escape_for_lqs_term()
-        if isinstance(value, scorched.strings.WildcardString):
+        if isinstance(value, scorched.strings.DismaxString):
+            ret = value
+        elif isinstance(value, scorched.strings.WildcardString):
             ret = value.escape_for_lqs_term()
+        else:
+            ret = scorched.strings.RawString(
+                self.to_solr(value)).escape_for_lqs_term()
         return ret
 
     range_query_templates = {
