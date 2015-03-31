@@ -382,7 +382,7 @@ class BaseSearch(object):
                       'more_like_this', 'highlighter', 'postings_highlighter',
                       'faceter', 'grouper', 'sorter', 'facet_querier',
                       'debugger', 'spellchecker', 'requesthandler',
-                      'field_limiter', 'parser', 'pivoter')
+                      'field_limiter', 'parser', 'pivoter', 'facet_ranger')
 
     def _init_common_modules(self):
         self.query_obj = LuceneQuery(u'q')
@@ -399,6 +399,7 @@ class BaseSearch(object):
         self.spellchecker = SpellcheckOptions()
         self.requesthandler = RequestHandlerOption()
         self.field_limiter = FieldLimitOptions()
+        self.facet_ranger = FacetRangeOptions()
         self.facet_querier = FacetQueryOptions()
 
     def clone(self):
@@ -446,6 +447,11 @@ class BaseSearch(object):
     def facet_by(self, fields, **kwargs):
         newself = self.clone()
         newself.faceter.update(fields, **kwargs)
+        return newself
+
+    def facet_range(self, fields, **kwargs):
+        newself = self.clone()
+        newself.facet_ranger.update(fields, **kwargs)
         return newself
 
     def pivot_by(self, fields, **kwargs):
@@ -737,6 +743,44 @@ class FacetOptions(Options):
     def field_names_in_opts(self, opts, fields):
         if fields:
             opts["facet.field"] = sorted(fields)
+
+
+class FacetRangeOptions(Options):
+    option_name = "facet.range"
+    opts = {
+        "start": str,
+        "end": str,
+        "gap": str,
+        "hardend": bool,
+        "mincount": int,
+        "include": ["lower", "upper", "edge", "outer", "all"],
+        "other": ["before", "after", "between", "none", "all"],
+    }
+
+    def __init__(self, original=None):
+        if original is None:
+            self.fields = collections.defaultdict(dict)
+        else:
+            self.fields = copy.copy(original.fields)
+
+    def field_names_in_opts(self, opts, fields):
+        opts['facet'] = True
+        opts[self.option_name] = list(self.fields.keys())
+
+    def options(self):
+        '''
+        Override options so we can move mincount from facet.range to facet.
+        '''
+        opts = super(FacetRangeOptions, self).options()
+
+        for field in self.fields.keys():
+            oldkey = 'f.%s.facet.range.mincount' % field
+            newkey = 'f.%s.facet.mincount' % field
+            if oldkey in opts:
+                opts[newkey] = opts[oldkey]
+                del opts[oldkey]
+
+        return opts
 
 
 class FacetPivotOptions(Options):

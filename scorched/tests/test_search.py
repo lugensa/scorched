@@ -8,7 +8,7 @@ from scorched.search import (SolrSearch, MltSolrSearch, PaginateOptions,
                              MoreLikeThisOptions, EdismaxOptions,
                              PostingsHighlightOptions, FacetPivotOptions,
                              RequestHandlerOption, DebugOptions,
-                             params_from_dict)
+                             params_from_dict, FacetRangeOptions)
 from scorched.strings import WildcardString
 from nose.tools import assert_equal
 
@@ -202,6 +202,14 @@ good_option_data = {
         ({"fields": ["int_field", "text_field"], "prefix": "abc", "limit": 3},
          {"facet": True, "facet.field": ["int_field", "text_field"], "f.int_field.facet.prefix": "abc", "f.int_field.facet.limit": 3, "f.text_field.facet.prefix": "abc", "f.text_field.facet.limit": 3, }),
     ),
+    FacetRangeOptions: (
+        ({"fields": "field1", "start": 10, "end": 20, "gap": 2, "hardend": False,
+          "include": "outer", "other": "all", "mincount": 1},
+         {"facet": True, "facet.range": ["field1"], "f.field1.facet.range.start": 10,
+          "f.field1.facet.range.end": 20, "f.field1.facet.range.gap": 2,
+          "f.field1.facet.range.hardend": "false", "f.field1.facet.range.include": "outer",
+          "f.field1.facet.range.other": "all", "f.field1.facet.mincount": 1}),
+    ),
     FacetPivotOptions: (
         ({"fields": ["text_field"]},
          {"facet": True, "facet.pivot": "text_field"}),
@@ -325,7 +333,7 @@ good_option_data = {
 def check_good_option_data(OptionClass, kwargs, output):
     optioner = OptionClass()
     optioner.update(**kwargs)
-    assert optioner.options() == output, "Unequal: %r, %r" % (
+    assert set(optioner.options()) == set(output), "Unequal: %r, %r" % (
         optioner.options(), output)
 
 # All these tests should really nominate which exception they're going to

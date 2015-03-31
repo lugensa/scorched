@@ -541,6 +541,27 @@ All of these can be used as keyword arguments to the ``facet()`` call, except
 of course the last one since it contains periods. To pass keyword arguments
 with periods in them, you can use `**` syntax:
 
+You can facet by ranges. The following query will return range facets over
+``field1``: 0-10, 11-20, 21-30, etc. The ``mincount`` parameter can be used to
+return only those facets which contain a minimum number of results.
+
+::
+
+    >>> si.query(...).facet_range(fields='field1', start=0, gap=10, end=100, \
+                                  mincount=1)
+
+Alternatively, you create ranges of dates using Solr's `date math` syntax. This
+next example creates a facet for each of the last 12 months.
+
+::
+
+    >>> si.query(...).facet_range(fields='field1', start='NOW-12MONTHS/MONTH', \
+                                  gap='+1MONTHS', end='NOW/MONTH')
+
+See
+https://cwiki.apache.org/confluence/display/solr/Working+with+Dates#WorkingwithDates-DateMath
+for more details on `date math` syntax.
+
 ::
 
     >>> facet(**{"enum.cache.minDf":25})
