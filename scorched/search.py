@@ -787,6 +787,7 @@ class DismaxOptions(Options):
     _name = "dismax"
     option_name = "defType"
     opts = {
+        "f": dict,
         "qf": dict,
         "mm": int,
         "pf": dict,
@@ -838,6 +839,15 @@ class DismaxOptions(Options):
 class EdismaxOptions(DismaxOptions):
     _name = "edismax"
 
+    def options(self):
+        opts = super(EdismaxOptions, self).options()
+
+        if 'f' in opts:
+            f = opts.pop('f')
+            for field, aliases in f.items():
+                opts['f.%s.qf' % field] = ' '.join(aliases)
+
+        return opts
 
 class HighlightOptions(Options):
     option_name = "hl"

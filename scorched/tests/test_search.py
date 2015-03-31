@@ -474,9 +474,12 @@ complex_boolean_queries = (
       ('qf', b'text_field^0.25 string_field^0.75')]),
     # edismax
     (lambda q: q.query("hello").filter(q.Q(text_field="tow")).alt_parser(
-        "edismax", qf={"text_field": 0.25, "string_field": 0.75}),
+        "edismax", qf={"text_field": 0.25, "string_field": 0.75},
+        f={'alias1':['field1', 'field2']}
+        ),
      [('defType', b'edismax'), ('fq', b'text_field:tow'), ('q', b'hello'),
-      ('qf', b'text_field^0.25 string_field^0.75')]),
+      ('qf', b'text_field^0.25 string_field^0.75'),
+      ('f.alias1.qf', b'field1 field2')]),
     # field_limit
     (lambda q: q.query().field_limit(['name', 'foo']),
      [('fl', b'foo,name'), ('q', b'*:*')]),
@@ -493,7 +496,7 @@ complex_boolean_queries = (
 
 def check_complex_boolean_query(solr_search, query, output):
     p = query(solr_search).params()
-    assert p == output, "Unequal: %r, %r" % (p, output)
+    assert set(p) == set(output), "Unequal: %r, %r" % (p, output)
     # And check no mutation of the base object
     q = query(solr_search).params()
     assert p == q, "Unequal: %r, %r" % (p, q)
