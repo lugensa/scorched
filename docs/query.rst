@@ -100,18 +100,18 @@ response like this:
     >>> for result in si.query("thief").execute():
     ...    print result
     {
-        u'name': u'The Lightning Thief', 
-        u'author': u'Rick Riordan', 
-        u'series_t': u'Percy Jackson and the Olympians', 
-        u'pages_i': 384, 
-        u'genre_s': u'fantasy', 
-        u'author_s': u'Rick Riordan', 
-        u'price': 12.5, 
-        u'price_c': u'12.5,USD', 
-        u'sequence_i': 1, 
-        u'inStock': True, 
-        u'_version_': 1462820023761371136, 
-        u'cat': [u'book', u'hardcover'], 
+        u'name': u'The Lightning Thief',
+        u'author': u'Rick Riordan',
+        u'series_t': u'Percy Jackson and the Olympians',
+        u'pages_i': 384,
+        u'genre_s': u'fantasy',
+        u'author_s': u'Rick Riordan',
+        u'price': 12.5,
+        u'price_c': u'12.5,USD',
+        u'sequence_i': 1,
+        u'inStock': True,
+        u'_version_': 1462820023761371136,
+        u'cat': [u'book', u'hardcover'],
         u'id': u'978-0641723445'
     }
 
@@ -125,7 +125,7 @@ you want an object.  Perhaps you have the following class defined in your code:
     ...         self.title = name
     ...         self.author = author
     ...         self.other_kwargs = other_kwargs
-    ... 
+    ...
     ...     def __repr__(self):
     ...         return 'Book("%s", "%s")' % (self.title, self.author)
 
@@ -163,7 +163,7 @@ Finally, ``response.result`` itself has the following attributes
 * ``response.result.numFound`` : total number of docs found in the index.
 * ``response.result.docs`` : the actual results themselves.
 * ``response.result.start`` : if the number of docs is less than numFound,
-                              then this is the pagination offset. 
+                              then this is the pagination offset.
 
 Pagination
 ----------
@@ -439,7 +439,7 @@ Adding multiple filter::
     >>> si.query(name="bla").filter(price__lt=7.5).filter(author="hans").options()
     {'fq': [u'author:hans', u'price:{* TO 7.5}'], 'q': u'name:bla'}
 
-    
+
 You can filter any sort of query, simply by using ``filter()`` instead of
 ``query()``. And if your filtering involves an exclusion, then simple use
 ``~si.Q(author="lloyd")``.
@@ -523,7 +523,7 @@ is a list of two-tuples, mapping the value of the faceted field.
 
 You can facet on more than one field at a time:
 
-:: 
+::
 
     >>> si.query(...).facet_by(fields=["field1", "field2, ...])
 
@@ -604,7 +604,7 @@ Specify which field we would like to see highlighted:
     {u'978-0641723445': {u'name': [u'The Lightning <em>Thief</em>']}}
 
 It is also possible to specify a array of fields::
-    
+
     >>> si.query('thief').highlight(['name', 'title']).options()
     {'hl': True, 'hl.fl': 'name,title', 'q': u'thief'}
 
@@ -626,7 +626,7 @@ Specify which field we would like to see highlighted:
     {u'978-0641723445': {u'name': [u'The Lightning <em>Thief</em>']}}
 
 It is also possible to specify a array of fields::
-    
+
     >>> si.query('thief').postings_highlight(['name', 'title']).options()
     {'hl': True, 'hl.fl': 'name,title', 'q': u'thief'}
 
@@ -696,16 +696,25 @@ To avoid having to do the extra dictionary lookup.
     fields, count, mintf, mindf, minwl, mawl, maxqt, maxntp, boost
 
 
-Alternativ parser
+Alternative parser
 -----------------
 
-Scorched support the `dismax` and `edismax` parser. This can be added by simply
-calling ``alt_parser``.
+Scorched supports the `dismax` and `edismax` parser. These can be added by
+simply calling ``alt_parser``.
 
 Example::
 
     >>> si.query().alt_parser('edismax', mm=2).options()
     {'defType': 'edismax', 'mm': 2, 'q': '*:*'}
+
+The `edismax` parser also supports field aliases. Here is an example where
+``foo`` is aliased to the fields ``bar`` and ``baz``.
+
+Example::
+
+    >>> si.query().alt_parser('edismax', f={'foo':['bar', 'baz']}).options()
+    {'defType': 'edismax', 'q': '*:*', 'f.foo.qf': 'bar baz'}
+
 
 Set request handler
 -------------------
@@ -715,7 +724,7 @@ It is possible to set the request handler. To set a different request handler
 use ``set_requesthandler``.
 
 Example::
-    
+
     >>> si.query().set_requesthandler('foo').options()
     {u'q': u'*:*', u'qt': 'foo'}
 
@@ -727,7 +736,7 @@ To get see what solr is doing with our query we need sometimes more info. To get
 this addition information we set ``debug``.
 
 Example::
-    
+
     >>> si.query().debug().options()
     {u'debugQuery': True, u'q': u'*:*'}
     >>>  si.query().debug().execute().debug
