@@ -548,7 +548,7 @@ return only those facets which contain a minimum number of results.
 ::
 
     >>> si.query(...).facet_range(fields='field1', start=0, gap=10, end=100, \
-                                  mincount=1)
+                                  limit=10, mincount=1)
 
 Alternatively, you create ranges of dates using Solr's `date math` syntax. This
 next example creates a facet for each of the last 12 months.

@@ -204,11 +204,12 @@ good_option_data = {
     ),
     FacetRangeOptions: (
         ({"fields": "field1", "start": 10, "end": 20, "gap": 2, "hardend": False,
-          "include": "outer", "other": "all", "mincount": 1},
+          "include": "outer", "other": "all", "limit": 10, "mincount": 1},
          {"facet": True, "facet.range": ["field1"], "f.field1.facet.range.start": 10,
           "f.field1.facet.range.end": 20, "f.field1.facet.range.gap": 2,
           "f.field1.facet.range.hardend": "false", "f.field1.facet.range.include": "outer",
-          "f.field1.facet.range.other": "all", "f.field1.facet.mincount": 1}),
+          "f.field1.facet.range.other": "all", "f.field1.facet.limit": 1,
+          "f.field1.facet.mincount": 1}),
     ),
     FacetPivotOptions: (
         ({"fields": ["text_field"]},

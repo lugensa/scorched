@@ -752,6 +752,7 @@ class FacetRangeOptions(Options):
         "end": str,
         "gap": str,
         "hardend": bool,
+        "limit": int,
         "mincount": int,
         "include": ["lower", "upper", "edge", "outer", "all"],
         "other": ["before", "after", "between", "none", "all"],
@@ -769,16 +770,18 @@ class FacetRangeOptions(Options):
 
     def options(self):
         '''
-        Override options so we can move mincount from facet.range to facet.
+        Override options so we can move limit & mincount from facet.range to
+        facet.
         '''
         opts = super(FacetRangeOptions, self).options()
 
         for field in self.fields.keys():
-            oldkey = 'f.%s.facet.range.mincount' % field
-            newkey = 'f.%s.facet.mincount' % field
-            if oldkey in opts:
-                opts[newkey] = opts[oldkey]
-                del opts[oldkey]
+            for key in ('limit', 'mincount'):
+                oldkey = 'f.%s.facet.range.%s' % (field, key)
+                newkey = 'f.%s.facet.%s' % (field, key)
+                if oldkey in opts:
+                    opts[newkey] = opts[oldkey]
+                    del opts[oldkey]
 
         return opts
 
