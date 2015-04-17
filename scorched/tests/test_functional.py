@@ -76,6 +76,7 @@ class TestUtils(unittest.TestCase):
                                                     (u'hardcover', 1)]},
                           'facet_dates': {},
                           'facet_queries': {},
+                          'facet_ranges': {},
                           'facet_pivot': ()})
 
     @scorched.testing.skip_unless_solr
