@@ -3,6 +3,12 @@
 
 - Test against solr 4.10.2 and added python 3.4 to travis.
 
+- Added support for dismax queries. 
+
+- Added support edismax field aliases.
+
+- Added support for facet ranges.
+
 
 0.6 (2014-06-23)
 ----------------
