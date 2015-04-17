@@ -19,7 +19,7 @@ class ResultsTestCase(unittest.TestCase):
         with open(file) as f:
             self.data_error = f.read()
 
-    def test_reponse(self):
+    def test_response(self):
         res = scorched.response.SolrResponse.from_json(
             self.data, datefields=('_dt', 'modified'))
         self.assertEqual(res.status, 0)
@@ -46,6 +46,18 @@ class ResultsTestCase(unittest.TestCase):
                                                     (u'hardcover', 1)]},
                           'facet_dates': {},
                           'facet_queries': {},
+                          'facet_ranges': {
+                            u'created_dt': {
+                              u'gap': u'+1YEARS',
+                              u'start': u'2009-01-01T00:00:00Z',
+                              u'end': u'2012-01-01T00:00:00Z',
+                              u'counts': [
+                                (u'2009-01-01T00:00:00Z',1),
+                                (u'2010-01-01T00:00:00Z',0),
+                                (u'2011-01-01T00:00:00Z',0),
+                              ]
+                            },
+                          },
                           'facet_pivot': ()})
         self.assertRaises(ValueError, res.from_json, self.data_error)
         self.assertEqual(res.__str__(), u'3 results found, starting at #0')
