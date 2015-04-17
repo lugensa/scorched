@@ -8,7 +8,7 @@ from scorched.search import (SolrSearch, MltSolrSearch, PaginateOptions,
                              MoreLikeThisOptions, EdismaxOptions,
                              PostingsHighlightOptions, FacetPivotOptions,
                              RequestHandlerOption, DebugOptions,
-                             params_from_dict)
+                             params_from_dict, FacetRangeOptions)
 from scorched.strings import WildcardString
 from nose.tools import assert_equal
 
@@ -202,6 +202,15 @@ good_option_data = {
         ({"fields": ["int_field", "text_field"], "prefix": "abc", "limit": 3},
          {"facet": True, "facet.field": ["int_field", "text_field"], "f.int_field.facet.prefix": "abc", "f.int_field.facet.limit": 3, "f.text_field.facet.prefix": "abc", "f.text_field.facet.limit": 3, }),
     ),
+    FacetRangeOptions: (
+        ({"fields": "field1", "start": 10, "end": 20, "gap": 2, "hardend": False,
+          "include": "outer", "other": "all", "limit": 10, "mincount": 1},
+         {"facet": True, "facet.range": ["field1"], "f.field1.facet.range.start": 10,
+          "f.field1.facet.range.end": 20, "f.field1.facet.range.gap": 2,
+          "f.field1.facet.range.hardend": "false", "f.field1.facet.range.include": "outer",
+          "f.field1.facet.range.other": "all", "f.field1.facet.limit": 1,
+          "f.field1.facet.mincount": 1}),
+    ),
     FacetPivotOptions: (
         ({"fields": ["text_field"]},
          {"facet": True, "facet.pivot": "text_field"}),
@@ -325,7 +334,7 @@ good_option_data = {
 def check_good_option_data(OptionClass, kwargs, output):
     optioner = OptionClass()
     optioner.update(**kwargs)
-    assert optioner.options() == output, "Unequal: %r, %r" % (
+    assert set(optioner.options()) == set(output), "Unequal: %r, %r" % (
         optioner.options(), output)
 
 # All these tests should really nominate which exception they're going to
@@ -474,9 +483,12 @@ complex_boolean_queries = (
       ('qf', b'text_field^0.25 string_field^0.75')]),
     # edismax
     (lambda q: q.query("hello").filter(q.Q(text_field="tow")).alt_parser(
-        "edismax", qf={"text_field": 0.25, "string_field": 0.75}),
+        "edismax", qf={"text_field": 0.25, "string_field": 0.75},
+        f={'alias1':['field1', 'field2']}
+        ),
      [('defType', b'edismax'), ('fq', b'text_field:tow'), ('q', b'hello'),
-      ('qf', b'text_field^0.25 string_field^0.75')]),
+      ('qf', b'text_field^0.25 string_field^0.75'),
+      ('f.alias1.qf', b'field1 field2')]),
     # field_limit
     (lambda q: q.query().field_limit(['name', 'foo']),
      [('fl', b'foo,name'), ('q', b'*:*')]),
@@ -493,7 +505,7 @@ complex_boolean_queries = (
 
 def check_complex_boolean_query(solr_search, query, output):
     p = query(solr_search).params()
-    assert p == output, "Unequal: %r, %r" % (p, output)
+    assert set(p) == set(output), "Unequal: %r, %r" % (p, output)
     # And check no mutation of the base object
     q = query(solr_search).params()
     assert p == q, "Unequal: %r, %r" % (p, q)
