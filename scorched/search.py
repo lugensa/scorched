@@ -555,6 +555,15 @@ class BaseSearch(object):
                 result.more_like_these[key].docs)
         return result
 
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            start, rows = key, 1
+        elif isinstance(key, slice):
+            start, rows = key.start, key.stop-key.start
+        else:
+            raise TypeError('Subscript must be int or slice')
+        return self.paginate(start, rows).execute()
+
 
 class SolrSearch(BaseSearch):
 
