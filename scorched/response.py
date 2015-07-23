@@ -63,6 +63,9 @@ class SolrResponse(collections.Sequence):
         details = doc['responseHeader']
         for attr in ["QTime", "params", "status"]:
             setattr(self, attr, details.get(attr))
+        # should this be a SolrResult attr ??
+        if doc.get('nextCursorMark'):
+            self.nextcursormark = doc.get('nextCursorMark')
         if self.status != 0:
             raise ValueError("Response indicates an error")
         self.result = SolrResult()
@@ -91,7 +94,44 @@ class SolrResponse(collections.Sequence):
 
     def __getitem__(self, key):
         return self.result.docs[key]
-
+    
+    def __iter__(self):
+#        print("in Solrresponse#iter")
+        nret = 0
+        srch = self.origsearch
+        
+        while True:
+            i = 0
+            l = len(self)
+        
+            while i < l and nret  < srch.paginator.userrows:
+                v = self[i]
+                yield v
+                i += 1
+                nret += 1
+                if nret >= srch.paginator.userrows:
+                    return
+            
+        # end buffer, see if we need to get more
+        
+            if hasattr(self, "nextcursormark"):
+#                print("endbuf: nextcursor:"+ self.nextcursormark + " prev curs:" +
+#                      self.params['cursorMark'])
+                #if(self.nextcursormark == self.params['cursorMark']):
+#                    print("completed iteration")
+                    return
+                else:
+#                    print("go pull next buffer")
+                    
+                    #  def update(self, start, rows, cursormark, fetchsize, cursorpos):
+                    srch.paginator.update(None,None, True, None, self.nextcursormark)
+                    newres = srch.execute()
+                    self = newres
+                    continue
+            else:
+#                print("no cursormark")
+            return
+    
 
 class SolrResult(object):
 
