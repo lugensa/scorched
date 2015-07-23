@@ -117,18 +117,16 @@ class SolrResponse(collections.Sequence):
             if hasattr(self, "nextcursormark"):
 #                print("endbuf: nextcursor:"+ self.nextcursormark + " prev curs:" +
 #                      self.params['cursorMark'])
-                #if(self.nextcursormark == self.params['cursorMark']):
+                if(self.nextcursormark == self.params['cursorMark']):
 #                    print("completed iteration")
                     return
                 else:
 #                    print("go pull next buffer")
-                    
-                    #  def update(self, start, rows, cursormark, fetchsize, cursorpos):
                     srch.paginator.update(None,None, True, None, self.nextcursormark)
                     newres = srch.execute()
                     self = newres
                     continue
-            else:
+            #else:
 #                print("no cursormark")
             return
     
