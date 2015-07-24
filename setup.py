@@ -25,11 +25,11 @@ setup(name='scorched',
       install_requires=[
           "setuptools",
           "requests",
-          "nose",
-          "coverage",
-          "mock",
           "pytz",
       ],
+      extra_requires={
+          'test': ["nose", "coverage", "mock", ],
+      },
       test_suite='scorched.tests',
       setup_requires=["setuptools_git"],
       )
