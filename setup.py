@@ -27,7 +27,7 @@ setup(name='scorched',
           "requests",
           "pytz",
       ],
-      extra_requires={
+      extras_require={
           'test': ["nose", "coverage", "mock", ],
       },
       test_suite='scorched.tests',
