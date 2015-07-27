@@ -27,7 +27,7 @@ is_solr_up(){
 
 wait_for_solr(){
     while ! is_solr_up; do
-        sleep 3
+        sleep 5
     done
 }
 
