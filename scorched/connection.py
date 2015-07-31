@@ -273,18 +273,21 @@ class SolrInterface(object):
         return ret
 
     def _prepare_docs(self, docs):
+        prepared_docs = []
         for doc in docs:
+            new_doc = {}
             for name, value in list(doc.items()):
                 # XXX remove all None fields this is needed for adding date
                 # fields
                 if value is None:
-                    doc.pop(name)
                     continue
                 if name in self._datefields:
-                    doc[name] = str(scorched.dates.solr_date(value))
+                    value = str(scorched.dates.solr_date(value))
                 elif name.endswith(self._datefields):
-                    doc[name] = str(scorched.dates.solr_date(value))
-        return docs
+                    value = str(scorched.dates.solr_date(value))
+                new_doc[name] = value
+            prepared_docs.append(new_doc)
+        return prepared_docs
 
     def add(self, docs, chunk=100, **kwargs):
         """

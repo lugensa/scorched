@@ -1,7 +1,7 @@
 0.8 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- fix. Do not alter documents while adding new documents
 
 
 0.7 (2015-04-17)
