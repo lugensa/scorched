@@ -1,6 +1,8 @@
 0.8 (unreleased)
 ----------------
 
+- added search_timeout paramter to SolrConnection (mamco)
+
 - fix. Do not alter documents while adding new documents
 
 
