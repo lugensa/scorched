@@ -39,18 +39,18 @@ SolrInterface object.
 
 ::
 
-    >>> import scorched 
+    >>> import scorched
     >>> si = scorched.SolrInterface("http://localhost:8983/solr/")
 
-    
+
 .. note:: Optional arguments to connection:
-   See api doku: TODO
+          :class:`scorched.connection.SolrConnection`
 
 
 Adding documents
 ----------------
 
-To add data to the scorched instance use a Python dictionary. 
+To add data to the scorched instance use a Python dictionary.
 
 ::
 
