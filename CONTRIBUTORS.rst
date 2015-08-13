@@ -1,6 +1,8 @@
 Contributors
 ============
 
+- Mauro Amico
+
 - Josip Delic
 
 - Janko Hauser
