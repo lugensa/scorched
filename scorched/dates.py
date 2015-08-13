@@ -5,7 +5,7 @@ import pytz
 import re
 import scorched.exc
 
-from scorched.compat import str
+from scorched.compat import basestring
 from scorched.compat import python_2_unicode_compatible
 
 
@@ -85,7 +85,7 @@ class solr_date(object):
     def __init__(self, v):
         if isinstance(v, solr_date):
             self._dt_obj = v._dt_obj
-        elif isinstance(v, str):
+        elif isinstance(v, basestring):
             self._dt_obj = datetime_from_w3_datestring(v)
         elif hasattr(v, "strftime"):
             self._dt_obj = self.from_date(v)

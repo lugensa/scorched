@@ -4,7 +4,6 @@ import pytz
 import unittest
 import scorched.exc
 
-from scorched.compat import str
 from scorched.dates import (solr_date, datetime_from_w3_datestring,
                             datetime_factory)
 
@@ -37,6 +36,7 @@ samples_from_strings = {
 
 
 def check_solr_date_from_date(s, date, canonical_date):
+    from scorched.compat import str
     assert str(solr_date(date)) == s, "Unequal representations of %r: %r and %r" % (
         date, str(solr_date(date)), s)
     check_solr_date_from_string(s, canonical_date)
@@ -89,3 +89,10 @@ class TestDates(unittest.TestCase):
         else:  # pragma: no cover
             self.assertFalse(s == "Foo")
         self.assertEqual(s.__repr__(), 'datetime.datetime(2009, 7, 23, 3, 24, 34, 376, tzinfo=<UTC>)')
+
+    def test_solr_date_from_str(self):
+        # str here is original str from python
+        self.assertTrue("'str'" in repr(str))
+        s = solr_date(str("2009-07-23T03:24:34.000376Z"))
+        self.assertEqual(s, solr_date(s))
+        self.assertTrue(s == s)
