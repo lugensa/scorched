@@ -26,7 +26,7 @@ class SolrConnection(object):
     writeable = True
 
     def __init__(self, url, http_connection, mode, retry_timeout,
-                 max_length_get_url):
+                 max_length_get_url, search_timeout=()):
         """
         :param url: url to solr
         :type url: str
@@ -38,6 +38,10 @@ class SolrConnection(object):
         :type retry_timeout: int
         :param max_length_get_url: max length until switch to post
         :type max_length_get_url: int
+        :param search_timeout: (optional) How long to wait for the server to
+                               send data before giving up, as a float, or a
+                               (connect timeout, read timeout) tuple.
+        :type search_timeout: float or tuple
         """
         self.http_connection = requests.Session()
         if mode == 'r':
@@ -50,6 +54,7 @@ class SolrConnection(object):
         self.mlt_url = self.url + "mlt/"
         self.retry_timeout = retry_timeout
         self.max_length_get_url = max_length_get_url
+        self.search_timeout = search_timeout
 
     def request(self, *args, **kwargs):
         """
@@ -63,7 +68,8 @@ class SolrConnection(object):
         """
         try:
             return self.http_connection.request(*args, **kwargs)
-        except requests.exceptions.ConnectionError:
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout):
             if self.retry_timeout < 0:
                 raise
             time.sleep(self.retry_timeout)
@@ -183,6 +189,8 @@ class SolrConnection(object):
         else:
             method = 'GET'
             kwargs = {}
+        if self.search_timeout != ():
+            kwargs['timeout'] = self.search_timeout
         response = self.request(method, url, **kwargs)
         if response.status_code != 200:
             raise scorched.exc.SolrError(response)
