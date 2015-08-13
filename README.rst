@@ -46,6 +46,7 @@ Now create a virtual-env and install some dependencies::
   cd scorched
   virtualenv ./
   bin/pip install -e .
+  bin/pip install -e .[test]
 
 Start the solr server to test against::
 

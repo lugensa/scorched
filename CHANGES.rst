@@ -1,7 +1,9 @@
 0.8 (unreleased)
 ----------------
 
-- added search_timeout paramter to SolrConnection (mamco)
+- remove test from core requirements (mamico)
+
+- added search_timeout paramter to SolrConnection (mamico)
 
 - fix. Do not alter documents while adding new documents
 
