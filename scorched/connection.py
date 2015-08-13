@@ -231,7 +231,8 @@ class SolrInterface(object):
     remote_schema_file = "schema?wt=json"
 
     def __init__(self, url, http_connection=None, mode='',
-                 retry_timeout=-1, max_length_get_url=MAX_LENGTH_GET_URL):
+                 retry_timeout=-1, max_length_get_url=MAX_LENGTH_GET_URL,
+                 search_timeout=()):
         """
         :param url: url to solr
         :type url: str
@@ -243,6 +244,10 @@ class SolrInterface(object):
         :type retry_timeout: int
         :param max_length_get_url: optional -- max length until switch to post
         :type max_length_get_url: int
+        :param search_timeout: (optional) How long to wait for the server to
+                               send data before giving up, as a float, or a
+                               (connect timeout, read timeout) tuple.
+        :type search_timeout: float or tuple
         """
 
         self.conn = SolrConnection(
