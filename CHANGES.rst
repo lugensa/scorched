@@ -1,6 +1,8 @@
 0.8 (unreleased)
 ----------------
 
+- use compat.basestring over compat.str in date convert (mamico)
+
 - remove test from core requirements (mamico)
 
 - added search_timeout paramter to SolrConnection (mamico)
