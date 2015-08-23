@@ -108,9 +108,7 @@ class SolrResult(object):
     def _prepare_docs(self, docs, datefields):
         for doc in docs:
             for name, value in list(doc.items()):
-                if name in datefields:
-                    doc[name] = scorched.dates.solr_date(value)._dt_obj
-                elif name.endswith(datefields):
+                if scorched.dates.is_datetime_field(name, datefields):
                     doc[name] = scorched.dates.solr_date(value)._dt_obj
         return docs
 

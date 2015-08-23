@@ -253,8 +253,7 @@ class SolrInterface(object):
         self.conn = SolrConnection(
             url, http_connection, mode, retry_timeout, max_length_get_url)
         self.schema = self.init_schema()
-        # we need tuples for endswith
-        self._datefields = tuple(self._extract_datefields(self.schema))
+        self._datefields = self._extract_datefields(self.schema)
 
     def init_schema(self):
         response = self.conn.request(
@@ -268,13 +267,10 @@ class SolrInterface(object):
         return response.json()['schema']
 
     def _extract_datefields(self, schema):
-        ret = [x for x in
+        ret = [x['name'] for x in
                schema['fields'] if x['type'] == 'date']
-        ret.extend([x for x in schema['dynamicFields']
+        ret.extend([x['name'] for x in schema['dynamicFields']
                     if x['type'] == 'date'])
-        if ret:
-            ret = [x['name'] for x in ret]
-            ret = [x.replace('*', '') for x in ret]
         return ret
 
     def _prepare_docs(self, docs):
@@ -286,9 +282,7 @@ class SolrInterface(object):
                 # fields
                 if value is None:
                     continue
-                if name in self._datefields:
-                    value = str(scorched.dates.solr_date(value))
-                elif name.endswith(self._datefields):
+                if scorched.dates.is_datetime_field(name, self._datefields):
                     value = str(scorched.dates.solr_date(value))
                 new_doc[name] = value
             prepared_docs.append(new_doc)

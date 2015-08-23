@@ -21,7 +21,7 @@ class ResultsTestCase(unittest.TestCase):
 
     def test_response(self):
         res = scorched.response.SolrResponse.from_json(
-            self.data, datefields=('_dt', 'modified'))
+            self.data, datefields=('*_dt', 'modified'))
         self.assertEqual(res.status, 0)
         self.assertEqual(res.QTime, 1)
         self.assertEqual(res.result.numFound, 3)

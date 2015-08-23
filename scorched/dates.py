@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import datetime
+import fnmatch
 import math
 import pytz
 import re
@@ -129,3 +130,13 @@ class solr_date(object):
         except AttributeError:
             pass
         return self._dt_obj == other
+
+
+def is_datetime_field(name, datefields):
+    if name in datefields:
+        return True
+    for fieldpattern in [d for d in datefields if '*' in d]:
+        # XXX: there is better than fnmatch ?
+        if fnmatch.fnmatch(name, fieldpattern):
+            return True
+    return False
