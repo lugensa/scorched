@@ -79,6 +79,7 @@ class SolrConnection(object):
         """
         :param update_doc: data send to solr
         :type update_doc: json data
+        :returns: json -- json string
 
         Send json to solr
         """
@@ -93,6 +94,7 @@ class SolrConnection(object):
         response = self.request('POST', url, data=body, headers=headers)
         if response.status_code != 200:
             raise scorched.exc.SolrError(response)
+        return response.text
 
     def url_for_update(self, commit=None, commitWithin=None, softCommit=None,
                        optimize=None, waitSearcher=None, expungeDeletes=None,
@@ -198,6 +200,11 @@ class SolrConnection(object):
 
     def mlt(self, params, content=None):
         """
+        :param params: LuceneQuery converted to a dictionary with search
+                       queries
+        :type params: dict
+        :returns: json -- json string
+
         Perform a MoreLikeThis query using the content specified
         There may be no content if stream.url is specified in the params.
         """
@@ -303,6 +310,7 @@ class SolrInterface(object):
         :type chunk: int
         :param kwargs: optinal -- additional arguments
         :type kwargs: dict
+        :returns: list of SolrUpdateResponse  -- A solr response object.
 
         Add a document or a list of document to solr.
         """
@@ -310,29 +318,38 @@ class SolrInterface(object):
             docs = [docs]
         # to avoid making messages too large, we break the message every
         # chunk docs.
+        ret = []
         for doc_chunk in grouper(docs, chunk):
             update_message = json.dumps(self._prepare_docs(doc_chunk))
-            self.conn.update(update_message, **kwargs)
+            ret.append(scorched.response.SolrUpdateResponse.from_json(
+                self.conn.update(update_message, **kwargs)))
+        return ret
 
     def delete_by_query(self, query, **kwargs):
         """
         :param query: criteria how witch entries should be deleted
         :type query: LuceneQuery
+        :returns: SolrUpdateResponse  -- A solr response object.
 
         Delete entries by a given query
         """
         delete_message = json.dumps({"delete": {"query": str(query)}})
-        self.conn.update(delete_message, **kwargs)
+        ret = scorched.response.SolrUpdateResponse.from_json(
+            self.conn.update(delete_message, **kwargs))
+        return ret
 
     def delete_by_ids(self, ids, **kwargs):
         """
         :param ids: ids of entries that should be deleted
         :type ids: list
+        :returns: SolrUpdateResponse  -- A solr response object.
 
         Delete entries by a given id
         """
         delete_message = json.dumps({"delete": ids})
-        self.conn.update(delete_message, **kwargs)
+        ret = scorched.response.SolrUpdateResponse.from_json(
+            self.conn.update(delete_message, **kwargs))
+        return ret
 
     def commit(self, waitSearcher=None, expungeDeletes=None, softCommit=None):
         """
@@ -346,13 +363,16 @@ class SolrInterface(object):
                            refresh the 'view' of the index in a more performant
                            manner, but without "on-disk" guarantees.
         :type softCommit: bool
+        :returns: SolrUpdateResponse  -- A solr response object.
 
         A commit operation makes index changes visible to new search requests.
         """
-        self.conn.update('{"commit": {}}', commit=True,
-                         waitSearcher=waitSearcher,
-                         expungeDeletes=expungeDeletes,
-                         softCommit=softCommit)
+        ret = scorched.response.SolrUpdateResponse.from_json(
+            self.conn.update('{"commit": {}}', commit=True,
+                             waitSearcher=waitSearcher,
+                             expungeDeletes=expungeDeletes,
+                             softCommit=softCommit))
+        return ret
 
     def optimize(self, waitSearcher=None, maxSegments=None):
         """
@@ -363,25 +383,35 @@ class SolrInterface(object):
         :param maxSegments: optional -- optimizes down to at most this number
                             of segments
         :type maxSegments: int
+        :returns: SolrUpdateResponse  -- A solr response object.
 
         An optimize is like a hard commit except that it forces all of the
         index segments to be merged into a single segment first.
         """
-        self.conn.update('{"optimize": {}}', optimize=True,
-                         waitSearcher=waitSearcher, maxSegments=maxSegments)
+        ret = scorched.response.SolrUpdateResponse.from_json(
+            self.conn.update('{"optimize": {}}', optimize=True,
+                             waitSearcher=waitSearcher,
+                             maxSegments=maxSegments))
+        return ret
 
     def rollback(self):
         """
+        :returns: SolrUpdateResponse  -- A solr response object.
+
         The rollback command rollbacks all add/deletes made to the index since
         the last commit
         """
-        self.conn.update('{"rollback": {}}')
+        ret = scorched.response.SolrUpdateResponse.from_json(
+            self.conn.update('{"rollback": {}}'))
+        return ret
 
     def delete_all(self):
         """
+        :returns: SolrUpdateResponse  -- A solr response object.
+
         Delete everything
         """
-        self.delete_by_query(self.Q(**{"*": "*"}))
+        return self.delete_by_query(self.Q(**{"*": "*"}))
 
     def search(self, **kwargs):
         """
@@ -408,6 +438,8 @@ class SolrInterface(object):
 
     def mlt_search(self, content=None, **kwargs):
         """
+        :returns: SolrResponse  -- A solr response object.
+
         Mlt search solr
         """
         params = scorched.search.params_from_dict(**kwargs)
