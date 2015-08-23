@@ -62,9 +62,9 @@ class TestUtils(unittest.TestCase):
         si.delete_all()
         si.add(self.docs)
         si.commit()
-        # delete
         res = si.query(genre_s="fantasy").execute()
         self.assertEqual(res.result.numFound, 3)
+        # delete
         res = si.delete_by_ids(res.result.docs[0]['id'])
         self.assertEqual(res.status, 0)
         # rollback
