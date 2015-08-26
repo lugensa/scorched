@@ -1,4 +1,4 @@
-0.8 (unreleased)
+0.8 (2015-08-26)
 ----------------
 
 - use compat.basestring over compat.str in date convert (mamico)
