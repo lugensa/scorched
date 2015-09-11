@@ -13,6 +13,11 @@ class ResultsTestCase(unittest.TestCase):
                             "request_w_facets.json")
         with open(file) as f:
             self.data = f.read()
+        # termVector data
+        file = os.path.join(os.path.dirname(__file__), "dumps",
+                            "request_w_termvector.json")
+        with open(file) as f:
+            self.data_tv = f.read()
         # error data
         file = os.path.join(os.path.dirname(__file__), "dumps",
                             "request_error.json")
@@ -59,6 +64,19 @@ class ResultsTestCase(unittest.TestCase):
                             },
                           },
                           'facet_pivot': ()})
+
+        res_tv = scorched.response.SolrResponse.from_json(
+            self.data_tv, datefields=('date'))
+        self.assertEqual(res_tv.term_vectors["uniqueKeyFieldName"], "uid")
+        self.assertEqual(res_tv.term_vectors["warnings"],
+                         {"noTermVectors": ["title"]})
+        self.assertEqual(res_tv.term_vectors["ffaa9370-5182-5810-b8a9-54b751ef0606"]["uniqueKey"],
+                         "ffaa9370-5182-5810-b8a9-54b751ef0606")
+        self.assertEqual(res_tv.term_vectors["ffaa9370-5182-5810-b8a9-54b751ef0606"]["weighted_words"]["wirken"],
+                         {"tf": 1, "df": 106})
+        self.assertEqual(res_tv.term_vectors["9ce8ef2d-6e0f-5647-ae4c-2aaaca37b28f"]["weighted_words"]["anlagen"],
+                         {"tf": 3, "df": 21484})
+
         self.assertRaises(ValueError, res.from_json, self.data_error)
         self.assertEqual(res.__str__(), u'3 results found, starting at #0')
         self.assertEqual(len(res), 3)
