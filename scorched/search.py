@@ -382,7 +382,8 @@ class BaseSearch(object):
                       'more_like_this', 'highlighter', 'postings_highlighter',
                       'faceter', 'grouper', 'sorter', 'facet_querier',
                       'debugger', 'spellchecker', 'requesthandler',
-                      'field_limiter', 'parser', 'pivoter', 'facet_ranger')
+                      'field_limiter', 'parser', 'pivoter', 'facet_ranger',
+                      'term_vectors')
 
     def _init_common_modules(self):
         self.query_obj = LuceneQuery(u'q')
@@ -401,6 +402,7 @@ class BaseSearch(object):
         self.field_limiter = FieldLimitOptions()
         self.facet_ranger = FacetRangeOptions()
         self.facet_querier = FacetQueryOptions()
+        self.term_vectors = TermVectorOptions()
 
     def clone(self):
         return self.__class__(interface=self.interface, original=self)
@@ -487,6 +489,11 @@ class BaseSearch(object):
     def mlt(self, fields, query_fields=None, **kwargs):
         newself = self.clone()
         newself.more_like_this.update(fields, query_fields, **kwargs)
+        return newself
+
+    def term_vector(self, fields=None, **kwargs):
+        newself = self.clone()
+        newself.term_vectors.update(fields, **kwargs)
         return newself
 
     def alt_parser(self, parser, **kwargs):
@@ -1070,6 +1077,40 @@ class MoreLikeThisHandlerOptions(MoreLikeThisOptions):
 
         return opts
 
+
+class TermVectorOptions(Options):
+    option_name = "tv"
+    opts = {
+        "all": bool,
+        "df": bool,
+        "offsets": bool,
+        "positions": bool,
+        "payloads": bool,
+        "tf": bool,
+        "tf_idf": bool,
+    }
+
+    def __init__(self, original=None):
+        if original is None:
+            self.fields = collections.defaultdict(dict)
+            self.enabled = False
+        else:
+            self.fields = copy.copy(original.fields)
+            self.enabled = original.enabled
+
+    def field_names_in_opts(self, opts, fields):
+        if fields:
+            opts["tv.fl"] = ",".join(sorted(fields))
+
+    def update(self, fields=None, **kwargs):
+        super(TermVectorOptions, self).update(fields, **kwargs)
+        self.enabled = True
+
+    def options(self):
+        opts = super(TermVectorOptions, self).options()
+        if self.enabled and not opts:
+            opts = {"tv": True}
+        return opts
 
 class PaginateOptions(Options):
 

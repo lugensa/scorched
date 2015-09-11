@@ -79,9 +79,27 @@ class SolrResponse(collections.Sequence):
         self.more_like_these = dict(
             (k, SolrResult.from_json(v, datefields))
             for (k, v) in list(doc.get('moreLikeThis', {}).items()))
+        self.term_vectors = self.parse_term_vectors(doc.get('termVectors', []))
         # can be computed by MoreLikeThisHandler
         self.interesting_terms = doc.get('interestingTerms', None)
         return self
+
+    @classmethod
+    def parse_term_vectors(cls, lst, path=""):
+        """Transform a solr list to dict
+
+        Turns [a, x, b, y, c, z ...] into {a: x, b: y, c: z ...}
+        If the values are lists themselves, this is done recursively
+        """
+        dct = dict()
+        for i in range(0, len(lst), 2):
+            k = lst[i]
+            v = lst[i+1]
+            # Do not recurse too deep into warnings list
+            if path != ".warnings" and isinstance(v, list):
+                v = cls.parse_term_vectors(v, path + "." + k)
+            dct[k] = v
+        return dct
 
     def __str__(self):
         return str(self.result)
