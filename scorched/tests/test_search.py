@@ -400,10 +400,12 @@ bad_option_data = {
 
 def check_bad_option_data(OptionClass, kwargs):
     option = OptionClass()
+    exception_raised = False
     try:
         option.update(**kwargs)
     except SolrError:
-        pass
+        exception_raised = True
+    assert exception_raised
 
 
 complex_boolean_queries = (
