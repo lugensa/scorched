@@ -8,7 +8,8 @@ from scorched.search import (SolrSearch, MltSolrSearch, PaginateOptions,
                              MoreLikeThisOptions, EdismaxOptions,
                              PostingsHighlightOptions, FacetPivotOptions,
                              RequestHandlerOption, DebugOptions,
-                             params_from_dict, FacetRangeOptions)
+                             params_from_dict, FacetRangeOptions,
+                             TermVectorOptions)
 from scorched.strings import WildcardString
 from nose.tools import assert_equal
 
@@ -284,6 +285,26 @@ good_option_data = {
         ({"fields": "text_field", "count": 1},
          {"mlt": True, "mlt.fl": "text_field", "mlt.count": 1}),
     ),
+    TermVectorOptions: (
+        ({},
+         {"tv": True}),
+        ({"offsets": True},
+         {"tv": True, "tv.offsets": True}),
+        ({"fields": "text_field"},
+         {"tv": True, "tv.fl": "text_field"}),
+        ({"fields": ["int_field", "text_field"]},
+         {"tv": True, "tv.fl": "int_field, text_field"}),
+        ({"all": True, "df": 1, "offsets": 0, "positions": False,
+          "payloads": "true", "tf": False, "tf_idf": True},
+         {'tv': True, 'tv.df': True, 'tv.all': True, 'tv.tf_idf': True,
+          'tv.tf': False, 'tv.offsets': False, 'tv.payloads': True,
+          'tv.positions': False}),
+        ({"fields": "text_field", "all": True},
+         {'tv': True, 'tv.fl': 'text_field', 'f.text_field.tv.all': True}),
+        ({"fields": ["int_field", "text_field"], "tf": True},
+         {'tv': True, 'tv.fl': 'int_field,text_field',
+          'f.text_field.tv.tf': True, 'f.int_field.tv.tf': True}),
+    ),
     DismaxOptions: (
         ({"qf": {"text_field": 0.25, "string_field": 0.75}},
          {'defType': 'dismax', 'qf': 'text_field^0.25 string_field^0.75'}),
@@ -365,6 +386,9 @@ bad_option_data = {
         {"fields": "text_field", "oops": True},  # undefined option
         {"fields": "text_field", "count": "a"}  # Invalid value for option
     ),
+    TermVectorOptions: (
+        {"foobar": True},  # undefined option
+    ),
     DismaxOptions: (
         # no ss
         {"ss": {"text_field": 0.25, "string_field": 0.75}},
@@ -376,10 +400,12 @@ bad_option_data = {
 
 def check_bad_option_data(OptionClass, kwargs):
     option = OptionClass()
+    exception_raised = False
     try:
         option.update(**kwargs)
     except SolrError:
-        pass
+        exception_raised = True
+    assert exception_raised
 
 
 complex_boolean_queries = (
@@ -473,6 +499,9 @@ complex_boolean_queries = (
     # highlight
     (lambda q: q.query("hello world").filter(q.Q(text_field="tow")).highlight('title'),
      [('fq', b'text_field:tow'), ('hl', b'true'), ('hl.fl', b'title'), ('q', b'hello\\ world')]),
+    # termVector
+    (lambda q: q.query("hello world").filter(q.Q(text_field="tow")).term_vector(df=True),
+     [('fq', b'text_field:tow'), ('tv', b'true'), ('tv.df', b'true'), ('q', b'hello\\ world')]),
     # sort
     (lambda q: q.query("hello world").filter(q.Q(text_field="tow")).sort_by('title'),
      [('fq', b'text_field:tow'), ('q', b'hello\\ world'), ('sort', b'title asc')]),

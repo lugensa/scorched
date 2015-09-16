@@ -652,6 +652,31 @@ It is also possible to specify a array of fields::
     {'hl': True, 'hl.fl': 'name,title', 'q': u'thief'}
 
 
+Term Vectors
+------------
+
+For background, see https://wiki.apache.org/solr/TermVectorComponent.
+
+Alongside the normal search results, you can ask solr to return the term
+vector, the term frequency, inverse document frequency, and position and offset
+information for the documents.
+You do this with the chainable ``term_vector()`` method.
+
+::
+
+    >>> resp = si.query('thief').term_vector(all=True).execute()
+
+You can also specify for which fields you would like to get information:
+
+::
+
+    >>> resp = si.query('thief').term_vector('name').execute()
+
+It is also possible to specify a array of fields::
+
+    >>> si.query('thief').term_vector(['name', 'title'], all=True).execute()
+
+
 More Like This
 --------------
 
