@@ -31,6 +31,7 @@ class TestUtils(unittest.TestCase):
                              "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         si.delete_all()
+        si.commit()
 
     @scorched.testing.skip_unless_solr
     def test_get(self):
