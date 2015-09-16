@@ -85,6 +85,15 @@ class SolrResponse(collections.Sequence):
         return self
 
     @classmethod
+    def from_get_json(cls, jsonmsg, datefields=()):
+        """Generate instance from the response of a RealTime Get"""
+        self = cls()
+        self.original_json = jsonmsg
+        doc = json.loads(jsonmsg)
+        self.result = SolrResult.from_json(doc['response'], datefields)
+        return self
+
+    @classmethod
     def parse_term_vectors(cls, lst, path=""):
         """Transform a solr list to dict
 

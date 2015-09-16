@@ -52,6 +52,7 @@ class SolrConnection(object):
         self.update_url = self.url + "update/json"
         self.select_url = self.url + "select/"
         self.mlt_url = self.url + "mlt/"
+        self.get_url = self.url + "get/"
         self.retry_timeout = retry_timeout
         self.max_length_get_url = max_length_get_url
         self.search_timeout = search_timeout
@@ -74,6 +75,33 @@ class SolrConnection(object):
                 raise
             time.sleep(self.retry_timeout)
             return self.http_connection.request(*args, **kwargs)
+
+    def get(self, ids, fl=None):
+        """
+        Perform a RealTime Get
+        """
+        # We always send the ids parameter to force the standart output format,
+        # but use the id parameter for our actual data as `ids` can no handle
+        # ids with commas
+        params = [
+            ("ids", ""),
+            ("wt", "json"),
+        ]
+        if is_iter(ids):
+            for id in ids:
+                params.append(("id", id))
+        else:
+            params.append(("id", ids))
+        if fl:
+            params.append(("fl", ",".join(fl)))
+
+        qs = scorched.compat.urlencode(params)
+        url = "%s?%s" % (self.get_url, qs)
+
+        response = self.request("GET", url)
+        if response.status_code != 200:
+            raise scorched.exc.SolrError(response)
+        return response.text
 
     def update(self, update_doc, **kwargs):
         """
@@ -382,6 +410,19 @@ class SolrInterface(object):
         Delete everything
         """
         self.delete_by_query(self.Q(**{"*": "*"}))
+
+    def get(self, ids, fields=None):
+        """
+        RealTime Get document(s) by id(s)
+
+        :param ids: id(s) of the document(s)
+        :type ids: list, string or int
+        :param fields: optional -- list of fields to return
+        :type fileds: list of strings
+        """
+        ret = scorched.response.SolrResponse.from_get_json(
+            self.conn.get(ids, fields), self._datefields)
+        return ret
 
     def search(self, **kwargs):
         """
