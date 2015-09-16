@@ -33,6 +33,29 @@ class TestUtils(unittest.TestCase):
         si.delete_all()
 
     @scorched.testing.skip_unless_solr
+    def test_get(self):
+        dsn = os.environ.get("SOLR_URL",
+                             "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        res = si.get("978-1423103349")
+        self.assertEqual(len(res), 0)
+
+        si.add(self.docs)
+        res = si.get("978-1423103349")
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0]["name"], "The Sea of Monsters")
+
+        res = si.get(["978-0641723445", "978-1423103349", "nonexist"])
+        self.assertEqual(len(res), 2)
+        self.assertEqual([x["name"] for x in res],
+                         [u"The Lightning Thief", u"The Sea of Monsters"])
+
+        si.commit()
+        res = si.get(ids="978-1423103349", fields=["author"])
+        self.assertEqual(len(res), 1)
+        self.assertEqual(list(res[0].keys()), ["author"])
+
+    @scorched.testing.skip_unless_solr
     def test_query(self):
         dsn = os.environ.get("SOLR_URL",
                              "http://localhost:8983/solr")
