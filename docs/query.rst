@@ -823,3 +823,19 @@ Example::
 
     >>> si.query().spellcheck().options()
     {u'q': u'*:*', u'spellcheck': 'true'}
+
+Realtime Get
+------------
+
+For background, see https://wiki.apache.org/solr/RealTimeGet
+
+Solr 4.0 added support for retrieval of documents that are not yet commited.
+The retrieval can only by done by id: ::
+
+    >>> resp = si.get("978-1423103349")
+
+You can also pass multiple ids: ::
+
+    >>> resp = si.get(["978-0641723445", "978-1423103349"])
+
+The return value is the same as for a normal search
