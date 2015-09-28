@@ -1,7 +1,9 @@
 0.9 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- RealTime Get (Chronial)
+
+- TermVector support (Chronial)
 
 
 0.8 (2015-08-26)
