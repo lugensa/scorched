@@ -591,7 +591,7 @@ For background, see http://wiki.apache.org/solr/FieldCollapsing.
 
 Solr 3.3 added support for result grouping.
 
-A example call lookes like this:
+An example call looks like this:
 
 ::
 
