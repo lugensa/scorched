@@ -1,6 +1,8 @@
 0.9 (unreleased)
 ----------------
 
+- Better check datetime dynamicfields (mamico)
+
 - RealTime Get (Chronial)
 
 - TermVector support (Chronial)
