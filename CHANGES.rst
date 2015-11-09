@@ -1,4 +1,4 @@
-0.9 (unreleased)
+0.9 (2015-11-09)
 ----------------
 
 - Better check datetime dynamicfields (mamico)
