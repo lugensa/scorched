@@ -1,7 +1,7 @@
 0.10 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Return response for update actions (mamico)
 
 
 0.9 (2015-11-09)
