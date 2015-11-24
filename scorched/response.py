@@ -53,6 +53,20 @@ class SolrFacetCounts(object):
         return SolrFacetCounts(**facet_counts)
 
 
+class SolrUpdateResponse(object):
+    @classmethod
+    def from_json(cls, jsonmsg):
+        self = cls()
+        self.original_json = jsonmsg
+        doc = json.loads(jsonmsg)
+        details = doc['responseHeader']
+        for attr in ["QTime", "params", "status"]:
+            setattr(self, attr, details.get(attr))
+        if self.status != 0:
+            raise ValueError("Response indicates an error")
+        return self
+
+
 class SolrResponse(collections.Sequence):
 
     @classmethod

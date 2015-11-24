@@ -66,7 +66,9 @@ class TestUtils(unittest.TestCase):
         res = si.query(genre_s="fantasy").execute()
         self.assertEqual(res.result.numFound, 3)
         # delete
-        si.delete_by_ids(res.result.docs[0]['id'])
+        res = si.delete_by_ids(res.result.docs[0]['id'])
+        self.assertEqual(res.status, 0)
+        res = si.query(genre_s="fantasy").execute()
         si.commit()
         res = si.query(genre_s="fantasy").execute()
         self.assertEqual(res.result.numFound, 2)
@@ -75,18 +77,56 @@ class TestUtils(unittest.TestCase):
         self.assertEqual([x.title for x in res.result.docs],
                          [u'The Sea of Monsters',
                           u"Sophie's World : The Greek Philosophers"])
-        # TODO rollback
-        # we see a rollback in solr log but entry is still deleted
-        #si.rollback()
-        #res = si.query(genre_s="fantasy").execute()
-        #self.assertEqual(res.result.numFound, 3)
+
+    @scorched.testing.skip_unless_solr
+    def test_rollback(self):
+        dsn = os.environ.get("SOLR_URL",
+                             "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        si.delete_all()
+        si.add(self.docs)
+        si.commit()
+        res = si.query(genre_s="fantasy").execute()
+        self.assertEqual(res.result.numFound, 3)
+        # delete
+        res = si.delete_by_ids(res.result.docs[0]['id'])
+        self.assertEqual(res.status, 0)
+        # rollback
+        res = si.rollback()
+        self.assertEqual(res.status, 0)
+        res = si.query(genre_s="fantasy").execute()
+        self.assertEqual(res.result.numFound, 3)
+
+    @scorched.testing.skip_unless_solr
+    def test_chunked_add(self):
+        dsn = os.environ.get("SOLR_URL",
+                             "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        self.assertEqual(len(self.docs), 4)
+        # chunk size = 1, chunks = 4
+        si.delete_all()
+        res = si.add(self.docs, chunk=1)
+        self.assertEqual(len(res), 4)
+        self.assertEqual([r.status for r in res], [0] * 4)
+        si.commit()
+        res = si.query(genre_s="fantasy").execute()
+        self.assertEqual(res.result.numFound, 3)
+        # chunk size = 2, chunks = 2
+        si.delete_all()
+        res = si.add(self.docs, chunk=2)
+        self.assertEqual(len(res), 2)
+        self.assertEqual([r.status for r in res], [0] * 2)
+        si.commit()
+        res = si.query(genre_s="fantasy").execute()
+        self.assertEqual(res.result.numFound, 3)
 
     @scorched.testing.skip_unless_solr
     def test_facet_query(self):
         dsn = os.environ.get("SOLR_URL",
                              "http://localhost:8983/solr")
         si = SolrInterface(dsn)
-        si.add(self.docs)
+        res = si.add(self.docs)
+        self.assertEqual(res[0].status, 0)
         si.commit()
         res = si.query(genre_s="fantasy").facet_by("cat").execute()
         self.assertEqual(res.result.numFound, 3)
