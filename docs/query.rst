@@ -177,6 +177,19 @@ which takes two parameters, ``start`` and ``rows``:
 
     >>> si.query("black").paginate(start=10, rows=30)
 
+Cursors
+-------
+If you want to get all / a huge number of results, you should use cursors to get
+the results in smaller chunks. Due to the way this is implemented in Solr, your
+sort needs to include your uniqueKey field. The ``cursor()`` method returns a
+cursor that you can iterate over. Like ``execute()``, ``cursor()`` takes an
+optional ``constructor`` parameter. In addition you can pass ``rows`` to define
+how many results should be fetched from solr at once.
+
+::
+
+    >>> for item in si.query("black").sort_by('id').cursor(rows=100): ...
+
 Returning different fields
 --------------------------
 
