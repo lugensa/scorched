@@ -597,6 +597,35 @@ class SolrSearch(BaseSearch):
             ret = self.constructor(ret, constructor)
         return ret
 
+    def cursor(self, constructor=None, rows=None):
+        if self.paginator.start is not None:
+            raise ValueError(
+                "cannot use the start parameter and cursors at the same time")
+        search = self
+        if rows:
+            search = search.paginate(rows=rows)
+        return SolrCursor(search, constructor)
+
+
+class SolrCursor:
+    def __init__(self, search, constructor):
+        self.search = search
+        self.constructor = constructor
+
+    def __iter__(self):
+        cursor_mark = "*"
+        while True:
+            options = self.search.options()
+            options['cursorMark'] = cursor_mark
+            ret = self.search.interface.search(**options)
+            if self.constructor:
+                ret = self.search.constructor(ret, self.constructor)
+            for item in ret:
+                yield item
+            if ret.next_cursor_mark == cursor_mark:
+                break
+            cursor_mark = ret.next_cursor_mark
+
 
 class MltSolrSearch(BaseSearch):
 
@@ -912,6 +941,7 @@ class EdismaxOptions(DismaxOptions):
 
         return opts
 
+
 class HighlightOptions(Options):
     option_name = "hl"
     opts = {"snippets": int,
@@ -1111,6 +1141,7 @@ class TermVectorOptions(Options):
         if self.enabled and not opts:
             opts = {"tv": True}
         return opts
+
 
 class PaginateOptions(Options):
 

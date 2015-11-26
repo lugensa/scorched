@@ -79,6 +79,44 @@ class TestUtils(unittest.TestCase):
                           u"Sophie's World : The Greek Philosophers"])
 
     @scorched.testing.skip_unless_solr
+    def test_cursor(self):
+        dsn = os.environ.get("SOLR_URL",
+                             "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        si.add(self.docs)
+        si.commit()
+        cursor = si.query(genre_s="fantasy").sort_by('id').cursor(rows=1)
+
+        # Count how often we hit solr
+        search_count = [0]
+        old_search = cursor.search.interface.search
+
+        def search_proxy(*args, **kwargs):
+            search_count[0] += 1
+            return old_search(*args, **kwargs)
+        cursor.search.interface.search = search_proxy
+
+        list(cursor)
+        self.assertEqual(search_count[0], 4)  # 3 + 1 to realize we are done
+
+        search_count = [0]
+        cursor = si.query(genre_s="fantasy").sort_by('id') \
+                   .cursor(constructor=Book, rows=2)
+        # test constructor
+        self.assertEqual([x.title for x in cursor],
+                         [u'The Lightning Thief',
+                          u'The Sea of Monsters',
+                          u"Sophie's World : The Greek Philosophers"])
+        self.assertEqual(search_count[0], 3)
+
+        # empty results
+        search_count = [0]
+        cursor = si.query(genre_s="nonexist").sort_by('id') \
+                   .cursor(constructor=Book)
+        self.assertEqual(list(cursor), [])
+        self.assertEqual(search_count[0], 1)
+
+    @scorched.testing.skip_unless_solr
     def test_rollback(self):
         dsn = os.environ.get("SOLR_URL",
                              "http://localhost:8983/solr")

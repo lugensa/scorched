@@ -90,6 +90,7 @@ class SolrResponse(collections.Sequence):
         self.spellcheck = doc.get("spellcheck", {})
         self.groups = doc.get('grouped', {})
         self.debug = doc.get('debug', {})
+        self.next_cursor_mark = doc.get('nextCursorMark')
         self.more_like_these = dict(
             (k, SolrResult.from_json(v, datefields))
             for (k, v) in list(doc.get('moreLikeThis', {}).items()))
