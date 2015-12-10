@@ -3,6 +3,8 @@
 
 - Return response for update actions (mamico)
 
+- Add support for solr cursors (Chronial)
+
 
 0.9 (2015-11-09)
 ----------------
