@@ -53,6 +53,31 @@ class SolrFacetCounts(object):
         return SolrFacetCounts(**facet_counts)
 
 
+class SolrStats(object):
+    members = (
+        "stats_fields",
+        "facet",
+    )
+
+    def __init__(self, **kwargs):
+        for member in self.members:
+            setattr(self, member, kwargs.get(member, ()))
+        self.stats_fields = dict(self.stats_fields)
+
+    @classmethod
+    def from_json(cls, response):
+        try:
+            stats_response = response['stats']
+        except KeyError:
+            return SolrStats()
+        stats = {'stats_fields': {}}
+        # faceted stats, if present, are included within the field
+        for field, values in list(stats_response['stats_fields'].items()):
+            stats['stats_fields'][field] = values
+
+        return SolrStats(**stats)
+
+
 class SolrUpdateResponse(object):
     @classmethod
     def from_json(cls, jsonmsg):
@@ -97,6 +122,7 @@ class SolrResponse(collections.Sequence):
         self.term_vectors = self.parse_term_vectors(doc.get('termVectors', []))
         # can be computed by MoreLikeThisHandler
         self.interesting_terms = doc.get('interestingTerms', None)
+        self.stats = SolrStats.from_json(doc)
         return self
 
     @classmethod
