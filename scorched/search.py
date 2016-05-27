@@ -1329,6 +1329,8 @@ class StatOptions(Options):
     opts = {
         "stats.facet": str,
     }
+    # NOTE: solr documentation indicates stats.facet is a legacy parameter,
+    # recommends using stats.field with facet.pivot instead
 
     def __init__(self, original=None):
         if original is None:
