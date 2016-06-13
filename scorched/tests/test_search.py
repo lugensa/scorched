@@ -9,7 +9,7 @@ from scorched.search import (SolrSearch, MltSolrSearch, PaginateOptions,
                              PostingsHighlightOptions, FacetPivotOptions,
                              RequestHandlerOption, DebugOptions,
                              params_from_dict, FacetRangeOptions,
-                             TermVectorOptions)
+                             TermVectorOptions, StatOptions)
 from scorched.strings import WildcardString
 from nose.tools import assert_equal
 
@@ -349,6 +349,15 @@ good_option_data = {
         ({"debug": True},
          {'debugQuery': True}),
     ),
+    StatOptions: (
+        ({"fields": "int_field"},
+         {"stats": True, "stats.field": ['int_field']}),
+        ({"fields": ["int_field", "float_field"]},
+         {"stats": True, "stats.field": ['int_field', 'float_field']}),
+        ({"fields": ["int_field", "float_field"], "facet": "field0"},
+         {"stats": True, "stats.field": ['int_field', 'float_field'],
+          "stats.facet": "field0"}),
+    ),
 }
 
 
@@ -395,6 +404,9 @@ bad_option_data = {
         # no float in pf
         {"pf": {"text_field": 0.25, "string_field": "ABBS"}},
     ),
+    StatOptions: (
+        {"oops": True},  # undefined option
+    )
 }
 
 

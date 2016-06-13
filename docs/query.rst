@@ -852,3 +852,21 @@ You can also pass multiple ids: ::
     >>> resp = si.get(["978-0641723445", "978-1423103349"])
 
 The return value is the same as for a normal search
+
+Stats
+-----
+
+For background, see https://wiki.apache.org/solr/StatsComponent
+
+Solr can return simple statistics for indexed numeric fields::
+
+   >>> resp = solr.query().stats('int_field')
+
+You can also pass multiple fields::
+
+   >>> resp = solr.query().stats(['int_field', 'float_field'])
+
+The resulting statistics are available on the response at
+``resp.stats.stats_fields``.
+
+
