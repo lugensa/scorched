@@ -5,6 +5,8 @@
 
 - Add support for solr cursors (Chronial)
 
+- Added stats option (rlskoeser)
+
 
 0.9 (2015-11-09)
 ----------------
