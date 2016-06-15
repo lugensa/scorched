@@ -1,7 +1,7 @@
 0.11 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Fixing setup.py classifier.
 
 
 0.10 (2016-06-15)
