@@ -1,4 +1,4 @@
-0.10 (unreleased)
+0.10 (2016-06-15)
 -----------------
 
 - Return response for update actions (mamico)
