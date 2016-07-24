@@ -1,0 +1,133 @@
+{
+  "responseHeader": {
+    "status": 0,
+    "QTime": 24,
+    "params": {
+      "tv.tf": "true",
+      "indent": "true",
+      "q": "*:*",
+      "tv": "true",
+      "_": "1441938054458",
+      "tv.fl": "weighted_words,title",
+      "tv.df": "true",
+      "wt": "json",
+      "rows": "2"
+    }
+  },
+  "response": {
+    "numFound": 333940,
+    "start": 0,
+    "docs": [
+      {
+        "title": "Medizinprodukteberater",
+        "uid": "ffaa9370-5182-5810-b8a9-54b751ef0606",
+        "date": "2015-09-09T16:42:20.735Z",
+        "cuid": "ffaa9370-5182-5810-b8a9-54b751ef0606",
+        "geohex": [
+          "378,70"
+        ],
+        "_version_": 1511854640452337700
+      },
+      {
+        "title": "Automatisierungstechniker m/w",
+        "uid": "9ce8ef2d-6e0f-5647-ae4c-2aaaca37b28f",
+        "uri": "http://meega.de/1431501-automatisierungstechniker-m-w.html",
+        "cuid": "9ce8ef2d-6e0f-5647-ae4c-2aaaca37b28f",
+        "geohex": [
+          "357,61"
+        ],
+        "_version_": 1511857045532311600
+      }
+    ]
+  },
+  "termVectors": [
+    "uniqueKeyFieldName",
+    "uid",
+    "warnings",
+    [
+      "noTermVectors",
+      [
+        "title"
+      ]
+    ],
+    "ffaa9370-5182-5810-b8a9-54b751ef0606",
+    [
+      "uniqueKey",
+      "ffaa9370-5182-5810-b8a9-54b751ef0606",
+      "weighted_words",
+      [
+        "denken",
+        [
+          "tf",
+          1,
+          "df",
+          10409
+        ],
+        "dienstfahrtzeug",
+        [
+          "tf",
+          1,
+          "df",
+          1
+        ],
+        "dokumentation",
+        [
+          "tf",
+          1,
+          "df",
+          19774
+        ],
+        "eigeninitiative",
+        [
+          "tf",
+          1,
+          "df",
+          11369
+        ],
+        "wirken",
+        [
+          "tf",
+          1,
+          "df",
+          106
+        ]
+      ]
+    ],
+    "9ce8ef2d-6e0f-5647-ae4c-2aaaca37b28f",
+    [
+      "uniqueKey",
+      "9ce8ef2d-6e0f-5647-ae4c-2aaaca37b28f",
+      "weighted_words",
+      [
+        "anlagen",
+        [
+          "tf",
+          3,
+          "df",
+          21484
+        ],
+        "instandhaltung",
+        [
+          "tf",
+          2,
+          "df",
+          11717
+        ],
+        "kontakte",
+        [
+          "tf",
+          1,
+          "df",
+          9893
+        ],
+        "wert",
+        [
+          "tf",
+          1,
+          "df",
+          8572
+        ]
+      ]
+    ]
+  ]
+}

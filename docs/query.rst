@@ -177,6 +177,19 @@ which takes two parameters, ``start`` and ``rows``:
 
     >>> si.query("black").paginate(start=10, rows=30)
 
+Cursors
+-------
+If you want to get all / a huge number of results, you should use cursors to get
+the results in smaller chunks. Due to the way this is implemented in Solr, your
+sort needs to include your uniqueKey field. The ``cursor()`` method returns a
+cursor that you can iterate over. Like ``execute()``, ``cursor()`` takes an
+optional ``constructor`` parameter. In addition you can pass ``rows`` to define
+how many results should be fetched from solr at once.
+
+::
+
+    >>> for item in si.query("black").sort_by('id').cursor(rows=100): ...
+
 Returning different fields
 --------------------------
 
@@ -591,7 +604,7 @@ For background, see http://wiki.apache.org/solr/FieldCollapsing.
 
 Solr 3.3 added support for result grouping.
 
-A example call lookes like this:
+An example call looks like this:
 
 ::
 
@@ -650,6 +663,31 @@ It is also possible to specify a array of fields::
 
     >>> si.query('thief').postings_highlight(['name', 'title']).options()
     {'hl': True, 'hl.fl': 'name,title', 'q': u'thief'}
+
+
+Term Vectors
+------------
+
+For background, see https://wiki.apache.org/solr/TermVectorComponent.
+
+Alongside the normal search results, you can ask solr to return the term
+vector, the term frequency, inverse document frequency, and position and offset
+information for the documents.
+You do this with the chainable ``term_vector()`` method.
+
+::
+
+    >>> resp = si.query('thief').term_vector(all=True).execute()
+
+You can also specify for which fields you would like to get information:
+
+::
+
+    >>> resp = si.query('thief').term_vector('name').execute()
+
+It is also possible to specify a array of fields::
+
+    >>> si.query('thief').term_vector(['name', 'title'], all=True).execute()
 
 
 More Like This
@@ -798,3 +836,37 @@ Example::
 
     >>> si.query().spellcheck().options()
     {u'q': u'*:*', u'spellcheck': 'true'}
+
+Realtime Get
+------------
+
+For background, see https://wiki.apache.org/solr/RealTimeGet
+
+Solr 4.0 added support for retrieval of documents that are not yet commited.
+The retrieval can only by done by id: ::
+
+    >>> resp = si.get("978-1423103349")
+
+You can also pass multiple ids: ::
+
+    >>> resp = si.get(["978-0641723445", "978-1423103349"])
+
+The return value is the same as for a normal search
+
+Stats
+-----
+
+For background, see https://wiki.apache.org/solr/StatsComponent
+
+Solr can return simple statistics for indexed numeric fields::
+
+   >>> resp = solr.query().stats('int_field')
+
+You can also pass multiple fields::
+
+   >>> resp = solr.query().stats(['int_field', 'float_field'])
+
+The resulting statistics are available on the response at
+``resp.stats.stats_fields``.
+
+

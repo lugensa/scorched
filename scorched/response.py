@@ -70,6 +70,45 @@ class SolrExtract(object):
         return self
 
 
+class SolrStats(object):
+    members = (
+        "stats_fields",
+        "facet",
+    )
+
+    def __init__(self, **kwargs):
+        for member in self.members:
+            setattr(self, member, kwargs.get(member, ()))
+        self.stats_fields = dict(self.stats_fields)
+
+    @classmethod
+    def from_json(cls, response):
+        try:
+            stats_response = response['stats']
+        except KeyError:
+            return SolrStats()
+        stats = {'stats_fields': {}}
+        # faceted stats, if present, are included within the field
+        for field, values in list(stats_response['stats_fields'].items()):
+            stats['stats_fields'][field] = values
+
+        return SolrStats(**stats)
+
+
+class SolrUpdateResponse(object):
+    @classmethod
+    def from_json(cls, jsonmsg):
+        self = cls()
+        self.original_json = jsonmsg
+        doc = json.loads(jsonmsg)
+        details = doc['responseHeader']
+        for attr in ["QTime", "params", "status"]:
+            setattr(self, attr, details.get(attr))
+        if self.status != 0:
+            raise ValueError("Response indicates an error")
+        return self
+
+
 class SolrResponse(collections.Sequence):
 
     @classmethod
@@ -93,12 +132,41 @@ class SolrResponse(collections.Sequence):
         self.spellcheck = doc.get("spellcheck", {})
         self.groups = doc.get('grouped', {})
         self.debug = doc.get('debug', {})
+        self.next_cursor_mark = doc.get('nextCursorMark')
         self.more_like_these = dict(
             (k, SolrResult.from_json(v, datefields))
             for (k, v) in list(doc.get('moreLikeThis', {}).items()))
+        self.term_vectors = self.parse_term_vectors(doc.get('termVectors', []))
         # can be computed by MoreLikeThisHandler
         self.interesting_terms = doc.get('interestingTerms', None)
+        self.stats = SolrStats.from_json(doc)
         return self
+
+    @classmethod
+    def from_get_json(cls, jsonmsg, datefields=()):
+        """Generate instance from the response of a RealTime Get"""
+        self = cls()
+        self.original_json = jsonmsg
+        doc = json.loads(jsonmsg)
+        self.result = SolrResult.from_json(doc['response'], datefields)
+        return self
+
+    @classmethod
+    def parse_term_vectors(cls, lst, path=""):
+        """Transform a solr list to dict
+
+        Turns [a, x, b, y, c, z ...] into {a: x, b: y, c: z ...}
+        If the values are lists themselves, this is done recursively
+        """
+        dct = dict()
+        for i in range(0, len(lst), 2):
+            k = lst[i]
+            v = lst[i+1]
+            # Do not recurse too deep into warnings list
+            if path != ".warnings" and isinstance(v, list):
+                v = cls.parse_term_vectors(v, path + "." + k)
+            dct[k] = v
+        return dct
 
     def __str__(self):
         return str(self.result)

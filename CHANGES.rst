@@ -1,4 +1,36 @@
-0.8 (unreleased)
+0.10.2 (unreleased)
+-------------------
+
+- Nothing changed yet.
+
+
+0.10.1 (2016-06-15)
+-------------------
+
+- Fixing setup.py classifier.
+
+
+0.10 (2016-06-15)
+-----------------
+
+- Return response for update actions (mamico)
+
+- Add support for solr cursors (Chronial)
+
+- Added stats option (rlskoeser)
+
+
+0.9 (2015-11-09)
+----------------
+
+- Better check datetime dynamicfields (mamico)
+
+- RealTime Get (Chronial)
+
+- TermVector support (Chronial)
+
+
+0.8 (2015-08-26)
 ----------------
 
 - use compat.basestring over compat.str in date convert (mamico)

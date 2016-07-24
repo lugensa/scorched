@@ -382,7 +382,8 @@ class BaseSearch(object):
                       'more_like_this', 'highlighter', 'postings_highlighter',
                       'faceter', 'grouper', 'sorter', 'facet_querier',
                       'debugger', 'spellchecker', 'requesthandler',
-                      'field_limiter', 'parser', 'pivoter', 'facet_ranger')
+                      'field_limiter', 'parser', 'pivoter', 'facet_ranger',
+                      'term_vectors', 'stat')
 
     def _init_common_modules(self):
         self.query_obj = LuceneQuery(u'q')
@@ -401,6 +402,8 @@ class BaseSearch(object):
         self.field_limiter = FieldLimitOptions()
         self.facet_ranger = FacetRangeOptions()
         self.facet_querier = FacetQueryOptions()
+        self.term_vectors = TermVectorOptions()
+        self.stat = StatOptions()
 
     def clone(self):
         return self.__class__(interface=self.interface, original=self)
@@ -489,6 +492,11 @@ class BaseSearch(object):
         newself.more_like_this.update(fields, query_fields, **kwargs)
         return newself
 
+    def term_vector(self, fields=None, **kwargs):
+        newself = self.clone()
+        newself.term_vectors.update(fields, **kwargs)
+        return newself
+
     def alt_parser(self, parser, **kwargs):
         if parser not in PARSERS:
             raise scorched.exc.SolrError(
@@ -544,6 +552,11 @@ class BaseSearch(object):
         newself = self.clone()
         return newself
 
+    def stats(self, fields, **kwargs):
+        newself = self.clone()
+        newself.stat.update(fields, **kwargs)
+        return newself
+
     def params(self):
         return params_from_dict(**self.options())
 
@@ -589,6 +602,35 @@ class SolrSearch(BaseSearch):
         if constructor:
             ret = self.constructor(ret, constructor)
         return ret
+
+    def cursor(self, constructor=None, rows=None):
+        if self.paginator.start is not None:
+            raise ValueError(
+                "cannot use the start parameter and cursors at the same time")
+        search = self
+        if rows:
+            search = search.paginate(rows=rows)
+        return SolrCursor(search, constructor)
+
+
+class SolrCursor:
+    def __init__(self, search, constructor):
+        self.search = search
+        self.constructor = constructor
+
+    def __iter__(self):
+        cursor_mark = "*"
+        while True:
+            options = self.search.options()
+            options['cursorMark'] = cursor_mark
+            ret = self.search.interface.search(**options)
+            if self.constructor:
+                ret = self.search.constructor(ret, self.constructor)
+            for item in ret:
+                yield item
+            if ret.next_cursor_mark == cursor_mark:
+                break
+            cursor_mark = ret.next_cursor_mark
 
 
 class MltSolrSearch(BaseSearch):
@@ -905,6 +947,7 @@ class EdismaxOptions(DismaxOptions):
 
         return opts
 
+
 class HighlightOptions(Options):
     option_name = "hl"
     opts = {"snippets": int,
@@ -1068,6 +1111,41 @@ class MoreLikeThisHandlerOptions(MoreLikeThisOptions):
         for opt_name, opt_value in list(self.kwargs.items()):
             opts["mlt.%s" % opt_name] = opt_value
 
+        return opts
+
+
+class TermVectorOptions(Options):
+    option_name = "tv"
+    opts = {
+        "all": bool,
+        "df": bool,
+        "offsets": bool,
+        "positions": bool,
+        "payloads": bool,
+        "tf": bool,
+        "tf_idf": bool,
+    }
+
+    def __init__(self, original=None):
+        if original is None:
+            self.fields = collections.defaultdict(dict)
+            self.enabled = False
+        else:
+            self.fields = copy.copy(original.fields)
+            self.enabled = original.enabled
+
+    def field_names_in_opts(self, opts, fields):
+        if fields:
+            opts["tv.fl"] = ",".join(sorted(fields))
+
+    def update(self, fields=None, **kwargs):
+        super(TermVectorOptions, self).update(fields, **kwargs)
+        self.enabled = True
+
+    def options(self):
+        opts = super(TermVectorOptions, self).options()
+        if self.enabled and not opts:
+            opts = {"tv": True}
         return opts
 
 
@@ -1244,6 +1322,43 @@ class FacetQueryOptions(Options):
                     'facet': True}
         else:
             return {}
+
+
+class StatOptions(Options):
+    option_name = "stats"
+    opts = {
+        "stats.facet": str,
+    }
+    # NOTE: solr documentation indicates stats.facet is a legacy parameter,
+    # recommends using stats.field with facet.pivot instead
+
+    def __init__(self, original=None):
+        if original is None:
+            self.stats = False
+            self.facet = None
+            self.fields = collections.defaultdict(dict)
+        else:
+            self.stats = original.stats
+            self.fields = copy.copy(original.fields)
+            self.facet = original.facet
+
+    def update(self, fields=None, **kwargs):
+        if 'facet' in kwargs:
+            self.facet = kwargs['facet']
+            del kwargs['facet']
+        super(StatOptions, self).update(fields, **kwargs)
+        self.stats = True
+
+    def field_names_in_opts(self, opts, fields):
+        if fields:
+            opts["stats.field"] = sorted(fields)
+
+    def options(self):
+        opts = super(StatOptions, self).options()
+        # stats = True set based on option_name
+        if self.facet:
+            opts['stats.facet'] = self.facet
+        return opts
 
 
 def params_from_dict(**kwargs):
