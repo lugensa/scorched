@@ -5,12 +5,14 @@ import datetime
 import numbers
 import operator
 import re
+
 import scorched.strings
 import scorched.exc
 import scorched.dates
 
 from functools import reduce
 from scorched.compat import str
+from scorched.compat import basestring
 from scorched.compat import python_2_unicode_compatible
 
 
@@ -18,7 +20,7 @@ PARSERS = ("edismax", "dismax")
 
 
 def is_iter(val):
-    return isinstance(val, (tuple, list))
+    return not isinstance(val, basestring) and isinstance(val, collections.Iterable)
 
 
 class LuceneQuery(object):
