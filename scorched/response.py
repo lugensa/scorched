@@ -53,6 +53,23 @@ class SolrFacetCounts(object):
         return SolrFacetCounts(**facet_counts)
 
 
+class SolrExtract(object):
+
+    @classmethod
+    def from_json(cls, doc, filename=None):
+        self = cls()
+        if filename is None:
+            for attrname in doc:
+                if attrname.endswith('_metadata'):
+                    filename = attrname[:-9]
+        self.text = doc[filename]
+        metadata = doc[filename + "_metadata"]
+        self.metadata = dict(zip(metadata[0::2], metadata[1::2]))
+        for attr in ["QTime", "status"]:
+            setattr(self, attr, doc['responseHeader'].get(attr))
+        return self
+
+
 class SolrResponse(collections.Sequence):
 
     @classmethod

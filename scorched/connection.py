@@ -436,6 +436,28 @@ class SolrInterface(object):
             self, content=content, content_charset=content_charset, url=url)
         return q.mlt(fields=fields, query_fields=query_fields, **kwargs)
 
+    def extract(self, fh, extractOnly=True, extractFormat='text'):
+        """
+        :param fh: binary file (PDF, MSWord, ODF, ...)
+        :type fh: open file handle
+        :returns: SolrExtract
+
+        Extract text and metadatada from binary file.
+
+        The ExtractingRequestHandler is expected to be registered at the
+        '/update/extract' endpoint in the solrconfig.xml file of the server.
+        """
+        url = self.conn.url + 'update/extract'
+        params = {'wt': 'json'}
+        if extractOnly:
+            params['extractOnly'] = 'true'
+        params['extractFormat'] = extractFormat
+        files = {'file': fh}
+        response = self.conn.request('POST', url, params=params, files=files)
+        if response.status_code != 200:
+            raise scorched.exc.SolrError(response)
+        return scorched.response.SolrExtract.from_json(response.json())
+
     def Q(self, *args, **kwargs):
         q = scorched.search.LuceneQuery()
         q.add(args, kwargs)
