@@ -9,7 +9,8 @@ from scorched.search import (SolrSearch, MltSolrSearch, PaginateOptions,
                              PostingsHighlightOptions, FacetPivotOptions,
                              RequestHandlerOption, DebugOptions,
                              params_from_dict, FacetRangeOptions,
-                             TermVectorOptions, StatOptions)
+                             TermVectorOptions, StatOptions,
+                             is_iter)
 from scorched.strings import WildcardString
 from nose.tools import assert_equal
 
@@ -627,3 +628,11 @@ def test_url_encode_data():
 def test_mlt_query_options():
     for (fields, query_fields, kwargs, output) in mlt_query_options_data:
         yield check_mlt_query_options, fields, query_fields, kwargs, output
+
+
+def test_is_iter():
+    assert is_iter("abc") == False
+    assert is_iter(1) == False
+    assert is_iter([1, 2]) == True
+    assert is_iter((1, 2)) == True
+    assert is_iter(set([1, 2])) == True
