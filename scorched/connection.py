@@ -326,7 +326,7 @@ class SolrInterface(object):
     def add(self, docs, chunk=100, **kwargs):
         """
         :param docs: documents to be added
-        :type docs: dict
+        :type docs: dict | list
         :param chunk: optional -- size of chunks in witch the add command
         schould be splitted
         :type chunk: int
