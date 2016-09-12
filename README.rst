@@ -32,6 +32,8 @@ Following some major differences:
 
 - Python 3
 
+- Drops support for Solr 4.x.
+
 - ...
 
 
