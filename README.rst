@@ -32,7 +32,7 @@ Following some major differences:
 
 - Python 3
 
-- Drops support for Solr 4.x.
+- Drops support for Solr < 4.3.0
 
 - ...
 
