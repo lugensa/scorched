@@ -248,6 +248,19 @@ class TestUtils(unittest.TestCase):
             self.assertEqual(res.result.docs[0][k], v)
 
     @scorched.testing.skip_unless_solr
+    def test_multi_value_dates(self):
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        docs = {
+            "id": "978-0641723445",
+            "important_dts": [
+                "1969-01-01",
+                "1969-01-02",
+            ],
+        }
+        si.add(docs)
+
+    @scorched.testing.skip_unless_solr
     def test_debug(self):
         dsn = os.environ.get("SOLR_URL",
                              "http://localhost:8983/solr")
