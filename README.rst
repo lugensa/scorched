@@ -12,7 +12,7 @@ Documentation: http://scorched.readthedocs.org/en/latest/
 .. _travisci: https://travis-ci.org/lugensa/scorched
 
 .. image:: https://coveralls.io/repos/lugensa/scorched/badge.png
-    :target: https://coveralls.io/r/lugensa/scorched 
+    :target: https://coveralls.io/r/lugensa/scorched
 
 |travisci|_
 
@@ -26,7 +26,7 @@ Following some major differences:
 
 - Send and receive as json. (Faster 20k docs from 6.5s to 1.3s)
 
-- API is more lightweight e.g. ``add`` consums now only dicts.
+- API is more lightweight e.g. ``add`` consumes now only dicts.
 
 - Wildcard search strings need to be explicitly set.
 
@@ -51,11 +51,11 @@ Now create a virtual-env and install some dependencies::
 
 Start the solr server to test against::
 
-  # DEBUG=1|0: verbose output of solr server on|off
+  # DEBUG=true|false: verbose output of solr server on|off
   # SOLR_VERSION=x.y.z (the version to test against)
   # the solr startup script reports the pid of the solr process
-  SOLR_VERSION=4.10.2 SOLR_PORT=44177 DEBUG=1 SOLR_CONFS="scorched/tests/solrconfig.xml" ./testing-solr.sh
-  
+  SOLR_VERSION=4.10.2 SOLR_PORT=44177 DEBUG=true SOLR_CONFS="scorched/tests/solrconfig.xml" ./testing-solr.sh
+
   # stop solr
   kill -9 $pid
 
