@@ -1,7 +1,11 @@
 0.10.2 (unreleased)
 -------------------
 
-- fix is_iter implementation #30 (mamico)
+- Fix is_iter implementation #30 (mamico)
+
+- Multi-value date fields work (mlissner)
+
+- Fixes error in the readme so that DEBUG mode works as documented (mlissner)
 
 
 0.10.1 (2016-06-15)
