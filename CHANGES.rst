@@ -1,4 +1,4 @@
-0.10.2 (unreleased)
+0.10.2 (2016-09-27)
 -------------------
 
 - Fix is_iter implementation #30 (mamico)
