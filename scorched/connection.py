@@ -318,7 +318,11 @@ class SolrInterface(object):
                 if value is None:
                     continue
                 if scorched.dates.is_datetime_field(name, self._datefields):
-                    value = str(scorched.dates.solr_date(value))
+                    if is_iter(value):
+                        value = [str(scorched.dates.solr_date(v)) for v in
+                                 value]
+                    else:
+                        value = str(scorched.dates.solr_date(value))
                 new_doc[name] = value
             prepared_docs.append(new_doc)
         return prepared_docs
@@ -327,8 +331,8 @@ class SolrInterface(object):
         """
         :param docs: documents to be added
         :type docs: dict
-        :param chunk: optional -- size of chunks in witch the add command
-        schould be splitted
+        :param chunk: optional -- size of chunks in which the add command
+        should be split
         :type chunk: int
         :param kwargs: optinal -- additional arguments
         :type kwargs: dict
