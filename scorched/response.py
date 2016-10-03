@@ -95,7 +95,7 @@ class SolrUpdateResponse(object):
 class SolrResponse(collections.Sequence):
 
     @classmethod
-    def from_json(cls, jsonmsg, datefields=()):
+    def from_json(cls, jsonmsg, unique_key, datefields=()):
         self = cls()
         self.original_json = jsonmsg
         doc = json.loads(jsonmsg)
@@ -112,6 +112,11 @@ class SolrResponse(collections.Sequence):
         #    self.result = SolrResult.from_json(doc['match'], datefields)
         self.facet_counts = SolrFacetCounts.from_json(doc)
         self.highlighting = doc.get("highlighting", {})
+        if self.highlighting:
+            for d in self.result.docs:
+                k = d[unique_key]
+                if k in self.highlighting:
+                    d['solr_highlights'] = self.highlighting[k]
         self.spellcheck = doc.get("spellcheck", {})
         self.groups = doc.get('grouped', {})
         self.debug = doc.get('debug', {})

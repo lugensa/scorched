@@ -26,7 +26,7 @@ class ResultsTestCase(unittest.TestCase):
 
     def test_response(self):
         res = scorched.response.SolrResponse.from_json(
-            self.data, datefields=('*_dt', 'modified'))
+            self.data, 'id', datefields=('*_dt', 'modified'))
         self.assertEqual(res.status, 0)
         self.assertEqual(res.QTime, 1)
         self.assertEqual(res.result.numFound, 3)
@@ -66,7 +66,7 @@ class ResultsTestCase(unittest.TestCase):
                           'facet_pivot': ()})
 
         res_tv = scorched.response.SolrResponse.from_json(
-            self.data_tv, datefields=('date'))
+            self.data_tv, 'id', datefields=('date'))
         self.assertEqual(res_tv.term_vectors["uniqueKeyFieldName"], "uid")
         self.assertEqual(res_tv.term_vectors["warnings"],
                          {"noTermVectors": ["title"]})
@@ -77,6 +77,6 @@ class ResultsTestCase(unittest.TestCase):
         self.assertEqual(res_tv.term_vectors["9ce8ef2d-6e0f-5647-ae4c-2aaaca37b28f"]["weighted_words"]["anlagen"],
                          {"tf": 3, "df": 21484})
 
-        self.assertRaises(ValueError, res.from_json, self.data_error)
+        self.assertRaises(ValueError, res.from_json, self.data_error, 'id')
         self.assertEqual(res.__str__(), u'3 results found, starting at #0')
         self.assertEqual(len(res), 3)
