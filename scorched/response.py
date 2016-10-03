@@ -114,7 +114,7 @@ class SolrResponse(collections.Sequence):
         self.highlighting = doc.get("highlighting", {})
         if self.highlighting:
             for d in self.result.docs:
-                k = d[unique_key]
+                k = str(d[unique_key])
                 if k in self.highlighting:
                     d['solr_highlights'] = self.highlighting[k]
         self.spellcheck = doc.get("spellcheck", {})
