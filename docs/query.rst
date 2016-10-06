@@ -642,8 +642,8 @@ It is also possible to specify a array of fields::
     >>> si.query('thief').highlight(['name', 'title']).options()
     {'hl': True, 'hl.fl': 'name,title', 'q': u'thief'}
 
-Highlighting values will also be included in ``response.result.doc` as a
-``solr_highlights` attribute so that they can be accessed during result
+Highlighting values will also be included in ``response.result.doc` and grouped
+results as a ``solr_highlights` attribute so that they can be accessed during result
 iteration.
 
 PostingsHighlighter
