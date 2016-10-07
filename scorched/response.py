@@ -4,6 +4,7 @@ import json
 import scorched.dates
 
 from scorched.compat import str
+from scorched.search import is_iter
 
 
 class SolrFacetCounts(object):
@@ -206,7 +207,11 @@ class SolrResult(object):
         for doc in docs:
             for name, value in list(doc.items()):
                 if scorched.dates.is_datetime_field(name, datefields):
-                    doc[name] = scorched.dates.solr_date(value)._dt_obj
+                    if is_iter(value):
+                        doc[name] = [scorched.dates.solr_date(v)._dt_obj for
+                                     v in value]
+                    else:
+                        doc[name] = scorched.dates.solr_date(value)._dt_obj
         return docs
 
     def __str__(self):
@@ -236,7 +241,11 @@ class SolrGroupResult(object):
             for doc in group['doclist']['docs']:
                 for name, value in doc.items():
                     if scorched.dates.is_datetime_field(name, datefields):
-                        doc[name] = scorched.dates.solr_date(value)._dt_obj
+                        if is_iter(value):
+                            doc[name] = [scorched.dates.solr_date(v)._dt_obj for
+                                         v in value]
+                        else:
+                            doc[name] = scorched.dates.solr_date(value)._dt_obj
         return groups
 
     def __str__(self):

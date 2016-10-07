@@ -252,13 +252,15 @@ class TestUtils(unittest.TestCase):
         dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         docs = {
-            "id": "978-0641723445",
+            "id": "978",
             "important_dts": [
                 "1969-01-01",
                 "1969-01-02",
             ],
         }
         si.add(docs)
+        si.commit()
+        _ = si.query(id=u"978").execute()
 
     @scorched.testing.skip_unless_solr
     def test_highlighting(self):
