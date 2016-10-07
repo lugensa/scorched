@@ -512,9 +512,10 @@ class BaseSearch(object):
         newself.parser.update(**kwargs)
         return newself
 
-    def paginate(self, start=None, rows=None):
+    def paginate(self, start=None, rows=None,
+                 cursormark=False, fetchsize=None, cursorpos='*'):
         newself = self.clone()
-        newself.paginator.update(start, rows)
+        newself.paginator.update(start, rows, cursormark, fetchsize, cursorpos)
         return newself
 
     def debug(self):
@@ -603,6 +604,7 @@ class SolrSearch(BaseSearch):
         ret = self.interface.search(**self.options())
         if constructor:
             ret = self.constructor(ret, constructor)
+        ret.origsearch = self
         return ret
 
     def cursor(self, constructor=None, rows=None):
@@ -1157,11 +1159,19 @@ class PaginateOptions(Options):
         if original is None:
             self.start = None
             self.rows = None
+            self.cursormark = None
+            self.cursorpos = '*'
+            self.fetchsize = None
+            self.userrows = None
         else:
             self.start = original.start
             self.rows = original.rows
+            self.cursormark = original.cursormark
+            self.cursorpos = original.cursorpos
+            self.fetchsize = original.fetchsize
+            self.userrows = original.userrows
 
-    def update(self, start, rows):
+    def update(self, start, rows, cursormark, fetchsize, cursorpos):
         if start is not None:
             if start < 0:
                 raise scorched.exc.SolrError(
@@ -1172,13 +1182,30 @@ class PaginateOptions(Options):
                 raise scorched.exc.SolrError(
                     "paginator rows must be 0 or greater")
             self.rows = rows
-
+        # this is what the user asked for, and will be used in the iterator
+        # regardless of whether its a cursormark or non cursormark search
+            self.userrows = rows
+        
+        # cursormark: boolean to enable/disable Cursormark
+        # cursorpos: was initted to '*'
+        if cursormark is True or self.cursormark is True:
+        # distinguish first time through (where we save user rows)
+        # from subsequent
+            self.cursormark = True
+            self.cursorpos = cursorpos
+            # this is what we will fetch on each request
+            if fetchsize is not None:
+                self.rows  = fetchsize
+            
     def options(self):
         opts = {}
         if self.start is not None:
             opts['start'] = self.start
         if self.rows is not None:
             opts['rows'] = self.rows
+        if self.cursormark is True:
+            opts['cursorMark'] = self.cursorpos
+        
         return opts
 
 
