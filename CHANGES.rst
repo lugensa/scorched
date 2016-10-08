@@ -1,7 +1,13 @@
-0.10.3 (unreleased)
+0.10.4 (unreleased)
 -------------------
 
-- Nothing changed yet.
+ - Nothing changed yet.
+
+0.10.3 (2016-10-04)
+-------------------
+
+- Highlighting is now available in the result documents as the
+``solr_highlights`` field (mlissner)
 
 
 0.10.2 (2016-09-27)
@@ -57,7 +63,7 @@
 
 - Test against solr 4.10.2 and added python 3.4 to travis.
 
-- Added support for dismax queries. 
+- Added support for dismax queries.
 
 - Added support edismax field aliases.
 
@@ -125,6 +131,6 @@
 
 - Removed mx.DateTime
 
-- Removed redundant more_like_this  
+- Removed redundant more_like_this
 
 - Offspring of sunburnt is born

@@ -1,0 +1,43 @@
+{
+  "responseHeader": {
+    "status": 0,
+    "QTime": 1,
+    "params": {
+      "q": "author:John",
+      "hl": "true",
+      "hl.fl": "author",
+      "wt": "json"
+    }
+  },
+  "response": {
+    "numFound": 1,
+    "start": 0,
+    "docs": [
+      {
+        "name": "The Höhlentripp Strauß",
+        "author": "John Muir",
+        "author_s": "John Muir",
+        "series_t": "Percy Jackson and ☂nicode",
+        "pages_i": 384,
+        "genre_s": "fantasy",
+        "id": "978",
+        "sequence_i": 1,
+        "inStock": true,
+        "cat": [
+          "book",
+          "hardcover"
+        ],
+        "price": 12.5,
+        "price_c": "12.5,USD",
+        "_version_": 1547482048566919168
+      }
+    ]
+  },
+  "highlighting": {
+    "978": {
+      "author": [
+        "<em>John</em> Muir"
+      ]
+    }
+  }
+}

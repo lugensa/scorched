@@ -460,7 +460,10 @@ class SolrInterface(object):
         """
         params = scorched.search.params_from_dict(**kwargs)
         ret = scorched.response.SolrResponse.from_json(
-            self.conn.select(params), self._datefields)
+            self.conn.select(params),
+            self.schema['uniqueKey'],
+            self._datefields,
+        )
         return ret
 
     def query(self, *args, **kwargs):
@@ -483,7 +486,10 @@ class SolrInterface(object):
         """
         params = scorched.search.params_from_dict(**kwargs)
         ret = scorched.response.SolrResponse.from_json(
-            self.conn.mlt(params, content=content), self._datefields)
+            self.conn.mlt(params, content=content),
+            self.schema['uniqueKey'],
+            self._datefields,
+        )
         return ret
 
     def mlt_query(self, fields, content=None, content_charset=None,

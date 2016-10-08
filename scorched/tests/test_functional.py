@@ -252,13 +252,47 @@ class TestUtils(unittest.TestCase):
         dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         docs = {
-            "id": "978-0641723445",
+            "id": "978",
             "important_dts": [
                 "1969-01-01",
                 "1969-01-02",
             ],
         }
         si.add(docs)
+        si.commit()
+        _ = si.query(id=u"978").execute()
+
+    @scorched.testing.skip_unless_solr
+    def test_highlighting(self):
+        dsn = os.environ.get("SOLR_URL", 'http://localhost:8983/solr')
+        si = SolrInterface(dsn)
+        docs = {
+            "id": "978-0641723445",
+            "cat": ["book", "hardcover"],
+            "name": u"The Höhlentripp Strauß",
+            "author": u"Röüß Itoa",
+            "series_t": u"Percy Jackson and \N{UMBRELLA}nicode",
+            "sequence_i": 1,
+            "genre_s": "fantasy",
+            "inStock": True,
+            "price": 12.50,
+            "pages_i": 384
+        }
+        si.add(docs)
+        si.commit()
+        res = si.query(author=u"Röüß").highlight('author').execute()
+        highlighted_field_result = u'<em>Röüß</em> Itoa'
+        # Does the highlighting attribute work?
+        self.assertEqual(
+            res.highlighting['978-0641723445']['author'][0],
+            highlighted_field_result,
+        )
+
+        # Does each item have highlighting attributes?
+        self.assertEqual(
+            res.result.docs[0]['solr_highlights']['author'][0],
+            highlighted_field_result,
+        )
 
     @scorched.testing.skip_unless_solr
     def test_debug(self):
