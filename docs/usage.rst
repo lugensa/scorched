@@ -33,8 +33,8 @@ That's all you need to do; all dependencies will be pulled in automatically.
 Configuring a connection
 ------------------------
 
-Whether you're querying or updating a solr server, you need to set up a
-connection to the solr server. Pass the URL of the solr server to a
+Whether you're querying or updating a Solr server, you need to set up a
+connection to the Solr server. Pass the URL of the Solr server to a
 SolrInterface object.
 
 ::

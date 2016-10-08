@@ -31,7 +31,7 @@
 
 - Return response for update actions (mamico)
 
-- Add support for solr cursors (Chronial)
+- Add support for Solr cursors (Chronial)
 
 - Added stats option (rlskoeser)
 
@@ -61,7 +61,7 @@
 0.7 (2015-04-17)
 ----------------
 
-- Test against solr 4.10.2 and added python 3.4 to travis.
+- Test against Solr 4.10.2 and added Python 3.4 to travis.
 
 - Added support for dismax queries.
 

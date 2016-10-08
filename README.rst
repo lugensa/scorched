@@ -49,14 +49,14 @@ Now create a virtual-env and install some dependencies::
   bin/pip install -e .
   bin/pip install -e .[test]
 
-Start the solr server to test against::
+Start the Solr server to test against::
 
-  # DEBUG=true|false: verbose output of solr server on|off
+  # DEBUG=true|false: verbose output of Solr server on|off
   # SOLR_VERSION=x.y.z (the version to test against)
-  # the solr startup script reports the pid of the solr process
+  # the Solr startup script reports the pid of the Solr process
   SOLR_VERSION=4.10.2 SOLR_PORT=44177 DEBUG=true SOLR_CONFS="scorched/tests/solrconfig.xml" ./testing-solr.sh
 
-  # stop solr
+  # stop Solr
   kill -9 $pid
 
 Running the tests::
