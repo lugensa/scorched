@@ -8,3 +8,6 @@ Contributors
 - Janko Hauser
 
 - Mark E. Haase
+
+- Mike Lissner
+
