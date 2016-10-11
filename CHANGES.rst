@@ -1,14 +1,13 @@
-0.10.4 (unreleased)
--------------------
+CHANGES
+=======
 
- - Nothing changed yet.
-
-0.10.3 (2016-10-04)
+0.11.0 (2016-10-11)
 -------------------
 
 - Highlighting is now available in the result documents as the
-``solr_highlights`` field (mlissner)
+  ``solr_highlights`` field (mlissner)
 
+- smaller documentation cleanup
 
 0.10.2 (2016-09-27)
 -------------------
