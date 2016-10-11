@@ -9,6 +9,7 @@ CHANGES
 
 - smaller documentation cleanup
 
+
 0.10.2 (2016-09-27)
 -------------------
 
