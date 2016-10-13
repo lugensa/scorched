@@ -28,11 +28,11 @@ class SolrConnection(object):
     def __init__(self, url, http_connection, mode, retry_timeout,
                  max_length_get_url, search_timeout=()):
         """
-        :param url: url to solr
+        :param url: url to Solr
         :type url: str
         :param http_connection: already existing connection TODO
         :type http_connection: requests connection
-        :param mode: mode (readable, writable) solr
+        :param mode: mode (readable, writable) Solr
         :type mode: str
         :param retry_timeout: timeout until retry
         :type retry_timeout: int
@@ -105,11 +105,11 @@ class SolrConnection(object):
 
     def update(self, update_doc, **kwargs):
         """
-        :param update_doc: data send to solr
+        :param update_doc: data send to Solr
         :type update_doc: json data
         :returns: json -- json string
 
-        Send json to solr
+        Send json to Solr
         """
         if not self.writeable:
             raise TypeError("This Solr instance is only for reading")
@@ -199,7 +199,7 @@ class SolrConnection(object):
         :type params: dict
         :returns: json -- json string
 
-        We perform here a search on the `select` handler of solr.
+        We perform here a search on the `select` handler of Solr.
         """
         if not self.readable:
             raise TypeError("This Solr instance is only for writing")
@@ -269,11 +269,11 @@ class SolrInterface(object):
                  retry_timeout=-1, max_length_get_url=MAX_LENGTH_GET_URL,
                  search_timeout=()):
         """
-        :param url: url to solr
+        :param url: url to Solr
         :type url: str
         :param http_connection: optional -- already existing connection TODO
         :type http_connection: requests connection
-        :param mode: optional -- mode (readable, writable) solr
+        :param mode: optional -- mode (readable, writable) Solr
         :type mode: str
         :param retry_timeout: optional -- timeout until retry
         :type retry_timeout: int
@@ -318,7 +318,11 @@ class SolrInterface(object):
                 if value is None:
                     continue
                 if scorched.dates.is_datetime_field(name, self._datefields):
-                    value = str(scorched.dates.solr_date(value))
+                    if is_iter(value):
+                        value = [str(scorched.dates.solr_date(v)) for v in
+                                 value]
+                    else:
+                        value = str(scorched.dates.solr_date(value))
                 new_doc[name] = value
             prepared_docs.append(new_doc)
         return prepared_docs
@@ -327,14 +331,14 @@ class SolrInterface(object):
         """
         :param docs: documents to be added
         :type docs: dict
-        :param chunk: optional -- size of chunks in witch the add command
-        schould be splitted
+        :param chunk: optional -- size of chunks in which the add command
+        should be split
         :type chunk: int
         :param kwargs: optinal -- additional arguments
         :type kwargs: dict
-        :returns: list of SolrUpdateResponse  -- A solr response object.
+        :returns: list of SolrUpdateResponse  -- A Solr response object.
 
-        Add a document or a list of document to solr.
+        Add a document or a list of document to Solr.
         """
         if hasattr(docs, "items") or not is_iter(docs):
             docs = [docs]
@@ -351,7 +355,7 @@ class SolrInterface(object):
         """
         :param query: criteria how witch entries should be deleted
         :type query: LuceneQuery
-        :returns: SolrUpdateResponse  -- A solr response object.
+        :returns: SolrUpdateResponse  -- A Solr response object.
 
         Delete entries by a given query
         """
@@ -364,7 +368,7 @@ class SolrInterface(object):
         """
         :param ids: ids of entries that should be deleted
         :type ids: list
-        :returns: SolrUpdateResponse  -- A solr response object.
+        :returns: SolrUpdateResponse  -- A Solr response object.
 
         Delete entries by a given id
         """
@@ -385,7 +389,7 @@ class SolrInterface(object):
                            refresh the 'view' of the index in a more performant
                            manner, but without "on-disk" guarantees.
         :type softCommit: bool
-        :returns: SolrUpdateResponse  -- A solr response object.
+        :returns: SolrUpdateResponse  -- A Solr response object.
 
         A commit operation makes index changes visible to new search requests.
         """
@@ -405,7 +409,7 @@ class SolrInterface(object):
         :param maxSegments: optional -- optimizes down to at most this number
                             of segments
         :type maxSegments: int
-        :returns: SolrUpdateResponse  -- A solr response object.
+        :returns: SolrUpdateResponse  -- A Solr response object.
 
         An optimize is like a hard commit except that it forces all of the
         index segments to be merged into a single segment first.
@@ -418,7 +422,7 @@ class SolrInterface(object):
 
     def rollback(self):
         """
-        :returns: SolrUpdateResponse  -- A solr response object.
+        :returns: SolrUpdateResponse  -- A Solr response object.
 
         The rollback command rollbacks all add/deletes made to the index since
         the last commit
@@ -429,7 +433,7 @@ class SolrInterface(object):
 
     def delete_all(self):
         """
-        :returns: SolrUpdateResponse  -- A solr response object.
+        :returns: SolrUpdateResponse  -- A Solr response object.
 
         Delete everything
         """
@@ -450,20 +454,23 @@ class SolrInterface(object):
 
     def search(self, **kwargs):
         """
-        :returns: SolrResponse  -- A solr response object.
+        :returns: SolrResponse  -- A Solr response object.
 
         Search solr
         """
         params = scorched.search.params_from_dict(**kwargs)
         ret = scorched.response.SolrResponse.from_json(
-            self.conn.select(params), self._datefields)
+            self.conn.select(params),
+            self.schema['uniqueKey'],
+            self._datefields,
+        )
         return ret
 
     def query(self, *args, **kwargs):
         """
         :returns: SolrSearch -- A solrsearch.
 
-        Build a solr query
+        Build a Solr query
         """
         q = scorched.search.SolrSearch(self)
         if len(args) + len(kwargs) > 0:
@@ -473,13 +480,16 @@ class SolrInterface(object):
 
     def mlt_search(self, content=None, **kwargs):
         """
-        :returns: SolrResponse  -- A solr response object.
+        :returns: SolrResponse  -- A Solr response object.
 
-        Mlt search solr
+        More like this search Solr
         """
         params = scorched.search.params_from_dict(**kwargs)
         ret = scorched.response.SolrResponse.from_json(
-            self.conn.mlt(params, content=content), self._datefields)
+            self.conn.mlt(params, content=content),
+            self.schema['uniqueKey'],
+            self._datefields,
+        )
         return ret
 
     def mlt_query(self, fields, content=None, content_charset=None,

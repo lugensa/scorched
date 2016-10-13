@@ -184,7 +184,7 @@ the results in smaller chunks. Due to the way this is implemented in Solr, your
 sort needs to include your uniqueKey field. The ``cursor()`` method returns a
 cursor that you can iterate over. Like ``execute()``, ``cursor()`` takes an
 optional ``constructor`` parameter. In addition you can pass ``rows`` to define
-how many results should be fetched from solr at once.
+how many results should be fetched from Solr at once.
 
 ::
 
@@ -358,7 +358,7 @@ You can also sort on multiple factors:
     >>> si.query("thief").sort_by("-price").sort_by("score")
 
 This query will sort first by descending price, and then by increasing "score"
-(which is what solr calls relevancy).
+(which is what Solr calls relevancy).
 
 
 Complex queries
@@ -496,7 +496,7 @@ Boosts the importance of the author field by 3.
 A more common pattern is that you want all books with "black" in the title *and
 you have a preference for those authored by Lloyd Alexander*. This is different
 from the last query; the last query would return books by Lloyd Alexander which
-did not have "black" in the title. Achieving this in solr is possible, but a
+did not have "black" in the title. Achieving this in Solr is possible, but a
 little awkward; scorched provides a shortcut for this pattern.
 
 ::
@@ -625,7 +625,7 @@ Highlighting
 
 For background, see http://wiki.apache.org/solr/HighlightingParameters.
 
-Alongside the normal search results, you can ask solr to return fragments of
+Alongside the normal search results, you can ask Solr to return fragments of
 the documents, with relevant search terms highlighted. You do this with the
 chainable ``highlight()`` method.
 
@@ -641,6 +641,10 @@ It is also possible to specify a array of fields::
 
     >>> si.query('thief').highlight(['name', 'title']).options()
     {'hl': True, 'hl.fl': 'name,title', 'q': u'thief'}
+
+Highlighting values will also be included in ``response.result.doc` and grouped
+results as a ``solr_highlights` attribute so that they can be accessed during result
+iteration.
 
 PostingsHighlighter
 -------------------
@@ -791,8 +795,8 @@ Set debug
 ---------
 
 For background, see https://wiki.apache.org/solr/CommonQueryParameters#Debugging.
-To get see what solr is doing with our query we need sometimes more info. To get
-this addition information we set ``debug``.
+To see what Solr is doing with our query we need sometimes more info. To get
+this additional information we set ``debug``.
 
 Example::
 

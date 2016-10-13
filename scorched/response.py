@@ -4,6 +4,7 @@ import json
 import scorched.dates
 
 from scorched.compat import str
+from scorched.search import is_iter
 
 
 class SolrFacetCounts(object):
@@ -95,7 +96,7 @@ class SolrUpdateResponse(object):
 class SolrResponse(collections.Sequence):
 
     @classmethod
-    def from_json(cls, jsonmsg, datefields=()):
+    def from_json(cls, jsonmsg, unique_key, datefields=()):
         self = cls()
         self.original_json = jsonmsg
         doc = json.loads(jsonmsg)
@@ -111,9 +112,30 @@ class SolrResponse(collections.Sequence):
         # if doc.get('match'):
         #    self.result = SolrResult.from_json(doc['match'], datefields)
         self.facet_counts = SolrFacetCounts.from_json(doc)
-        self.highlighting = doc.get("highlighting", {})
         self.spellcheck = doc.get("spellcheck", {})
-        self.groups = doc.get('grouped', {})
+        if self.params is not None:
+            self.group_field = self.params.get('group.field')
+        else:
+            self.group_field = None
+        self.groups = {}
+        if self.group_field is not None:
+            self.groups = SolrGroupResult.from_json(
+                doc['grouped'], self.group_field, datefields)
+        self.highlighting = doc.get("highlighting", {})
+        if self.highlighting:
+            # Add highlighting info to the individual documents.
+            if doc.get('response'):
+                for d in self.result.docs:
+                    k = str(d[unique_key])
+                    if k in self.highlighting:
+                        d['solr_highlights'] = self.highlighting[k]
+            elif doc.get('grouped'):
+                for group in getattr(self.groups, self.group_field)['groups']:
+                    for d in group['doclist']['docs']:
+                        k = str(d[unique_key])
+                        if k in self.highlighting:
+                            d['solr_highlights'] = self.highlighting[k]
+
         self.debug = doc.get('debug', {})
         self.next_cursor_mark = doc.get('nextCursorMark')
         self.more_like_these = dict(
@@ -129,6 +151,7 @@ class SolrResponse(collections.Sequence):
     def from_get_json(cls, jsonmsg, datefields=()):
         """Generate instance from the response of a RealTime Get"""
         self = cls()
+        self.groups = {}
         self.original_json = jsonmsg
         doc = json.loads(jsonmsg)
         self.result = SolrResult.from_json(doc['response'], datefields)
@@ -155,10 +178,16 @@ class SolrResponse(collections.Sequence):
         return str(self.result)
 
     def __len__(self):
-        return len(self.result.docs)
+        if self.groups:
+            return len(getattr(self.groups, self.group_field)['groups'])
+        else:
+            return len(self.result.docs)
 
     def __getitem__(self, key):
-        return self.result.docs[key]
+        if self.groups:
+            return getattr(self.groups, self.group_field)['groups'][key]
+        else:
+            return self.result.docs[key]
 
 
 class SolrResult(object):
@@ -173,13 +202,54 @@ class SolrResult(object):
         self.docs = self._prepare_docs(docs, datefields)
         return self
 
-    def _prepare_docs(self, docs, datefields):
+    @staticmethod
+    def _prepare_docs(docs, datefields):
         for doc in docs:
             for name, value in list(doc.items()):
                 if scorched.dates.is_datetime_field(name, datefields):
-                    doc[name] = scorched.dates.solr_date(value)._dt_obj
+                    if is_iter(value):
+                        doc[name] = [scorched.dates.solr_date(v)._dt_obj for
+                                     v in value]
+                    else:
+                        doc[name] = scorched.dates.solr_date(value)._dt_obj
         return docs
 
     def __str__(self):
         return "{numFound} results found, starting at #{start}".format(
             numFound=self.numFound, start=self.start)
+
+
+class SolrGroupResult(object):
+
+    @classmethod
+    def from_json(cls, node, group_field, datefields=()):
+        self = cls()
+        self.name = 'response'
+        self.group_field = group_field
+        groups = node[group_field]['groups']
+        setattr(self, group_field, {
+            'matches': node[group_field]['matches'],
+            'ngroups': node[group_field]['ngroups'],
+            'groups': self._prepare_groups(groups, datefields),
+        })
+        return self
+
+    @staticmethod
+    def _prepare_groups(groups, datefields):
+        """Iterate over the docs and the groups and cast fields appropriately"""
+        for group in groups:
+            for doc in group['doclist']['docs']:
+                for name, value in doc.items():
+                    if scorched.dates.is_datetime_field(name, datefields):
+                        if is_iter(value):
+                            doc[name] = [scorched.dates.solr_date(v)._dt_obj for
+                                         v in value]
+                        else:
+                            doc[name] = scorched.dates.solr_date(value)._dt_obj
+        return groups
+
+    def __str__(self):
+        return "{ngroups} groups with {matches} matches found".format(
+            ngroups=getattr(self, self.group_field)['ngroups'],
+            matches=getattr(self, self.group_field)['matches'],
+        )

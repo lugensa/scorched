@@ -20,7 +20,7 @@ download() {
 }
 
 is_solr_up(){
-    echo "Checking if solr is up on http://localhost:$SOLR_PORT/solr/admin/cores"
+    echo "Checking if Solr is up on http://localhost:$SOLR_PORT/solr/admin/cores"
     http_code=`echo $(curl -s -o /dev/null -w "%{http_code}" "http://localhost:$SOLR_PORT/solr/admin/cores")`
     return `test $http_code = "200"`
 }
@@ -189,10 +189,10 @@ add_core() {
     [[ -d "${dir_name}/example/multicore/${solr_core}" ]] || mkdir $dir_name/example/multicore/$solr_core
     [[ -d "${dir_name}/example/multicore/${solr_core}/conf" ]] || mkdir $dir_name/example/multicore/$solr_core/conf
 
-    # copy full solr example first 
+    # copy full solr example first
     cp -R $dir_name/example/solr/$dir_conf/* $dir_name/example/multicore/$solr_core/conf
 
-    # ooverwrite with custom configurations
+    # overwrite with custom configurations
     if [ -d "${solr_confs}" ] ; then
       cp -R $solr_confs/* $dir_name/example/multicore/$solr_core/conf/
     else

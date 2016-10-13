@@ -1,7 +1,29 @@
-0.10.2 (unreleased)
+CHANGES
+=======
+
+0.11.1 (unreleased)
 -------------------
 
-- fix is_iter implementation #30 (mamico)
+- Nothing changed yet.
+
+
+0.11.0 (2016-10-11)
+-------------------
+
+- Highlighting is now available in the result documents as the
+  ``solr_highlights`` field (mlissner)
+
+- smaller documentation cleanup
+
+
+0.10.2 (2016-09-27)
+-------------------
+
+- Fix is_iter implementation #30 (mamico)
+
+- Multi-value date fields work (mlissner)
+
+- Fixes error in the readme so that DEBUG mode works as documented (mlissner)
 
 
 0.10.1 (2016-06-15)
@@ -15,7 +37,7 @@
 
 - Return response for update actions (mamico)
 
-- Add support for solr cursors (Chronial)
+- Add support for Solr cursors (Chronial)
 
 - Added stats option (rlskoeser)
 
@@ -45,9 +67,9 @@
 0.7 (2015-04-17)
 ----------------
 
-- Test against solr 4.10.2 and added python 3.4 to travis.
+- Test against Solr 4.10.2 and added Python 3.4 to travis.
 
-- Added support for dismax queries. 
+- Added support for dismax queries.
 
 - Added support edismax field aliases.
 
@@ -115,6 +137,6 @@
 
 - Removed mx.DateTime
 
-- Removed redundant more_like_this  
+- Removed redundant more_like_this
 
 - Offspring of sunburnt is born
