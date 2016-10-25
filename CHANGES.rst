@@ -4,7 +4,7 @@ CHANGES
 0.11.1 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- ``BaseSearch`` has now a ``count`` function (mlissner)
 
 
 0.11.0 (2016-10-11)
