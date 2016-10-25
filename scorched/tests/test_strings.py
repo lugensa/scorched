@@ -21,9 +21,14 @@ class TestStrings(unittest.TestCase):
         output = {None: u'occurrencetype$$pressemitteilung$$*'}
         self.assertEqual(q.options(), output,
                          "Unequal: %r, %r" % (q.options(), output))
-        # backslash
+        # slash
         q = q.Q(WildcardString(u'occu/*/baum'))
         output = {None: u'occu\\/*\\/baum'}
+        self.assertEqual(q.options(), output,
+                         "Unequal: %r, %r" % (q.options(), output))
+        # backslash
+        q = q.Q(WildcardString(u'occu\*baum\?aus\\'))
+        output = {None: u'occu\\*baum\\?aus\\\\'}
         self.assertEqual(q.options(), output,
                          "Unequal: %r, %r" % (q.options(), output))
         # question mark
