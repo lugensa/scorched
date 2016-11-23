@@ -395,7 +395,7 @@ class SolrInterface(object):
         A commit operation makes index changes visible to new search requests.
         """
         ret = scorched.response.SolrUpdateResponse.from_json(
-            self.conn.update('{"commit": {}}', commit=True,
+            self.conn.update(b'{"commit": {}}', commit=True,
                              waitSearcher=waitSearcher,
                              expungeDeletes=expungeDeletes,
                              softCommit=softCommit))
@@ -416,7 +416,7 @@ class SolrInterface(object):
         index segments to be merged into a single segment first.
         """
         ret = scorched.response.SolrUpdateResponse.from_json(
-            self.conn.update('{"optimize": {}}', optimize=True,
+            self.conn.update(b'{"optimize": {}}', optimize=True,
                              waitSearcher=waitSearcher,
                              maxSegments=maxSegments))
         return ret
@@ -429,7 +429,7 @@ class SolrInterface(object):
         the last commit
         """
         ret = scorched.response.SolrUpdateResponse.from_json(
-            self.conn.update('{"rollback": {}}'))
+            self.conn.update(b'{"rollback": {}}'))
         return ret
 
     def delete_all(self):
