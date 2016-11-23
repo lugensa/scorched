@@ -30,7 +30,8 @@ class SolrConnection(object):
         """
         :param url: url to Solr
         :type url: str
-        :param http_connection: already existing connection TODO
+        :param http_connection: existing requests.Session object, or None to
+                                create a new one.
         :type http_connection: requests connection
         :param mode: mode (readable, writable) Solr
         :type mode: str
@@ -43,7 +44,7 @@ class SolrConnection(object):
                                (connect timeout, read timeout) tuple.
         :type search_timeout: float or tuple
         """
-        self.http_connection = requests.Session()
+        self.http_connection = http_connection or requests.Session()
         if mode == 'r':
             self.writeable = False
         elif mode == 'w':
@@ -271,7 +272,7 @@ class SolrInterface(object):
         """
         :param url: url to Solr
         :type url: str
-        :param http_connection: optional -- already existing connection TODO
+        :param http_connection: optional -- already existing connection
         :type http_connection: requests connection
         :param mode: optional -- mode (readable, writable) Solr
         :type mode: str
