@@ -1,16 +1,17 @@
 from __future__ import unicode_literals
+from scorched.compat import str
+
 import itertools
 import json
 import requests
+import scorched.compat
 import scorched.dates
+import scorched.exc
 import scorched.response
 import scorched.search
-import scorched.exc
-import scorched.compat
 import time
 import warnings
 
-from scorched.compat import str
 
 MAX_LENGTH_GET_URL = 2048
 # Jetty default is 4096; Tomcat default is 8192; picking 2048 to be
@@ -309,6 +310,27 @@ class SolrInterface(object):
                     if x['type'] == 'date'])
         return ret
 
+    def _should_skip_value(self, value):
+        if value is None:
+            return True
+        if (
+            isinstance(value, dict) and
+            'set' in value and
+            value['set'] is None
+        ):
+            return True
+        return False
+
+    def _prepare_date(self, value):
+        ''' Prepare a value of type date
+        '''
+        if is_iter(value):
+            value = [str(scorched.dates.solr_date(v)) for v in
+                     value]
+        else:
+            value = str(scorched.dates.solr_date(value))
+        return value
+
     def _prepare_docs(self, docs):
         prepared_docs = []
         for doc in docs:
@@ -316,14 +338,13 @@ class SolrInterface(object):
             for name, value in list(doc.items()):
                 # XXX remove all None fields this is needed for adding date
                 # fields
-                if value is None:
+                if self._should_skip_value(value):
                     continue
                 if scorched.dates.is_datetime_field(name, self._datefields):
-                    if is_iter(value):
-                        value = [str(scorched.dates.solr_date(v)) for v in
-                                 value]
+                    if isinstance(value, dict) and 'set' in value:
+                        value['set'] = self._prepare_date(value['set'])
                     else:
-                        value = str(scorched.dates.solr_date(value))
+                        value = self._prepare_date(value)
                 new_doc[name] = value
             prepared_docs.append(new_doc)
         return prepared_docs
