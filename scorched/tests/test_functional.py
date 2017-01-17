@@ -349,6 +349,17 @@ class TestUtils(unittest.TestCase):
         opts = si.query(name=u"Monstes").spellcheck().options()
         self.assertEqual({u'q': u'name:Monstes', u'spellcheck': True}, opts)
 
+    @scorched.testing.skip_unless_solr
+    def test_extract(self):
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        pdf = os.path.join(os.path.dirname(__file__), "data", "lipsum.pdf")
+        with open(pdf, 'rb') as f:
+            data = si.extract(f)
+        self.assertEqual(0, data.status)
+        self.assertTrue('Lorem ipsum' in data.text)
+        self.assertEqual(['pdfTeX-1.40.13'], data.metadata['producer'])
+
 
 class TestMltHandler(unittest.TestCase):
 
