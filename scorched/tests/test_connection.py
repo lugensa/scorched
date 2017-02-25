@@ -148,6 +148,17 @@ class TestConnection(unittest.TestCase):
         sc.search_timeout = (1.0, 5.0)
         self.assertRaises(requests.exceptions.ConnectTimeout, sc.select, [])
 
+    def test_basic_auth(self):
+        hc = requests.Session()
+        hc.auth = ('joe', 'Secret')
+
+        dsn = "http://localhost:1234/none"
+        sc = self._make_connection(url=dsn, http_connection=hc)
+        sc.select_url = httpbin('/basic-auth/{0}/{1}'.format(*hc.auth))
+
+        resp = sc.select([])
+        self.assertTrue(json.loads(resp)['authenticated'])
+
 
 class TestSolrInterface(unittest.TestCase):
 

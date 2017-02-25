@@ -11,3 +11,4 @@ Contributors
 
 - Mike Lissner
 
+- Thomas Quinot
