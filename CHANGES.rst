@@ -4,6 +4,10 @@ CHANGES
 0.11.1 (unreleased)
 -------------------
 
+- Add extract handler support (mamico)
+
+- Allow user to pass an http_connection to SolrInterface ctor (quinot)
+
 - ``BaseSearch`` has now a ``count`` function (mlissner)
 
 
