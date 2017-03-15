@@ -1,6 +1,9 @@
 from __future__ import unicode_literals
+from setuptools import find_packages
+from setuptools import setup
+
 import os
-from setuptools import setup, find_packages
+
 
 version = '0.11.1.dev0'
 
@@ -25,6 +28,7 @@ setup(name='scorched',
                   'Programming Language :: Python :: 2.7',
                   'Programming Language :: Python :: 3',
                   'Programming Language :: Python :: 3.4',
+                  'Programming Language :: Python :: 3.5',
       ],
       keywords='solr tow sunburnt offspring',
       author='(Josip Delic) Lugensa GmbH',

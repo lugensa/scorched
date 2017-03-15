@@ -9,6 +9,7 @@ CHANGES
 - Allow user to pass an http_connection to SolrInterface ctor (quinot)
 
 - ``BaseSearch`` has now a ``count`` function (mlissner)
+- Support atomic updates (ale-rt)
 
 
 0.11.0 (2016-10-11)
