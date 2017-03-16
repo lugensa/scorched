@@ -196,9 +196,9 @@ class SolrResponse(collections.Sequence):
 
     def __len__(self):
         if self.groups:
-            return len(getattr(self.groups, self.group_field)['groups'])
+            return getattr(self.groups, self.group_field)['ngroups']
         else:
-            return len(self.result.docs)
+            return self.result.numFound
 
     def __getitem__(self, key):
         if self.groups:
