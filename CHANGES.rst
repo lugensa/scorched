@@ -1,8 +1,8 @@
 CHANGES
 =======
 
-0.11.1 (unreleased)
--------------------
+0.12 (2017-03-16)
+-----------------
 
 - Add extract handler support (mamico)
 
