@@ -2,12 +2,15 @@ from __future__ import unicode_literals
 
 import datetime
 import json
-import mock
 import os
 import requests
 import scorched.connection
 import unittest
 
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 HTTPBIN = os.environ.get('HTTPBIN_URL', 'http://httpbin.org/')
 # Issue #1483: Make sure the URL always has a trailing slash

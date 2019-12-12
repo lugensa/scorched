@@ -44,7 +44,7 @@ setup(name='scorched',
           "pytz",
       ],
       extras_require={
-          'test': ["nose", "coverage", "mock", ],
+          'test': ["nose", "coverage", "mock;python_version<'3'"],
       },
       test_suite='scorched.tests',
       setup_requires=["setuptools_git"],
