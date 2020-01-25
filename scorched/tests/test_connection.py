@@ -2,14 +2,18 @@ from __future__ import unicode_literals
 
 import datetime
 import json
-import mock
 import os
 import requests
 import scorched.connection
 import unittest
 
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
-HTTPBIN = os.environ.get('HTTPBIN_URL', 'http://httpbin.org/')
+
+HTTPBIN = os.environ.get('HTTPBIN_URL', 'https://httpbin.org/')
 # Issue #1483: Make sure the URL always has a trailing slash
 HTTPBIN = HTTPBIN.rstrip('/') + '/'
 
@@ -144,7 +148,7 @@ class TestConnection(unittest.TestCase):
         resp = sc.select([])
         self.assertTrue(json.loads(resp)['url'].startswith(sc.select_url))
         # Connecting to an invalid port should raise a ConnectionError
-        sc.select_url = "http://httpbin.org:1/none/select"
+        sc.select_url = "https://httpbin.org:1/none/select"
         sc.search_timeout = 1.0
         self.assertRaises(requests.exceptions.ConnectTimeout, sc.select, [])
         sc.search_timeout = (1.0, 5.0)

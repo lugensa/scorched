@@ -4,7 +4,7 @@ CHANGES
 0.12.1 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Add support for Python 3.6, Python3.7 and Python 3.8 (ale-rt)
 
 
 0.12 (2017-03-16)
@@ -15,6 +15,7 @@ CHANGES
 - Allow user to pass an http_connection to SolrInterface ctor (quinot)
 
 - ``BaseSearch`` has now a ``count`` function (mlissner)
+
 - Support atomic updates (ale-rt)
 
 

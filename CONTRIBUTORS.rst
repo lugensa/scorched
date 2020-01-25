@@ -1,6 +1,8 @@
 Contributors
 ============
 
+- Alessandro Pisa
+
 - Mauro Amico
 
 - Josip Delic

@@ -94,6 +94,9 @@ class solr_date(object):
             raise scorched.exc.SolrError(
                 "Cannot initialize solr_date from %s object" % type(v))
 
+    def __hash__(self):
+        return self._dt_obj.__hash__()
+
     @staticmethod
     def from_date(dt_obj):
         # Python datetime objects may include timezone information
