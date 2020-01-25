@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-0.12.1 (unreleased)
+0.13.0 (2020-01-25)
 -------------------
 
 - Add support for Python 3.6, Python3.7 and Python 3.8 (ale-rt)
