@@ -570,6 +570,22 @@ class BaseSearch(object):
                 result.more_like_these[key].docs)
         return result
 
+    _count = None
+    def count(self):
+        if self._count is None:
+            # We haven't gotten the count yet. Get it. Clone self for this
+            # query or else we'll set rows=0 for remainder.
+            newself = self.clone()
+            r = newself.paginate(None, 0).execute()
+            if r.groups:
+                total = getattr(r.groups, r.group_field)['ngroups']
+            else:
+                total = r.result.numFound
+
+            # Set the cache
+            self._count = total
+        return self._count
+
     def __getitem__(self, key):
         if isinstance(key, int):
             start, rows = key, 1
@@ -1331,7 +1347,7 @@ class StatOptions(Options):
     opts = {
         "stats.facet": str,
     }
-    # NOTE: solr documentation indicates stats.facet is a legacy parameter,
+    # NOTE: Solr documentation indicates stats.facet is a legacy parameter,
     # recommends using stats.field with facet.pivot instead
 
     def __init__(self, original=None):

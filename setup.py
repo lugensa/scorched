@@ -1,8 +1,11 @@
 from __future__ import unicode_literals
-import os
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 
-version = '0.10.2.dev0'
+import os
+
+
+version = '0.13.1.dev0'
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
@@ -25,6 +28,10 @@ setup(name='scorched',
                   'Programming Language :: Python :: 2.7',
                   'Programming Language :: Python :: 3',
                   'Programming Language :: Python :: 3.4',
+                  'Programming Language :: Python :: 3.5',
+                  'Programming Language :: Python :: 3.6',
+                  'Programming Language :: Python :: 3.7',
+                  'Programming Language :: Python :: 3.8',
       ],
       keywords='solr tow sunburnt offspring',
       author='(Josip Delic) Lugensa GmbH',
@@ -40,7 +47,7 @@ setup(name='scorched',
           "pytz",
       ],
       extras_require={
-          'test': ["nose", "coverage", "mock", ],
+          'test': ["nose", "coverage", "mock;python_version<'3'"],
       },
       test_suite='scorched.tests',
       setup_requires=["setuptools_git"],

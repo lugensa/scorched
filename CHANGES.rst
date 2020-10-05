@@ -1,7 +1,47 @@
-0.10.2 (unreleased)
+CHANGES
+=======
+
+0.13.1 (unreleased)
 -------------------
 
-- fix is_iter implementation #30 (mamico)
+- Nothing changed yet.
+
+
+0.13.0 (2020-01-25)
+-------------------
+
+- Add support for Python 3.6, Python3.7 and Python 3.8 (ale-rt)
+
+
+0.12 (2017-03-16)
+-----------------
+
+- Add extract handler support (mamico)
+
+- Allow user to pass an http_connection to SolrInterface ctor (quinot)
+
+- ``BaseSearch`` has now a ``count`` function (mlissner)
+
+- Support atomic updates (ale-rt)
+
+
+0.11.0 (2016-10-11)
+-------------------
+
+- Highlighting is now available in the result documents as the
+  ``solr_highlights`` field (mlissner)
+
+- smaller documentation cleanup
+
+
+0.10.2 (2016-09-27)
+-------------------
+
+- Fix is_iter implementation #30 (mamico)
+
+- Multi-value date fields work (mlissner)
+
+- Fixes error in the readme so that DEBUG mode works as documented (mlissner)
 
 
 0.10.1 (2016-06-15)
@@ -15,7 +55,7 @@
 
 - Return response for update actions (mamico)
 
-- Add support for solr cursors (Chronial)
+- Add support for Solr cursors (Chronial)
 
 - Added stats option (rlskoeser)
 
@@ -45,9 +85,9 @@
 0.7 (2015-04-17)
 ----------------
 
-- Test against solr 4.10.2 and added python 3.4 to travis.
+- Test against Solr 4.10.2 and added Python 3.4 to travis.
 
-- Added support for dismax queries. 
+- Added support for dismax queries.
 
 - Added support edismax field aliases.
 
@@ -115,6 +155,6 @@
 
 - Removed mx.DateTime
 
-- Removed redundant more_like_this  
+- Removed redundant more_like_this
 
 - Offspring of sunburnt is born

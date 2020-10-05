@@ -9,24 +9,34 @@ import scorched.response
 class ResultsTestCase(unittest.TestCase):
 
     def setUp(self):
-        file = os.path.join(os.path.dirname(__file__), "dumps",
-                            "request_w_facets.json")
-        with open(file) as f:
+        file_path = os.path.join(os.path.dirname(__file__), "dumps",
+                                 "request_w_facets.json")
+        with open(file_path) as f:
             self.data = f.read()
         # termVector data
-        file = os.path.join(os.path.dirname(__file__), "dumps",
-                            "request_w_termvector.json")
-        with open(file) as f:
+        file_path = os.path.join(os.path.dirname(__file__), "dumps",
+                                 "request_w_termvector.json")
+        with open(file_path) as f:
             self.data_tv = f.read()
         # error data
-        file = os.path.join(os.path.dirname(__file__), "dumps",
-                            "request_error.json")
-        with open(file) as f:
+        file_path = os.path.join(os.path.dirname(__file__), "dumps",
+                                 "request_error.json")
+        with open(file_path) as f:
             self.data_error = f.read()
+
+        file_path = os.path.join(os.path.dirname(__file__), "dumps",
+                                 "request_hl.json")
+        with open(file_path) as f:
+            self.data_hl = f.read()
+
+        file_path = os.path.join(os.path.dirname(__file__), "dumps",
+                                 "request_hl_grouped.json")
+        with open(file_path) as f:
+            self.data_hl_grouped = f.read()
 
     def test_response(self):
         res = scorched.response.SolrResponse.from_json(
-            self.data, datefields=('*_dt', 'modified'))
+            self.data, 'id', datefields=('*_dt', 'modified'))
         self.assertEqual(res.status, 0)
         self.assertEqual(res.QTime, 1)
         self.assertEqual(res.result.numFound, 3)
@@ -65,8 +75,13 @@ class ResultsTestCase(unittest.TestCase):
                           },
                           'facet_pivot': ()})
 
+        self.assertRaises(ValueError, res.from_json, self.data_error, 'id')
+        self.assertEqual(res.__str__(), u'3 results found, starting at #0')
+        self.assertEqual(len(res), 3)
+
+    def test_term_vectors(self):
         res_tv = scorched.response.SolrResponse.from_json(
-            self.data_tv, datefields=('date'))
+            self.data_tv, 'id', datefields=('date',))
         self.assertEqual(res_tv.term_vectors["uniqueKeyFieldName"], "uid")
         self.assertEqual(res_tv.term_vectors["warnings"],
                          {"noTermVectors": ["title"]})
@@ -77,6 +92,29 @@ class ResultsTestCase(unittest.TestCase):
         self.assertEqual(res_tv.term_vectors["9ce8ef2d-6e0f-5647-ae4c-2aaaca37b28f"]["weighted_words"]["anlagen"],
                          {"tf": 3, "df": 21484})
 
-        self.assertRaises(ValueError, res.from_json, self.data_error)
-        self.assertEqual(res.__str__(), u'3 results found, starting at #0')
-        self.assertEqual(len(res), 3)
+    def test_highlighting(self):
+        res_hl = scorched.response.SolrResponse.from_json(
+            self.data_hl, 'id')
+        highlights = {u'author': [u'<em>John</em> Muir']}
+        self.assertEqual(res_hl.highlighting['978'], highlights)
+        self.assertEqual(res_hl.result.docs[0]['solr_highlights'], highlights)
+
+    def test_highlighting_with_grouping(self):
+        res_hl_group = scorched.response.SolrResponse.from_json(
+            self.data_hl_grouped, 'id', datefields=('important_dts',))
+        self.assertEqual(res_hl_group.group_field, 'inStock')
+        self.assertEqual(getattr(res_hl_group.groups, res_hl_group.group_field)['matches'], 2)
+        ngroups = getattr(res_hl_group.groups, res_hl_group.group_field)['ngroups']
+        self.assertEqual(ngroups, 1)
+
+        groups = getattr(res_hl_group.groups, res_hl_group.group_field)['groups']
+        self.assertEqual(len(groups), ngroups)
+
+        highlights = {u'author': [u'John <em>Muir</em>']}
+        self.assertEqual(groups[0]['doclist']['docs'][0]['solr_highlights'],
+                         highlights)
+        self.assertEqual(type(groups[0]['doclist']['docs'][0]['important_dts'][0]),
+                         datetime.datetime)
+
+
+

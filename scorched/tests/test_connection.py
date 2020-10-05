@@ -1,13 +1,19 @@
 from __future__ import unicode_literals
+
 import datetime
 import json
-import mock
 import os
 import requests
-import unittest
 import scorched.connection
+import unittest
 
-HTTPBIN = os.environ.get('HTTPBIN_URL', 'http://httpbin.org/')
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
+
+HTTPBIN = os.environ.get('HTTPBIN_URL', 'https://httpbin.org/')
 # Issue #1483: Make sure the URL always has a trailing slash
 HTTPBIN = HTTPBIN.rstrip('/') + '/'
 
@@ -142,11 +148,22 @@ class TestConnection(unittest.TestCase):
         resp = sc.select([])
         self.assertTrue(json.loads(resp)['url'].startswith(sc.select_url))
         # Connecting to an invalid port should raise a ConnectionError
-        sc.select_url = "http://httpbin.org:1/none/select"
+        sc.select_url = "https://httpbin.org:1/none/select"
         sc.search_timeout = 1.0
         self.assertRaises(requests.exceptions.ConnectTimeout, sc.select, [])
         sc.search_timeout = (1.0, 5.0)
         self.assertRaises(requests.exceptions.ConnectTimeout, sc.select, [])
+
+    def test_basic_auth(self):
+        hc = requests.Session()
+        hc.auth = ('joe', 'Secret')
+
+        dsn = "http://localhost:1234/none"
+        sc = self._make_connection(url=dsn, http_connection=hc)
+        sc.select_url = httpbin('/basic-auth/{0}/{1}'.format(*hc.auth))
+
+        resp = sc.select([])
+        self.assertTrue(json.loads(resp)['authenticated'])
 
 
 class TestSolrInterface(unittest.TestCase):
@@ -161,6 +178,13 @@ class TestSolrInterface(unittest.TestCase):
                 'http://localhost:2222/mysolr')
         return si
 
+    def test__should_skip_value(self):
+        sc = self._make_one()
+        self.assertTrue(sc._should_skip_value(None))
+        self.assertTrue(sc._should_skip_value({'set': None}))
+        self.assertFalse(sc._should_skip_value(1))
+        self.assertFalse(sc._should_skip_value({'set': 1}))
+
     def test__prepare_docs_does_not_alter_given_docs(self):
         sc = self._make_one()
         today = datetime.datetime.utcnow()
@@ -174,3 +198,13 @@ class TestSolrInterface(unittest.TestCase):
         docs = [{'last_modified': dt}]
         result = sc._prepare_docs(docs)
         self.assertEqual(result[0]['last_modified'], "2014-02-18T12:12:10Z")
+
+    def test__prepare_docs_converts_datetime_atomic_update(self):
+        sc = self._make_one()
+        dt = datetime.datetime(2014, 2, 18, 12, 12, 10)
+        docs = [{'last_modified': {'set': dt}}]
+        result = sc._prepare_docs(docs)
+        self.assertEqual(
+            result[0]['last_modified']['set'],
+            '2014-02-18T12:12:10Z',
+        )

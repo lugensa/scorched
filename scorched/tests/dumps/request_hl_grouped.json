@@ -1,0 +1,53 @@
+{
+  "responseHeader": {
+    "status": 0,
+    "QTime": 1,
+    "params": {
+      "q": "author:Muir",
+      "hl": "true",
+      "hl.fl": "author",
+      "group.ngroups": "true",
+      "wt": "json",
+      "group.field": "inStock",
+      "group": "true"
+    }
+  },
+  "grouped": {
+    "inStock": {
+      "matches": 2,
+      "ngroups": 1,
+      "groups": [
+        {
+          "groupValue": true,
+          "doclist": {
+            "numFound": 2,
+            "start": 0,
+            "docs": [
+              {
+                "name": "The Yosemite",
+                "author": "John Muir",
+                "author_s": "John Muir",
+                "price": 12.5,
+                "price_c": "12.5,USD",
+                "important_dts": [
+                  "1969-01-01T00:00:00Z",
+                  "1969-01-02T00:00:00Z"
+                ],
+                "inStock": true,
+                "id": "978",
+                "_version_": 1547485322340728832
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "highlighting": {
+    "978": {
+      "author": [
+        "John <em>Muir</em>"
+      ]
+    }
+  }
+}

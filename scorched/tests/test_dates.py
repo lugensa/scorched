@@ -6,6 +6,7 @@ import scorched.exc
 
 from scorched.dates import (solr_date, datetime_from_w3_datestring,
                             datetime_factory)
+from scorched.search import LuceneQuery
 
 not_utc = pytz.timezone('Etc/GMT-3')
 
@@ -96,3 +97,8 @@ class TestDates(unittest.TestCase):
         s = solr_date(str("2009-07-23T03:24:34.000376Z"))
         self.assertEqual(s, solr_date(s))
         self.assertTrue(s == s)
+
+    def test_solr_date_ranges(self):
+        query = LuceneQuery()
+        date = solr_date("2009-07-23T03:24:34.000376Z")
+        query.Q(**{"last_modified__gt": date})
