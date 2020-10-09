@@ -1040,6 +1040,7 @@ class MoreLikeThisOptions(Options):
     opts = {"count": int,
             "mintf": int,
             "mindf": int,
+            "maxdf": int,
             "minwl": int,
             "maxwl": int,
             "maxqt": int,
