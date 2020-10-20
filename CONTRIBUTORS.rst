@@ -1,6 +1,8 @@
 Contributors
 ============
 
+- Alessandro Pisa
+
 - Mauro Amico
 
 - Josip Delic
@@ -11,3 +13,4 @@ Contributors
 
 - Mike Lissner
 
+- Thomas Quinot

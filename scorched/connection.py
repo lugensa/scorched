@@ -1,16 +1,17 @@
 from __future__ import unicode_literals
+from scorched.compat import str
+
 import itertools
 import json
 import requests
+import scorched.compat
 import scorched.dates
+import scorched.exc
 import scorched.response
 import scorched.search
-import scorched.exc
-import scorched.compat
 import time
 import warnings
 
-from scorched.compat import str
 
 MAX_LENGTH_GET_URL = 2048
 # Jetty default is 4096; Tomcat default is 8192; picking 2048 to be
@@ -30,7 +31,8 @@ class SolrConnection(object):
         """
         :param url: url to Solr
         :type url: str
-        :param http_connection: already existing connection TODO
+        :param http_connection: existing requests.Session object, or None to
+                                create a new one.
         :type http_connection: requests connection
         :param mode: mode (readable, writable) Solr
         :type mode: str
@@ -43,7 +45,7 @@ class SolrConnection(object):
                                (connect timeout, read timeout) tuple.
         :type search_timeout: float or tuple
         """
-        self.http_connection = requests.Session()
+        self.http_connection = http_connection or requests.Session()
         if mode == 'r':
             self.writeable = False
         elif mode == 'w':
@@ -271,7 +273,7 @@ class SolrInterface(object):
         """
         :param url: url to Solr
         :type url: str
-        :param http_connection: optional -- already existing connection TODO
+        :param http_connection: optional -- already existing connection
         :type http_connection: requests connection
         :param mode: optional -- mode (readable, writable) Solr
         :type mode: str
@@ -308,6 +310,27 @@ class SolrInterface(object):
                     if x['type'] == 'date'])
         return ret
 
+    def _should_skip_value(self, value):
+        if value is None:
+            return True
+        if (
+            isinstance(value, dict) and
+            'set' in value and
+            value['set'] is None
+        ):
+            return True
+        return False
+
+    def _prepare_date(self, value):
+        ''' Prepare a value of type date
+        '''
+        if is_iter(value):
+            value = [str(scorched.dates.solr_date(v)) for v in
+                     value]
+        else:
+            value = str(scorched.dates.solr_date(value))
+        return value
+
     def _prepare_docs(self, docs):
         prepared_docs = []
         for doc in docs:
@@ -315,14 +338,13 @@ class SolrInterface(object):
             for name, value in list(doc.items()):
                 # XXX remove all None fields this is needed for adding date
                 # fields
-                if value is None:
+                if self._should_skip_value(value):
                     continue
                 if scorched.dates.is_datetime_field(name, self._datefields):
-                    if is_iter(value):
-                        value = [str(scorched.dates.solr_date(v)) for v in
-                                 value]
+                    if isinstance(value, dict) and 'set' in value:
+                        value['set'] = self._prepare_date(value['set'])
                     else:
-                        value = str(scorched.dates.solr_date(value))
+                        value = self._prepare_date(value)
                 new_doc[name] = value
             prepared_docs.append(new_doc)
         return prepared_docs
@@ -518,6 +540,28 @@ class SolrInterface(object):
         q = scorched.search.MltSolrSearch(
             self, content=content, content_charset=content_charset, url=url)
         return q.mlt(fields=fields, query_fields=query_fields, **kwargs)
+
+    def extract(self, fh, extractOnly=True, extractFormat='text'):
+        """
+        :param fh: binary file (PDF, MSWord, ODF, ...)
+        :type fh: open file handle
+        :returns: SolrExtract
+
+        Extract text and metadatada from binary file.
+
+        The ExtractingRequestHandler is expected to be registered at the
+        '/update/extract' endpoint in the solrconfig.xml file of the server.
+        """
+        url = self.conn.url + 'update/extract'
+        params = {'wt': 'json'}
+        if extractOnly:
+            params['extractOnly'] = 'true'
+        params['extractFormat'] = extractFormat
+        files = {'file': fh}
+        response = self.conn.request('POST', url, params=params, files=files)
+        if response.status_code != 200:
+            raise scorched.exc.SolrError(response)
+        return scorched.response.SolrExtract.from_json(response.json())
 
     def Q(self, *args, **kwargs):
         q = scorched.search.LuceneQuery()

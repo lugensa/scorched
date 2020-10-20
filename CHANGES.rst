@@ -1,10 +1,28 @@
 CHANGES
 =======
 
-0.11.1 (unreleased)
+0.13.1 (unreleased)
 -------------------
 
 - Nothing changed yet.
+
+
+0.13.0 (2020-01-25)
+-------------------
+
+- Add support for Python 3.6, Python3.7 and Python 3.8 (ale-rt)
+
+
+0.12 (2017-03-16)
+-----------------
+
+- Add extract handler support (mamico)
+
+- Allow user to pass an http_connection to SolrInterface ctor (quinot)
+
+- ``BaseSearch`` has now a ``count`` function (mlissner)
+
+- Support atomic updates (ale-rt)
 
 
 0.11.0 (2016-10-11)

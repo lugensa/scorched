@@ -295,6 +295,26 @@ class TestUtils(unittest.TestCase):
         )
 
     @scorched.testing.skip_unless_solr
+    def test_count(self):
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        docs = [{
+            "id": "1",
+            "genre_s": "fantasy",
+        }, {
+            "id": "2",
+            "genre_s": "fantasy",
+        }]
+        si.add(docs)
+        si.commit()
+        ungrouped_count = si.query(genre_s="fantasy").count()
+        ungrouped_count_expected = 2
+        self.assertEqual(ungrouped_count, ungrouped_count_expected)
+        grouped_count = si.query(genre_s="fantasy").group_by("genre_s").count()
+        grouped_count_expected = 1
+        self.assertEqual(grouped_count, grouped_count_expected)
+
+    @scorched.testing.skip_unless_solr
     def test_debug(self):
         dsn = os.environ.get("SOLR_URL",
                              "http://localhost:8983/solr")
@@ -329,6 +349,17 @@ class TestUtils(unittest.TestCase):
         opts = si.query(name=u"Monstes").spellcheck().options()
         self.assertEqual({u'q': u'name:Monstes', u'spellcheck': True}, opts)
 
+    @scorched.testing.skip_unless_solr
+    def test_extract(self):
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        pdf = os.path.join(os.path.dirname(__file__), "data", "lipsum.pdf")
+        with open(pdf, 'rb') as f:
+            data = si.extract(f)
+        self.assertEqual(0, data.status)
+        self.assertTrue('Lorem ipsum' in data.text)
+        self.assertEqual(['pdfTeX-1.40.13'], data.metadata['producer'])
+
 
 class TestMltHandler(unittest.TestCase):
 
@@ -338,6 +369,13 @@ class TestMltHandler(unittest.TestCase):
         with open(file) as f:
             self.datajson = f.read()
             self.docs = json.loads(self.datajson)
+
+    def tearDown(self):
+        dsn = os.environ.get("SOLR_URL",
+                             "http://localhost:8983/solr")
+        si = SolrInterface(dsn)
+        si.delete_all()
+        si.commit()
 
     @scorched.testing.skip_unless_solr
     def test_mlt(self):
