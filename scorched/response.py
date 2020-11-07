@@ -1,8 +1,8 @@
 from __future__ import unicode_literals
-import collections
 import json
 import scorched.dates
 
+from collections.abc import Sequence
 from scorched.compat import str
 from scorched.search import is_iter
 
@@ -110,7 +110,7 @@ class SolrUpdateResponse(object):
         return self
 
 
-class SolrResponse(collections.Sequence):
+class SolrResponse(Sequence):
 
     @classmethod
     def from_json(cls, jsonmsg, unique_key, datefields=()):
