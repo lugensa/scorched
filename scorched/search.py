@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+
+import collections
 import copy
 import datetime
 import numbers
