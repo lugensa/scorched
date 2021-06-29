@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from unittest import mock
 
 import datetime
 import json
@@ -6,11 +7,6 @@ import os
 import requests
 import scorched.connection
 import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 
 
 HTTPBIN = os.environ.get('HTTPBIN_URL', 'https://httpbin.org/')
