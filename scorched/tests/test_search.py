@@ -12,7 +12,7 @@ from scorched.search import (SolrSearch, MltSolrSearch, PaginateOptions,
                              TermVectorOptions, StatOptions,
                              is_iter)
 from scorched.strings import WildcardString
-from nose.tools import assert_equal
+import pytest
 
 
 debug = False
@@ -92,17 +92,17 @@ base_good_query_data = {
         ([], {"int_field__gt": 3},
          [("q", b"int_field:{3 TO *}")]),
         ([], {"int_field__rangeexc": (-3, 3)},
-         [("q", b"int_field:{\-3 TO 3}")]),
+         [("q", b"int_field:{\\-3 TO 3}")]),
         ([], {"int_field__rangeexc": (3, -3)},
-         [("q", b"int_field:{\-3 TO 3}")]),
+         [("q", b"int_field:{\\-3 TO 3}")]),
         ([], {"int_field__lte": 3},
          [("q", b"int_field:[* TO 3]")]),
         ([], {"int_field__gte": 3},
          [("q", b"int_field:[3 TO *]")]),
         ([], {"int_field__range": (-3, 3)},
-         [("q", b"int_field:[\-3 TO 3]")]),
+         [("q", b"int_field:[\\-3 TO 3]")]),
         ([], {"int_field__range": (3, -3)},
-         [("q", b"int_field:[\-3 TO 3]")]),
+         [("q", b"int_field:[\\-3 TO 3]")]),
         ([], {"date_field__lt": datetime.datetime(2009, 1, 1)},
          [("q", b"date_field:{* TO 2009\\-01\\-01T00\\:00\\:00Z}")]),
         ([], {"date_field__gt": datetime.datetime(2009, 1, 1)},
@@ -238,8 +238,8 @@ good_option_data = {
          {"hl": True, "hl.fl": "int_field,text_field"}),
         ({"snippets": 3},
          {"hl": True, "hl.snippets": 3}),
-        ({"snippets": 3, "fragsize": 5, "mergeContinuous": True, "requireFieldMatch": True, "maxAnalyzedChars": 500, "alternateField": "text_field", "maxAlternateFieldLength": 50, "formatter": "simple", "simple.pre": "<b>", "simple.post": "</b>", "fragmenter": "regex", "usePhraseHighlighter": True, "highlightMultiTerm": True, "regex.slop": 0.2, "regex.pattern": "\w", "regex.maxAnalyzedChars": 100},
-         {"hl": True, "hl.snippets": 3, "hl.fragsize": 5, "hl.mergeContinuous": True, "hl.requireFieldMatch": True, "hl.maxAnalyzedChars": 500, "hl.alternateField": "text_field", "hl.maxAlternateFieldLength": 50, "hl.formatter": "simple", "hl.simple.pre": "<b>", "hl.simple.post": "</b>", "hl.fragmenter": "regex", "hl.usePhraseHighlighter": True, "hl.highlightMultiTerm": True, "hl.regex.slop": 0.2, "hl.regex.pattern": "\w", "hl.regex.maxAnalyzedChars": 100}),
+        ({"snippets": 3, "fragsize": 5, "mergeContinuous": True, "requireFieldMatch": True, "maxAnalyzedChars": 500, "alternateField": "text_field", "maxAlternateFieldLength": 50, "formatter": "simple", "simple.pre": "<b>", "simple.post": "</b>", "fragmenter": "regex", "usePhraseHighlighter": True, "highlightMultiTerm": True, "regex.slop": 0.2, "regex.pattern": "\\w", "regex.maxAnalyzedChars": 100},
+         {"hl": True, "hl.snippets": 3, "hl.fragsize": 5, "hl.mergeContinuous": True, "hl.requireFieldMatch": True, "hl.maxAnalyzedChars": 500, "hl.alternateField": "text_field", "hl.maxAlternateFieldLength": 50, "hl.formatter": "simple", "hl.simple.pre": "<b>", "hl.simple.post": "</b>", "hl.fragmenter": "regex", "hl.usePhraseHighlighter": True, "hl.highlightMultiTerm": True, "hl.regex.slop": 0.2, "hl.regex.pattern": "\\w", "hl.regex.maxAnalyzedChars": 100}),
         ({"fields": "int_field", "snippets": "3"},
          {"hl": True, "hl.fl": "int_field", "f.int_field.hl.snippets": 3}),
         ({"fields": "int_field", "snippets": 3, "fragsize": 5},
@@ -587,47 +587,58 @@ mlt_query_options_data = (
 def check_mlt_query_options(fields, query_fields, kwargs, output):
     q = MltSolrSearch(None, content="This is the posted content.")
     q = q.mlt(fields, query_fields=query_fields, **kwargs)
-    assert_equal(q.params(), output)
+    assert q.params() == output
 
 
-def test_query_data():
-    for method, data in list(good_query_data.items()):
-        for args, kwargs, output in data:
-            yield check_query_data, method, args, kwargs, output
+def flatten(test_data):
+    new_data = []
+    for method, data in test_data.items():
+        for row in data:
+            if isinstance(row, (list, tuple)):
+                new_data.append([method, *row])
+            else:
+                new_data.append([method, row])
+    return new_data
 
 
-def test_mlt_query_data():
-    for method, data in list(base_good_query_data.items()):
-        for args, kwargs, output in data:
-            yield check_mlt_query_data, method, args, kwargs, output
+@pytest.mark.parametrize(
+        "method,args,kwargs,expected", flatten(good_query_data))
+def test_query_data(method, args, kwargs, expected):
+    check_query_data(method, args, kwargs, expected)
 
 
-def test_good_option_data():
-    for OptionClass, option_data in list(good_option_data.items()):
-        for kwargs, output in option_data:
-            yield check_good_option_data, OptionClass, kwargs, output
+@pytest.mark.parametrize(
+        "method,args,kwargs,expected", flatten(base_good_query_data))
+def test_mlt_query_data(method, args, kwargs, expected):
+    check_mlt_query_data(method, args, kwargs, expected)
 
 
-def test_bad_option_data():
-    for OptionClass, option_data in list(bad_option_data.items()):
-        for kwargs in option_data:
-            yield check_bad_option_data, OptionClass, kwargs
+@pytest.mark.parametrize(
+        "option_class,kwargs,expected", flatten(good_option_data))
+def test_good_option_data(option_class, kwargs, expected):
+    check_good_option_data(option_class, kwargs, expected)
 
 
-def test_complex_boolean_queries():
+@pytest.mark.parametrize("option_class,kwargs", flatten(bad_option_data))
+def test_bad_option_data(option_class, kwargs):
+    check_bad_option_data(option_class, kwargs)
+
+
+@pytest.mark.parametrize("query,expected", complex_boolean_queries)
+def test_complex_boolean_queries(query, expected):
     solr_search = SolrSearch(None)
-    for query, output in complex_boolean_queries:
-        yield check_complex_boolean_query, solr_search, query, output
+    check_complex_boolean_query(solr_search, query, expected)
 
 
-def test_url_encode_data():
-    for kwargs, output in param_encode_data:
-        yield check_url_encode_data, kwargs, output
+@pytest.mark.parametrize("kwargs, expected", param_encode_data)
+def test_url_encode_data(kwargs, expected):
+    check_url_encode_data(kwargs, expected)
 
 
-def test_mlt_query_options():
-    for (fields, query_fields, kwargs, output) in mlt_query_options_data:
-        yield check_mlt_query_options, fields, query_fields, kwargs, output
+@pytest.mark.parametrize(
+        "fields,query_fields,kwargs,expected", mlt_query_options_data)
+def test_mlt_query_options(fields, query_fields, kwargs, expected):
+    check_mlt_query_options(fields, query_fields, kwargs, expected)
 
 
 def test_is_iter():

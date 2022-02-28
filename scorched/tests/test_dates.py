@@ -3,6 +3,7 @@ import datetime
 import pytz
 import unittest
 import scorched.exc
+import pytest
 
 from scorched.dates import (solr_date, datetime_from_w3_datestring,
                             datetime_factory)
@@ -48,14 +49,16 @@ def check_solr_date_from_string(s, date):
         solr_date(s)._dt_obj, date, s)
 
 
-def test_solr_date_from_pydatetimes():
-    for k, v in list(samples_from_pydatetimes.items()):
-        yield check_solr_date_from_date, k, v[0], v[1]
+@pytest.mark.parametrize(
+        "dt_string,dt_objects", samples_from_pydatetimes.items())
+def test_solr_date_from_pydatetimes(dt_string, dt_objects):
+    check_solr_date_from_date(dt_string, dt_objects[0], dt_objects[1])
 
 
-def test_solr_date_from_strings():
-    for k, v in list(samples_from_strings.items()):
-        yield check_solr_date_from_string, k, v
+@pytest.mark.parametrize(
+        "dt_string,dt_object", samples_from_strings.items())
+def test_solr_date_from_strings(dt_string, dt_object):
+    check_solr_date_from_string(dt_string, dt_object)
 
 
 class TestDates(unittest.TestCase):
