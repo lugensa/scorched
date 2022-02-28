@@ -1,11 +1,6 @@
-from __future__ import unicode_literals
 import unittest
 import scorched.testing
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 
 class TestTesting(unittest.TestCase):

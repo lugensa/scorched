@@ -5,7 +5,7 @@ from setuptools import setup
 import os
 
 
-version = '0.13.1.dev0'
+version = '1.0.0.dev0'
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
@@ -41,13 +41,14 @@ setup(name='scorched',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
+      python_requires='>=3.7.0',
       install_requires=[
           "setuptools",
           "requests",
           "pytz",
       ],
       extras_require={
-          'test': ["nose", "coverage", "mock"],
+          'test': ["pytest", "coverage"],
       },
       test_suite='scorched.tests',
       setup_requires=["setuptools_git"],

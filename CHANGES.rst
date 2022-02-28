@@ -1,12 +1,15 @@
 CHANGES
 =======
 
-0.14.0 (unreleased)
--------------------
+1.0.0 (unreleased)
+------------------
 
 - Added missing mlt parameter (mlissner) 
 
-- Remove support for Python 2.7 and Python 3.6 is now the baseline.
+- Remove support for Python 2.7
+
+- Python 3.9 is now the baseline.
+
 
 0.13.0 (2020-01-25)
 -------------------
