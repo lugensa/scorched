@@ -257,20 +257,20 @@ good_option_data = {
           "tag.ellipsis": "...", "defaultSummary": True, "encoder": "simple",
           "score.k1": 1.2, "score.b": 0.75, "score.pivot": 87,
           "bs.type": "SENTENCE", "maxAnalyzedChars": 10000, },
-         {'f.text_field.hl.score.b': 0.75, 'f.int_field.hl.encoder': u'simple',
-          'f.int_field.hl.tag.pre': u'&lt;em&gt;', 'f.text_field.hl.tag.pre':
-          u'&lt;em&gt;', 'f.text_field.hl.defaultSummary': True,
-          'f.text_field.hl.tag.post': u'&lt;em&gt;', 'f.text_field.hl.bs.type':
-          u'SENTENCE', 'f.int_field.hl.tag.ellipsis': u'...',
+         {'f.text_field.hl.score.b': 0.75, 'f.int_field.hl.encoder': 'simple',
+          'f.int_field.hl.tag.pre': '&lt;em&gt;', 'f.text_field.hl.tag.pre':
+          '&lt;em&gt;', 'f.text_field.hl.defaultSummary': True,
+          'f.text_field.hl.tag.post': '&lt;em&gt;', 'f.text_field.hl.bs.type':
+          'SENTENCE', 'f.int_field.hl.tag.ellipsis': '...',
           'f.text_field.hl.score.k1': 1.2, 'f.text_field.hl.tag.ellipsis':
-          u'...', 'f.int_field.hl.score.pivot': 87.0,
-          'f.int_field.hl.tag.post': u'&lt;em&gt;', 'f.int_field.hl.bs.type':
-          u'SENTENCE', 'f.int_field.hl.score.b': 0.75,
-          'f.text_field.hl.maxAnalyzedChars': u'10000', 'hl': True,
-          'f.text_field.hl.encoder': u'simple', 'hl.fl':
+          '...', 'f.int_field.hl.score.pivot': 87.0,
+          'f.int_field.hl.tag.post': '&lt;em&gt;', 'f.int_field.hl.bs.type':
+          'SENTENCE', 'f.int_field.hl.score.b': 0.75,
+          'f.text_field.hl.maxAnalyzedChars': '10000', 'hl': True,
+          'f.text_field.hl.encoder': 'simple', 'hl.fl':
           'int_field,text_field', 'f.int_field.hl.snippets': 1,
           'f.text_field.hl.snippets': 1, 'f.int_field.hl.maxAnalyzedChars':
-          u'10000', 'f.int_field.hl.score.k1': 1.2,
+          '10000', 'f.int_field.hl.score.k1': 1.2,
           'f.int_field.hl.defaultSummary': True, 'f.text_field.hl.score.pivot':
           87.0}),
     ),
@@ -552,13 +552,13 @@ def check_complex_boolean_query(solr_search, query, output):
 
 
 param_encode_data = (
-    ({"int": 3, "string": "string", "unicode": u"unicode"},
+    ({"int": 3, "string": "string", "unicode": "unicode"},
      [("int", b"3"), ("string", b"string"), ("unicode", b"unicode")]),
-    ({"int": 3, "string": "string", "unicode": u"\N{UMBRELLA}nicode"},
+    ({"int": 3, "string": "string", "unicode": "\N{UMBRELLA}nicode"},
      [("int", b"3"), ("string", b"string"), ("unicode", b"\xe2\x98\x82nicode")]),
     # python3 needs unicode as keys
-    ({"int": 3, "string": "string", u"\N{UMBRELLA}nicode": u"\N{UMBRELLA}nicode"},
-     [("int", b"3"), ("string", b"string"), (u"\N{UMBRELLA}nicode", b"\xe2\x98\x82nicode")]),
+    ({"int": 3, "string": "string", "\N{UMBRELLA}nicode": "\N{UMBRELLA}nicode"},
+     [("int", b"3"), ("string", b"string"), ("\N{UMBRELLA}nicode", b"\xe2\x98\x82nicode")]),
     ({"true": True, "false": False},
      [("false", b"false"), ("true", b"true")]),
     ({"list": ["first", "second", "third"]},

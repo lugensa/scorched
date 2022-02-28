@@ -41,13 +41,13 @@ class ResultsTestCase(unittest.TestCase):
         self.assertEqual(res.result.numFound, 3)
         # iterable
         self.assertEqual([x['name'] for x in res],
-                         [u'The Lightning Thief',
-                          u'The Sea of Monsters',
-                          u"Sophie's World : The Greek Philosophers"])
+                         ['The Lightning Thief',
+                          'The Sea of Monsters',
+                          "Sophie's World : The Greek Philosophers"])
         self.assertEqual([x['name'] for x in res.result.docs],
-                         [u'The Lightning Thief',
-                          u'The Sea of Monsters',
-                          u"Sophie's World : The Greek Philosophers"])
+                         ['The Lightning Thief',
+                          'The Sea of Monsters',
+                          "Sophie's World : The Greek Philosophers"])
         self.assertEqual([x['created_dt'] for x in res.result.docs if 'created_dt' in x],
                          [datetime.datetime(2009, 7, 23, 3, 24, 34, 376,
                                             tzinfo=pytz.utc)])
@@ -55,27 +55,27 @@ class ResultsTestCase(unittest.TestCase):
                          [datetime.datetime(2009, 7, 23, 3, 24, 34, 376,
                                             tzinfo=pytz.utc)])
         self.assertEqual(res.facet_counts.__dict__,
-                         {'facet_fields': {u'cat': [(u'book', 3),
-                                                    (u'paperback', 2),
-                                                    (u'hardcover', 1)]},
+                         {'facet_fields': {'cat': [('book', 3),
+                                                    ('paperback', 2),
+                                                    ('hardcover', 1)]},
                           'facet_dates': {},
                           'facet_queries': {},
                           'facet_ranges': {
-                            u'created_dt': {
-                              u'gap': u'+1YEARS',
-                              u'start': u'2009-01-01T00:00:00Z',
-                              u'end': u'2012-01-01T00:00:00Z',
-                              u'counts': [
-                                (u'2009-01-01T00:00:00Z',1),
-                                (u'2010-01-01T00:00:00Z',0),
-                                (u'2011-01-01T00:00:00Z',0),
+                            'created_dt': {
+                              'gap': '+1YEARS',
+                              'start': '2009-01-01T00:00:00Z',
+                              'end': '2012-01-01T00:00:00Z',
+                              'counts': [
+                                ('2009-01-01T00:00:00Z',1),
+                                ('2010-01-01T00:00:00Z',0),
+                                ('2011-01-01T00:00:00Z',0),
                               ]
                             },
                           },
                           'facet_pivot': ()})
 
         self.assertRaises(ValueError, res.from_json, self.data_error, 'id')
-        self.assertEqual(res.__str__(), u'3 results found, starting at #0')
+        self.assertEqual(res.__str__(), '3 results found, starting at #0')
         self.assertEqual(len(res), 3)
 
     def test_term_vectors(self):
@@ -94,7 +94,7 @@ class ResultsTestCase(unittest.TestCase):
     def test_highlighting(self):
         res_hl = scorched.response.SolrResponse.from_json(
             self.data_hl, 'id')
-        highlights = {u'author': [u'<em>John</em> Muir']}
+        highlights = {'author': ['<em>John</em> Muir']}
         self.assertEqual(res_hl.highlighting['978'], highlights)
         self.assertEqual(res_hl.result.docs[0]['solr_highlights'], highlights)
 
@@ -109,7 +109,7 @@ class ResultsTestCase(unittest.TestCase):
         groups = getattr(res_hl_group.groups, res_hl_group.group_field)['groups']
         self.assertEqual(len(groups), ngroups)
 
-        highlights = {u'author': [u'John <em>Muir</em>']}
+        highlights = {'author': ['John <em>Muir</em>']}
         self.assertEqual(groups[0]['doclist']['docs'][0]['solr_highlights'],
                          highlights)
         self.assertEqual(type(groups[0]['doclist']['docs'][0]['important_dts'][0]),

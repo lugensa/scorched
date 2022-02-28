@@ -73,8 +73,8 @@ class TestUtils(unittest.TestCase):
         res = si.query(genre_s="fantasy").execute(constructor=Book)
         # test constructor
         self.assertEqual([x.title for x in res.result.docs],
-                         [u'The Sea of Monsters',
-                          u"Sophie's World : The Greek Philosophers"])
+                         ["The Sea of Monsters",
+                          "Sophie's World : The Greek Philosophers"])
 
     @scorched.testing.skip_unless_solr
     def test_cursor(self):
@@ -102,9 +102,9 @@ class TestUtils(unittest.TestCase):
                    .cursor(constructor=Book, rows=2)
         # test constructor
         self.assertEqual([x.title for x in cursor],
-                         [u'The Lightning Thief',
-                          u'The Sea of Monsters',
-                          u"Sophie's World : The Greek Philosophers"])
+                         ['The Lightning Thief',
+                          'The Sea of Monsters',
+                          "Sophie's World : The Greek Philosophers"])
         self.assertEqual(search_count[0], 3)
 
         # empty results
@@ -167,13 +167,13 @@ class TestUtils(unittest.TestCase):
         res = si.query(genre_s="fantasy").facet_by("cat").execute()
         self.assertEqual(res.result.numFound, 3)
         self.assertEqual([x['name'] for x in res.result.docs],
-                         [u'The Lightning Thief',
-                          u'The Sea of Monsters',
-                          u"Sophie's World : The Greek Philosophers"])
+                         ['The Lightning Thief',
+                          'The Sea of Monsters',
+                          "Sophie's World : The Greek Philosophers"])
         self.assertEqual(res.facet_counts.__dict__,
-                         {'facet_fields': {u'cat': [(u'book', 3),
-                                                    (u'paperback', 2),
-                                                    (u'hardcover', 1)]},
+                         {'facet_fields': {'cat': [('book', 3),
+                                                   ('paperback', 2),
+                                                   ('hardcover', 1)]},
                           'facet_dates': {},
                           'facet_queries': {},
                           'facet_ranges': {},
@@ -190,7 +190,7 @@ class TestUtils(unittest.TestCase):
             genre_s="fantasy").execute()
         self.assertEqual(res.result.numFound, 1)
         self.assertEqual([x['name'] for x in res.result.docs],
-                         [u'The Lightning Thief'])
+                         ['The Lightning Thief'])
 
     @scorched.testing.skip_unless_solr
     def test_edismax_query(self):
@@ -203,7 +203,7 @@ class TestUtils(unittest.TestCase):
             genre_s="fantasy").alt_parser('edismax').execute()
         self.assertEqual(res.result.numFound, 1)
         self.assertEqual([x['name'] for x in res.result.docs],
-                         [u'The Lightning Thief'])
+                         ['The Lightning Thief'])
 
     @scorched.testing.skip_unless_solr
     def test_mlt_component_query(self):
@@ -219,7 +219,7 @@ class TestUtils(unittest.TestCase):
         # but in more like this we get two
         self.assertEqual(len(res.more_like_these["978-0641723445"].docs), 2)
         self.assertEqual([x['author'] for x in res.more_like_these[
-            "978-0641723445"].docs], [u'Rick Riordan', u'Jostein Gaarder'])
+            "978-0641723445"].docs], ['Rick Riordan', 'Jostein Gaarder'])
 
     @scorched.testing.skip_unless_solr
     def test_encoding(self):
@@ -279,7 +279,7 @@ class TestUtils(unittest.TestCase):
         si.add(docs)
         si.commit()
         res = si.query(author=u"Röüß").highlight('author').execute()
-        highlighted_field_result = u'<em>Röüß</em> Itoa'
+        highlighted_field_result = '<em>Röüß</em> Itoa'
         # Does the highlighting attribute work?
         self.assertEqual(
             res.highlighting['978-0641723445']['author'][0],
@@ -345,7 +345,7 @@ class TestUtils(unittest.TestCase):
         dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         opts = si.query(name=u"Monstes").spellcheck().options()
-        self.assertEqual({u'q': u'name:Monstes', u'spellcheck': True}, opts)
+        self.assertEqual({'q': 'name:Monstes', 'spellcheck': True}, opts)
 
     @scorched.testing.skip_unless_solr
     def test_extract(self):
@@ -386,6 +386,6 @@ class TestMltHandler(unittest.TestCase):
                            interestingTerms="details", mintf=1, mindf=1
                            ).query(id="978-0641723445").execute()
         self.assertEqual(res.result.numFound, 2)
-        self.assertEqual(res.interesting_terms, [u'genre_s:fantasy', 1.0])
+        self.assertEqual(res.interesting_terms, ['genre_s:fantasy', 1.0])
         self.assertEqual([x['author'] for x in res.result.docs],
-                         [u'Rick Riordan', u'Jostein Gaarder'])
+                         ['Rick Riordan', 'Jostein Gaarder'])
