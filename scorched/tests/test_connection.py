@@ -7,10 +7,7 @@ import requests
 import scorched.connection
 import unittest
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 
 HTTPBIN = os.environ.get('HTTPBIN_URL', 'https://httpbin.org/')
