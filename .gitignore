@@ -42,3 +42,6 @@ nosetests.xml
 
 # potential solr downloads
 solr-*
+
+man
+pyvenv.cfg

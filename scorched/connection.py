@@ -1,17 +1,18 @@
 from __future__ import unicode_literals
-from scorched.compat import str
 
 import itertools
 import json
+import time
+import warnings
+
 import requests
+
 import scorched.compat
 import scorched.dates
 import scorched.exc
 import scorched.response
 import scorched.search
-import time
-import warnings
-
+from scorched.compat import str
 
 MAX_LENGTH_GET_URL = 2048
 # Jetty default is 4096; Tomcat default is 8192; picking 2048 to be
@@ -26,8 +27,15 @@ class SolrConnection(object):
     readable = True
     writeable = True
 
-    def __init__(self, url, http_connection, mode, retry_timeout,
-                 max_length_get_url, search_timeout=()):
+    def __init__(
+        self,
+        url,
+        http_connection,
+        mode,
+        retry_timeout,
+        max_length_get_url,
+        search_timeout=(),
+    ):
         """
         :param url: url to Solr
         :type url: str
@@ -46,9 +54,9 @@ class SolrConnection(object):
         :type search_timeout: float or tuple
         """
         self.http_connection = http_connection or requests.Session()
-        if mode == 'r':
+        if mode == "r":
             self.writeable = False
-        elif mode == 'w':
+        elif mode == "w":
             self.readable = False
         self.url = url.rstrip("/") + "/"
         self.update_url = self.url + "update/json"
@@ -71,8 +79,7 @@ class SolrConnection(object):
         """
         try:
             return self.http_connection.request(*args, **kwargs)
-        except (requests.exceptions.ConnectionError,
-                requests.exceptions.Timeout):
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             if self.retry_timeout < 0:
                 raise
             time.sleep(self.retry_timeout)
@@ -121,14 +128,21 @@ class SolrConnection(object):
         else:
             headers = {}
         url = self.url_for_update(**kwargs)
-        response = self.request('POST', url, data=body, headers=headers)
+        response = self.request("POST", url, data=body, headers=headers)
         if response.status_code != 200:
             raise scorched.exc.SolrError(response)
         return response.text
 
-    def url_for_update(self, commit=None, commitWithin=None, softCommit=None,
-                       optimize=None, waitSearcher=None, expungeDeletes=None,
-                       maxSegments=None):
+    def url_for_update(
+        self,
+        commit=None,
+        commitWithin=None,
+        softCommit=None,
+        optimize=None,
+        waitSearcher=None,
+        expungeDeletes=None,
+        maxSegments=None,
+    ):
         """
         :param commit: optional -- commit actions
         :type commit: bool
@@ -156,41 +170,40 @@ class SolrConnection(object):
         """
         extra_params = {}
         if commit is not None:
-            extra_params['commit'] = "true" if commit else "false"
+            extra_params["commit"] = "true" if commit else "false"
         if commitWithin is not None:
             try:
-                extra_params['commitWithin'] = int(commitWithin)
+                extra_params["commitWithin"] = int(commitWithin)
             except (TypeError, ValueError):
-                raise ValueError(
-                    "commitWithin should be a number in milliseconds")
-            if extra_params['commitWithin'] < 0:
-                raise ValueError(
-                    "commitWithin should be a number in milliseconds")
-            extra_params['commitWithin'] = str(extra_params['commitWithin'])
+                raise ValueError("commitWithin should be a number in milliseconds")
+            if extra_params["commitWithin"] < 0:
+                raise ValueError("commitWithin should be a number in milliseconds")
+            extra_params["commitWithin"] = str(extra_params["commitWithin"])
         if softCommit is not None:
-            extra_params['softCommit'] = "true" if softCommit else "false"
+            extra_params["softCommit"] = "true" if softCommit else "false"
         if optimize is not None:
-            extra_params['optimize'] = "true" if optimize else "false"
+            extra_params["optimize"] = "true" if optimize else "false"
         if waitSearcher is not None:
-            extra_params['waitSearcher'] = "true" if waitSearcher else "false"
+            extra_params["waitSearcher"] = "true" if waitSearcher else "false"
         if expungeDeletes is not None:
-            extra_params[
-                'expungeDeletes'] = "true" if expungeDeletes else "false"
+            extra_params["expungeDeletes"] = "true" if expungeDeletes else "false"
         if maxSegments is not None:
             try:
-                extra_params['maxSegments'] = int(maxSegments)
+                extra_params["maxSegments"] = int(maxSegments)
             except (TypeError, ValueError):
                 raise ValueError("maxSegments")
-            if extra_params['maxSegments'] <= 0:
+            if extra_params["maxSegments"] <= 0:
                 raise ValueError("maxSegments should be a positive number")
-            extra_params['maxSegments'] = str(extra_params['maxSegments'])
-        if 'expungeDeletes' in extra_params and 'commit' not in extra_params:
+            extra_params["maxSegments"] = str(extra_params["maxSegments"])
+        if "expungeDeletes" in extra_params and "commit" not in extra_params:
             raise ValueError("Can't do expungeDeletes without commit")
-        if 'maxSegments' in extra_params and 'optimize' not in extra_params:
+        if "maxSegments" in extra_params and "optimize" not in extra_params:
             raise ValueError("Can't do maxSegments without optimize")
         if extra_params:
-            return "%s?%s" % (self.update_url, scorched.compat.urlencode(
-                sorted(extra_params.items())))
+            return "%s?%s" % (
+                self.update_url,
+                scorched.compat.urlencode(sorted(extra_params.items())),
+            )
         else:
             return self.update_url
 
@@ -205,24 +218,25 @@ class SolrConnection(object):
         """
         if not self.readable:
             raise TypeError("This Solr instance is only for writing")
-        params.append(('wt', 'json'))
+        params.append(("wt", "json"))
         qs = scorched.compat.urlencode(params)
         url = "%s?%s" % (self.select_url, qs)
         if len(url) > self.max_length_get_url:
             warnings.warn(
                 "Long query URL encountered - POSTing instead of "
-                "GETting. This query will not be cached at the HTTP layer")
+                "GETting. This query will not be cached at the HTTP layer"
+            )
             url = self.select_url
-            method = 'POST'
+            method = "POST"
             kwargs = {
-                'data': qs,
-                'headers': {
-                    "Content-Type": "application/x-www-form-urlencoded"}}
+                "data": qs,
+                "headers": {"Content-Type": "application/x-www-form-urlencoded"},
+            }
         else:
-            method = 'GET'
+            method = "GET"
             kwargs = {}
         if self.search_timeout != ():
-            kwargs['timeout'] = self.search_timeout
+            kwargs["timeout"] = self.search_timeout
         response = self.request(method, url, **kwargs)
         if response.status_code != 200:
             raise scorched.exc.SolrError(response)
@@ -240,24 +254,27 @@ class SolrConnection(object):
         """
         if not self.readable:
             raise TypeError("This Solr instance is only for writing")
-        params.append(('wt', 'json'))
+        params.append(("wt", "json"))
         qs = scorched.compat.urlencode(params)
         base_url = "%s?%s" % (self.mlt_url, qs)
-        method = 'GET'
+        method = "GET"
         kwargs = {}
         if content is None:
             url = base_url
         else:
             get_url = "%s&stream.body=%s" % (
-                base_url, scorched.compat.quote_plus(content))
+                base_url,
+                scorched.compat.quote_plus(content),
+            )
             if len(get_url) <= self.max_length_get_url:
                 url = get_url
             else:
                 url = base_url
-                method = 'POST'
+                method = "POST"
                 kwargs = {
-                    'data': content,
-                    'headers': {"Content-Type": "text/plain; charset=utf-8"}}
+                    "data": content,
+                    "headers": {"Content-Type": "text/plain; charset=utf-8"},
+                }
         response = self.request(method, url, **kwargs)
         if response.status_code != 200:
             raise scorched.exc.SolrError(response.content)
@@ -267,9 +284,15 @@ class SolrConnection(object):
 class SolrInterface(object):
     remote_schema_file = "schema?wt=json"
 
-    def __init__(self, url, http_connection=None, mode='',
-                 retry_timeout=-1, max_length_get_url=MAX_LENGTH_GET_URL,
-                 search_timeout=()):
+    def __init__(
+        self,
+        url,
+        http_connection=None,
+        mode="",
+        retry_timeout=-1,
+        max_length_get_url=MAX_LENGTH_GET_URL,
+        search_timeout=(),
+    ):
         """
         :param url: url to Solr
         :type url: str
@@ -288,45 +311,51 @@ class SolrInterface(object):
         """
 
         self.conn = SolrConnection(
-            url, http_connection, mode, retry_timeout, max_length_get_url)
+            url, http_connection, mode, retry_timeout, max_length_get_url
+        )
         self.schema = self.init_schema()
         self._datefields = self._extract_datefields(self.schema)
 
     def init_schema(self):
         response = self.conn.request(
-            'GET', scorched.compat.urljoin(self.conn.url,
-                                           self.remote_schema_file))
+            "GET", scorched.compat.urljoin(self.conn.url, self.remote_schema_file)
+        )
         if response.status_code != 200:
             raise EnvironmentError(
-                "Couldn't retrieve schema document - status code %s\n%s" % (
-                    response.status_code, response.content)
+                "Couldn't retrieve schema document - status code %s\n%s"
+                % (response.status_code, response.content)
             )
-        return response.json()['schema']
+        return response.json()["schema"]
 
     def _extract_datefields(self, schema):
-        ret = [x['name'] for x in
-               schema['fields'] if x['type'] == 'date']
-        ret.extend([x['name'] for x in schema['dynamicFields']
-                    if x['type'] == 'date'])
+        # attn: in modern solr (>=8.x) date fields are declared
+        # as <fieldType name="pdates" class="solr.DatePointField"
+        #               docValues="true" multiValued="true"/>
+        # instead of <fieldType name="date" class="solr.TrieDateField"
+        #                       precisionStep="0" positionIncrementGap="0"/>
+        # This schema parsing is determining the fields by name
+        # and not by java class type. Therefore this is error-prone.
+        ret = [x["name"] for x in schema["fields"] if x["type"] in ["pdate", "date"]]
+        ret.extend(
+            [
+                x["name"]
+                for x in schema["dynamicFields"]
+                if x["type"] in ["pdate", "date"]
+            ]
+        )
         return ret
 
     def _should_skip_value(self, value):
         if value is None:
             return True
-        if (
-            isinstance(value, dict) and
-            'set' in value and
-            value['set'] is None
-        ):
+        if isinstance(value, dict) and "set" in value and value["set"] is None:
             return True
         return False
 
     def _prepare_date(self, value):
-        ''' Prepare a value of type date
-        '''
+        """Prepare a value of type date"""
         if is_iter(value):
-            value = [str(scorched.dates.solr_date(v)) for v in
-                     value]
+            value = [str(scorched.dates.solr_date(v)) for v in value]
         else:
             value = str(scorched.dates.solr_date(value))
         return value
@@ -341,8 +370,8 @@ class SolrInterface(object):
                 if self._should_skip_value(value):
                     continue
                 if scorched.dates.is_datetime_field(name, self._datefields):
-                    if isinstance(value, dict) and 'set' in value:
-                        value['set'] = self._prepare_date(value['set'])
+                    if isinstance(value, dict) and "set" in value:
+                        value["set"] = self._prepare_date(value["set"])
                     else:
                         value = self._prepare_date(value)
                 new_doc[name] = value
@@ -369,8 +398,11 @@ class SolrInterface(object):
         ret = []
         for doc_chunk in grouper(docs, chunk):
             update_message = json.dumps(self._prepare_docs(doc_chunk))
-            ret.append(scorched.response.SolrUpdateResponse.from_json(
-                self.conn.update(update_message, **kwargs)))
+            ret.append(
+                scorched.response.SolrUpdateResponse.from_json(
+                    self.conn.update(update_message, **kwargs)
+                )
+            )
         return ret
 
     def delete_by_query(self, query, **kwargs):
@@ -383,7 +415,8 @@ class SolrInterface(object):
         """
         delete_message = json.dumps({"delete": {"query": str(query)}})
         ret = scorched.response.SolrUpdateResponse.from_json(
-            self.conn.update(delete_message, **kwargs))
+            self.conn.update(delete_message, **kwargs)
+        )
         return ret
 
     def delete_by_ids(self, ids, **kwargs):
@@ -396,7 +429,8 @@ class SolrInterface(object):
         """
         delete_message = json.dumps({"delete": ids})
         ret = scorched.response.SolrUpdateResponse.from_json(
-            self.conn.update(delete_message, **kwargs))
+            self.conn.update(delete_message, **kwargs)
+        )
         return ret
 
     def commit(self, waitSearcher=None, expungeDeletes=None, softCommit=None):
@@ -416,10 +450,14 @@ class SolrInterface(object):
         A commit operation makes index changes visible to new search requests.
         """
         ret = scorched.response.SolrUpdateResponse.from_json(
-            self.conn.update('{"commit": {}}', commit=True,
-                             waitSearcher=waitSearcher,
-                             expungeDeletes=expungeDeletes,
-                             softCommit=softCommit))
+            self.conn.update(
+                '{"commit": {}}',
+                commit=True,
+                waitSearcher=waitSearcher,
+                expungeDeletes=expungeDeletes,
+                softCommit=softCommit,
+            )
+        )
         return ret
 
     def optimize(self, waitSearcher=None, maxSegments=None):
@@ -437,9 +475,13 @@ class SolrInterface(object):
         index segments to be merged into a single segment first.
         """
         ret = scorched.response.SolrUpdateResponse.from_json(
-            self.conn.update('{"optimize": {}}', optimize=True,
-                             waitSearcher=waitSearcher,
-                             maxSegments=maxSegments))
+            self.conn.update(
+                '{"optimize": {}}',
+                optimize=True,
+                waitSearcher=waitSearcher,
+                maxSegments=maxSegments,
+            )
+        )
         return ret
 
     def rollback(self):
@@ -450,7 +492,8 @@ class SolrInterface(object):
         the last commit
         """
         ret = scorched.response.SolrUpdateResponse.from_json(
-            self.conn.update('{"rollback": {}}'))
+            self.conn.update('{"rollback": {}}')
+        )
         return ret
 
     def delete_all(self):
@@ -471,7 +514,8 @@ class SolrInterface(object):
         :type fileds: list of strings
         """
         ret = scorched.response.SolrResponse.from_get_json(
-            self.conn.get(ids, fields), self._datefields)
+            self.conn.get(ids, fields), self._datefields
+        )
         return ret
 
     def search(self, **kwargs):
@@ -483,7 +527,7 @@ class SolrInterface(object):
         params = scorched.search.params_from_dict(**kwargs)
         ret = scorched.response.SolrResponse.from_json(
             self.conn.select(params),
-            self.schema['uniqueKey'],
+            self.schema["uniqueKey"],
             self._datefields,
         )
         return ret
@@ -509,13 +553,20 @@ class SolrInterface(object):
         params = scorched.search.params_from_dict(**kwargs)
         ret = scorched.response.SolrResponse.from_json(
             self.conn.mlt(params, content=content),
-            self.schema['uniqueKey'],
+            self.schema["uniqueKey"],
             self._datefields,
         )
         return ret
 
-    def mlt_query(self, fields, content=None, content_charset=None,
-                  url=None, query_fields=None, **kwargs):
+    def mlt_query(
+        self,
+        fields,
+        content=None,
+        content_charset=None,
+        url=None,
+        query_fields=None,
+        **kwargs
+    ):
         """
         :param fields: field names to compute similarity upon
         :type fields: list
@@ -538,10 +589,11 @@ class SolrInterface(object):
         the 'mlt.' prefix.
         """
         q = scorched.search.MltSolrSearch(
-            self, content=content, content_charset=content_charset, url=url)
+            self, content=content, content_charset=content_charset, url=url
+        )
         return q.mlt(fields=fields, query_fields=query_fields, **kwargs)
 
-    def extract(self, fh, extractOnly=True, extractFormat='text'):
+    def extract(self, fh, extractOnly=True, extractFormat="text"):
         """
         :param fh: binary file (PDF, MSWord, ODF, ...)
         :type fh: open file handle
@@ -552,13 +604,13 @@ class SolrInterface(object):
         The ExtractingRequestHandler is expected to be registered at the
         '/update/extract' endpoint in the solrconfig.xml file of the server.
         """
-        url = self.conn.url + 'update/extract'
-        params = {'wt': 'json'}
+        url = self.conn.url + "update/extract"
+        params = {"wt": "json"}
         if extractOnly:
-            params['extractOnly'] = 'true'
-        params['extractFormat'] = extractFormat
-        files = {'file': fh}
-        response = self.conn.request('POST', url, params=params, files=files)
+            params["extractOnly"] = "true"
+        params["extractFormat"] = extractFormat
+        files = {"file": fh}
+        response = self.conn.request("POST", url, params=params, files=files)
         if response.status_code != 200:
             raise scorched.exc.SolrError(response)
         return scorched.response.SolrExtract.from_json(response.json())

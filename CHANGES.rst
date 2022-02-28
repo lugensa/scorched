@@ -21,6 +21,9 @@ Bug fixes
 Features
 ++++++++
 
+- interpret fields of type `date` and/or `pdate` as
+  solr datefields
+
 - Python 3.9 is now the baseline.
 
 
