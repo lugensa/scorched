@@ -1,0 +1,13 @@
+include *.py
+include *.sh
+include *.rst
+
+recursive-include docs *.bat
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include docs Makefile
+recursive-include scorched *.json
+recursive-include scorched *.pdf
+recursive-include scorched *.xml
+
+exclude .coveragerc

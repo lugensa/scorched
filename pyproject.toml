@@ -1,0 +1,8 @@
+[tool.isort]
+profile = "black"
+
+[tool.black]
+py37 = true
+
+[tool.check-manifest]
+ignore = [".flake8", ".pre-commit-config.yaml", "pyproject.toml"]
