@@ -4,9 +4,22 @@ CHANGES
 1.0.0 (unreleased)
 ------------------
 
-- Added missing mlt parameter (mlissner) 
+Backwards incompatible changes
+++++++++++++++++++++++++++++++
+
+- In Response.facet_counts the default value for
+  `facet_counts.facet_pivot` is now `{}` instead of `(,)` if
+  `facet_pivot` was not in the solr response json
 
 - Remove support for Python 2.7
+
+Bug fixes
++++++++++
+
+- Added missing mlt parameter (mlissner)
+
+Features
+++++++++
 
 - Python 3.9 is now the baseline.
 

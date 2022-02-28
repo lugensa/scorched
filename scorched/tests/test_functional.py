@@ -1,6 +1,7 @@
-import unittest
-import os
 import json
+import os
+import unittest
+
 import scorched.testing
 from scorched import SolrInterface
 
@@ -16,25 +17,21 @@ class Book:
 
 
 class TestUtils(unittest.TestCase):
-
     def setUp(self):
-        file = os.path.join(os.path.dirname(__file__), "dumps",
-                            "books.json")
+        file = os.path.join(os.path.dirname(__file__), "dumps", "books.json")
         with open(file) as f:
             self.datajson = f.read()
             self.docs = json.loads(self.datajson)
 
     def tearDown(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         si.delete_all()
         si.commit()
 
     @scorched.testing.skip_unless_solr
     def test_get(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         res = si.get("978-1423103349")
         self.assertEqual(len(res), 0)
@@ -46,8 +43,9 @@ class TestUtils(unittest.TestCase):
 
         res = si.get(["978-0641723445", "978-1423103349", "nonexist"])
         self.assertEqual(len(res), 2)
-        self.assertEqual([x["name"] for x in res],
-                         [u"The Lightning Thief", u"The Sea of Monsters"])
+        self.assertEqual(
+            [x["name"] for x in res], [u"The Lightning Thief", u"The Sea of Monsters"]
+        )
 
         si.commit()
         res = si.get(ids="978-1423103349", fields=["author"])
@@ -56,15 +54,14 @@ class TestUtils(unittest.TestCase):
 
     @scorched.testing.skip_unless_solr
     def test_query(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         si.add(self.docs)
         si.commit()
         res = si.query(genre_s="fantasy").execute()
         self.assertEqual(res.result.numFound, 3)
         # delete
-        res = si.delete_by_ids(res.result.docs[0]['id'])
+        res = si.delete_by_ids(res.result.docs[0]["id"])
         self.assertEqual(res.status, 0)
         res = si.query(genre_s="fantasy").execute()
         si.commit()
@@ -72,18 +69,18 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(res.result.numFound, 2)
         res = si.query(genre_s="fantasy").execute(constructor=Book)
         # test constructor
-        self.assertEqual([x.title for x in res.result.docs],
-                         ["The Sea of Monsters",
-                          "Sophie's World : The Greek Philosophers"])
+        self.assertEqual(
+            [x.title for x in res.result.docs],
+            ["The Sea of Monsters", "Sophie's World : The Greek Philosophers"],
+        )
 
     @scorched.testing.skip_unless_solr
     def test_cursor(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         si.add(self.docs)
         si.commit()
-        cursor = si.query(genre_s="fantasy").sort_by('id').cursor(rows=1)
+        cursor = si.query(genre_s="fantasy").sort_by("id").cursor(rows=1)
 
         # Count how often we hit solr
         search_count = [0]
@@ -92,32 +89,36 @@ class TestUtils(unittest.TestCase):
         def search_proxy(*args, **kwargs):
             search_count[0] += 1
             return old_search(*args, **kwargs)
+
         cursor.search.interface.search = search_proxy
 
         list(cursor)
         self.assertEqual(search_count[0], 4)  # 3 + 1 to realize we are done
 
         search_count = [0]
-        cursor = si.query(genre_s="fantasy").sort_by('id') \
-                   .cursor(constructor=Book, rows=2)
+        cursor = (
+            si.query(genre_s="fantasy").sort_by("id").cursor(constructor=Book, rows=2)
+        )
         # test constructor
-        self.assertEqual([x.title for x in cursor],
-                         ['The Lightning Thief',
-                          'The Sea of Monsters',
-                          "Sophie's World : The Greek Philosophers"])
+        self.assertEqual(
+            [x.title for x in cursor],
+            [
+                "The Lightning Thief",
+                "The Sea of Monsters",
+                "Sophie's World : The Greek Philosophers",
+            ],
+        )
         self.assertEqual(search_count[0], 3)
 
         # empty results
         search_count = [0]
-        cursor = si.query(genre_s="nonexist").sort_by('id') \
-                   .cursor(constructor=Book)
+        cursor = si.query(genre_s="nonexist").sort_by("id").cursor(constructor=Book)
         self.assertEqual(list(cursor), [])
         self.assertEqual(search_count[0], 1)
 
     @scorched.testing.skip_unless_solr
     def test_rollback(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         si.delete_all()
         si.add(self.docs)
@@ -125,7 +126,7 @@ class TestUtils(unittest.TestCase):
         res = si.query(genre_s="fantasy").execute()
         self.assertEqual(res.result.numFound, 3)
         # delete
-        res = si.delete_by_ids(res.result.docs[0]['id'])
+        res = si.delete_by_ids(res.result.docs[0]["id"])
         self.assertEqual(res.status, 0)
         # rollback
         res = si.rollback()
@@ -135,8 +136,7 @@ class TestUtils(unittest.TestCase):
 
     @scorched.testing.skip_unless_solr
     def test_chunked_add(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         self.assertEqual(len(self.docs), 4)
         # chunk size = 1, chunks = 4
@@ -158,73 +158,84 @@ class TestUtils(unittest.TestCase):
 
     @scorched.testing.skip_unless_solr
     def test_facet_query(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         res = si.add(self.docs)
         self.assertEqual(res[0].status, 0)
         si.commit()
         res = si.query(genre_s="fantasy").facet_by("cat").execute()
         self.assertEqual(res.result.numFound, 3)
-        self.assertEqual([x['name'] for x in res.result.docs],
-                         ['The Lightning Thief',
-                          'The Sea of Monsters',
-                          "Sophie's World : The Greek Philosophers"])
-        self.assertEqual(res.facet_counts.__dict__,
-                         {'facet_fields': {'cat': [('book', 3),
-                                                   ('paperback', 2),
-                                                   ('hardcover', 1)]},
-                          'facet_dates': {},
-                          'facet_queries': {},
-                          'facet_ranges': {},
-                          'facet_pivot': ()})
+        self.assertEqual(
+            [x["name"] for x in res.result.docs],
+            [
+                "The Lightning Thief",
+                "The Sea of Monsters",
+                "Sophie's World : The Greek Philosophers",
+            ],
+        )
+        self.assertEqual(
+            res.facet_counts.__dict__,
+            {
+                "facet_fields": {
+                    "cat": [("book", 3), ("paperback", 2), ("hardcover", 1)]
+                },
+                "facet_dates": {},
+                "facet_queries": {},
+                "facet_ranges": {},
+                "facet_pivot": {},
+            },
+        )
 
     @scorched.testing.skip_unless_solr
     def test_filter_query(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         si.add(self.docs)
         si.commit()
-        res = si.query(si.Q(**{"*": "*"})).filter(cat="hardcover").filter(
-            genre_s="fantasy").execute()
+        res = (
+            si.query(si.Q(**{"*": "*"}))
+            .filter(cat="hardcover")
+            .filter(genre_s="fantasy")
+            .execute()
+        )
         self.assertEqual(res.result.numFound, 1)
-        self.assertEqual([x['name'] for x in res.result.docs],
-                         ['The Lightning Thief'])
+        self.assertEqual([x["name"] for x in res.result.docs], ["The Lightning Thief"])
 
     @scorched.testing.skip_unless_solr
     def test_edismax_query(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         si.add(self.docs)
         si.commit()
-        res = si.query(si.Q(**{"*": "*"})).filter(cat="hardcover").filter(
-            genre_s="fantasy").alt_parser('edismax').execute()
+        res = (
+            si.query(si.Q(**{"*": "*"}))
+            .filter(cat="hardcover")
+            .filter(genre_s="fantasy")
+            .alt_parser("edismax")
+            .execute()
+        )
         self.assertEqual(res.result.numFound, 1)
-        self.assertEqual([x['name'] for x in res.result.docs],
-                         ['The Lightning Thief'])
+        self.assertEqual([x["name"] for x in res.result.docs], ["The Lightning Thief"])
 
     @scorched.testing.skip_unless_solr
     def test_mlt_component_query(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         si.add(self.docs)
         si.commit()
-        res = si.query(id="978-0641723445").mlt(
-            "genre_s", mintf=1, mindf=1).execute()
+        res = si.query(id="978-0641723445").mlt("genre_s", mintf=1, mindf=1).execute()
         # query shows only one
         self.assertEqual(res.result.numFound, 1)
         # but in more like this we get two
         self.assertEqual(len(res.more_like_these["978-0641723445"].docs), 2)
-        self.assertEqual([x['author'] for x in res.more_like_these[
-            "978-0641723445"].docs], ['Rick Riordan', 'Jostein Gaarder'])
+        self.assertEqual(
+            [x["author"] for x in res.more_like_these["978-0641723445"].docs],
+            ["Rick Riordan", "Jostein Gaarder"],
+        )
 
     @scorched.testing.skip_unless_solr
     def test_encoding(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         docs = {
             "id": "978-0641723445",
@@ -236,8 +247,8 @@ class TestUtils(unittest.TestCase):
             "genre_s": "fantasy",
             "inStock": True,
             "price": 12.50,
-            "pages_i": 384
-            }
+            "pages_i": 384,
+        }
         si.add(docs)
         si.commit()
         res = si.query(author=u"Röüß").execute()
@@ -262,7 +273,7 @@ class TestUtils(unittest.TestCase):
 
     @scorched.testing.skip_unless_solr
     def test_highlighting(self):
-        dsn = os.environ.get("SOLR_URL", 'http://localhost:8983/solr')
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         docs = {
             "id": "978-0641723445",
@@ -274,21 +285,21 @@ class TestUtils(unittest.TestCase):
             "genre_s": "fantasy",
             "inStock": True,
             "price": 12.50,
-            "pages_i": 384
+            "pages_i": 384,
         }
         si.add(docs)
         si.commit()
-        res = si.query(author=u"Röüß").highlight('author').execute()
-        highlighted_field_result = '<em>Röüß</em> Itoa'
+        res = si.query(author=u"Röüß").highlight("author").execute()
+        highlighted_field_result = "<em>Röüß</em> Itoa"
         # Does the highlighting attribute work?
         self.assertEqual(
-            res.highlighting['978-0641723445']['author'][0],
+            res.highlighting["978-0641723445"]["author"][0],
             highlighted_field_result,
         )
 
         # Does each item have highlighting attributes?
         self.assertEqual(
-            res.result.docs[0]['solr_highlights']['author'][0],
+            res.result.docs[0]["solr_highlights"]["author"][0],
             highlighted_field_result,
         )
 
@@ -296,13 +307,16 @@ class TestUtils(unittest.TestCase):
     def test_count(self):
         dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
-        docs = [{
-            "id": "1",
-            "genre_s": "fantasy",
-        }, {
-            "id": "2",
-            "genre_s": "fantasy",
-        }]
+        docs = [
+            {
+                "id": "1",
+                "genre_s": "fantasy",
+            },
+            {
+                "id": "2",
+                "genre_s": "fantasy",
+            },
+        ]
         si.add(docs)
         si.commit()
         ungrouped_count = si.query(genre_s="fantasy").count()
@@ -314,8 +328,7 @@ class TestUtils(unittest.TestCase):
 
     @scorched.testing.skip_unless_solr
     def test_debug(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         docs = {
             "id": "978-0641723445",
@@ -327,65 +340,64 @@ class TestUtils(unittest.TestCase):
             "genre_s": "fantasy",
             "inStock": True,
             "price": 12.50,
-            "pages_i": 384
-            }
+            "pages_i": 384,
+        }
         si.add(docs)
         si.commit()
         res = si.query(author=u"Röüß").debug().execute()
         self.assertEqual(res.result.numFound, 1)
         for k, v in docs.items():
             self.assertEqual(res.result.docs[0][k], v)
-        self.assertTrue('explain' in res.debug)
+        self.assertTrue("explain" in res.debug)
         # deactivate
         res = si.query(author=u"Röüß").execute()
-        self.assertFalse('explain' in res.debug)
+        self.assertFalse("explain" in res.debug)
 
     @scorched.testing.skip_unless_solr
     def test_spellcheck(self):
         dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         opts = si.query(name=u"Monstes").spellcheck().options()
-        self.assertEqual({'q': 'name:Monstes', 'spellcheck': True}, opts)
+        self.assertEqual({"q": "name:Monstes", "spellcheck": True}, opts)
 
     @scorched.testing.skip_unless_solr
     def test_extract(self):
         dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         pdf = os.path.join(os.path.dirname(__file__), "data", "lipsum.pdf")
-        with open(pdf, 'rb') as f:
+        with open(pdf, "rb") as f:
             data = si.extract(f)
         self.assertEqual(0, data.status)
-        self.assertTrue('Lorem ipsum' in data.text)
-        self.assertEqual(['pdfTeX-1.40.13'], data.metadata['producer'])
+        self.assertTrue("Lorem ipsum" in data.text)
+        self.assertEqual(["pdfTeX-1.40.13"], data.metadata["producer"])
 
 
 class TestMltHandler(unittest.TestCase):
-
     def setUp(self):
-        file = os.path.join(os.path.dirname(__file__), "dumps",
-                            "books.json")
+        file = os.path.join(os.path.dirname(__file__), "dumps", "books.json")
         with open(file) as f:
             self.datajson = f.read()
             self.docs = json.loads(self.datajson)
 
     def tearDown(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         si.delete_all()
         si.commit()
 
     @scorched.testing.skip_unless_solr
     def test_mlt(self):
-        dsn = os.environ.get("SOLR_URL",
-                             "http://localhost:8983/solr")
+        dsn = os.environ.get("SOLR_URL", "http://localhost:8983/solr")
         si = SolrInterface(dsn)
         si.add(self.docs)
         si.commit()
-        res = si.mlt_query("genre_s",
-                           interestingTerms="details", mintf=1, mindf=1
-                           ).query(id="978-0641723445").execute()
+        res = (
+            si.mlt_query("genre_s", interestingTerms="details", mintf=1, mindf=1)
+            .query(id="978-0641723445")
+            .execute()
+        )
         self.assertEqual(res.result.numFound, 2)
-        self.assertEqual(res.interesting_terms, ['genre_s:fantasy', 1.0])
-        self.assertEqual([x['author'] for x in res.result.docs],
-                         ['Rick Riordan', 'Jostein Gaarder'])
+        self.assertEqual(res.interesting_terms, ["genre_s:fantasy", 1.0])
+        self.assertEqual(
+            [x["author"] for x in res.result.docs], ["Rick Riordan", "Jostein Gaarder"]
+        )
