@@ -9,5 +9,6 @@ recursive-include docs Makefile
 recursive-include scorched *.json
 recursive-include scorched *.pdf
 recursive-include scorched *.xml
+recursive-include scorched *.yml
 
 exclude .coveragerc

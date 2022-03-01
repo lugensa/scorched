@@ -1,0 +1,20 @@
+version: '3'
+services:
+  solr:
+    image: solr:8
+    ports:
+     - "${SCORCHED_TEST_SOLR_PORT:-44177}:8983"
+    volumes:
+      - ./:/tests
+    command: |
+      bash -c 'precreate-core core0 &&
+      cp -a /opt/solr/server/solr/configsets/sample_techproducts_configs/conf/* /var/solr/data/core0/conf/ &&
+      cp /tests/solrconfig_8.11.xml /var/solr/data/core0/conf/solrconfig.xml &&
+      solr-foreground'
+
+# docker run -d --rm -p 44177:8983 \
+#   -v $PWD/scorched/tests:/tests \
+#   --name my_solr solr:8 bash -c \
+#   "precreate-core core0 && "\
+#   "cp -a /opt/solr/server/solr/configsets/sample_techproducts_configs/conf/* /var/solr/data/core0/conf/ &&"\
+#   "cp /tests/solrconfig_8.11.xml /var/solr/data/core0/conf/solrconfig.xml && solr-foreground"
