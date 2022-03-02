@@ -40,27 +40,27 @@ Following some major differences:
 Local testing
 =============
 
+We changed to pytest and pytest-docker to spin-off
+the tests.
+
+The account on your os under which you run the tests
+should have permissions to start docker processes.
+
 First checkout the sources::
 
   https://github.com/lugensa/scorched.git
 
-Now create a virtual-env and install some dependencies::
+Now use tox for testing::
 
   cd scorched
-  virtualenv ./
-  bin/pip install -e .
-  bin/pip install -e .[test]
+  tox
 
-Start the Solr server to test against::
+Additionally use pytest directly::
 
-  # DEBUG=true|false: verbose output of Solr server on|off
-  # SOLR_VERSION=x.y.z (the version to test against)
-  # the Solr startup script reports the pid of the Solr process
-  SOLR_VERSION=4.10.2 SOLR_PORT=44177 DEBUG=true SOLR_CONFS="scorched/tests/solrconfig.xml" ./testing-solr.sh
+  cd scorched
+  python3.10 -mvenv .
+  ./bin/pip install -e .[test]
+  ./bin/pytest ./scorched
 
-  # stop Solr
-  kill -9 $pid
-
-Running the tests::
-
-  SOLR_URL=http://localhost:44177/solr/core0 ./bin/nosetests -s scorched
+Running the tests will start a solr-8.11.1 in docker
+(see scorched/tests/docker-compose.yml).
