@@ -4,7 +4,7 @@ import os
 
 from setuptools import find_packages, setup
 
-version = "1.0.0.0b2.dev0"
+version = "1.0.0.0b2"
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, "README.rst")).read()

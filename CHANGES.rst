@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-1.0.0.0b2 (unreleased)
+1.0.0.0b2 (2022-03-21)
 ----------------------
 
 - Fix last version: pep440 does not support semantic versioning
