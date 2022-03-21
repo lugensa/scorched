@@ -1,10 +1,13 @@
 CHANGES
 =======
 
-1.0.0b2 (unreleased)
---------------------
+1.0.0.0b2 (unreleased)
+----------------------
 
-- Nothing changed yet.
+- Fix last version: pep440 does not support semantic versioning
+  as supposed by https://semver.org (neither 1.0 no 2.0).
+  openstack suggests a modified semver as described here:
+  https://docs.openstack.org/pbr/latest/user/semver.html
 
 
 1.0.0-beta.1 (2022-03-21)
