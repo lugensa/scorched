@@ -914,6 +914,7 @@ class DismaxOptions(Options):
         "tie": float,
         "bq": str,
         "bf": str,
+        "q.alt": str,
     }
 
     def __init__(self, original=None):
